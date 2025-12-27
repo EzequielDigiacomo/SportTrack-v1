@@ -1,0 +1,57 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.14.36717.8 d17.14
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SportTrack-v1.Api", "SportTrack-v1.Api\SportTrack-v1.Api.csproj", "{62EEB4D8-CA88-4810-A888-3C6EDDE4B34C}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "01.Api", "01.Api", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "02.Controladores", "02.Controladores", "{0395C90F-E467-4FD1-B170-1C467A5BA887}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "03.AccesoDatos", "03.AccesoDatos", "{C73952BB-2BAE-47D4-B7E0-A72AEC47CE46}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "04.Entidades", "04.Entidades", "{31115E2D-843E-462D-AA42-D1BE9CCEBCB6}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SportTrack-v1.Controladores", "SportTrack-v1.Controladores\SportTrack-v1.Controladores.csproj", "{6AC4B84A-05E1-4068-99E5-FDCC35D6F110}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SportTrack-v1.AccesoDatos", "SportTrack-v1.AccesoDatos\SportTrack-v1.AccesoDatos.csproj", "{09161409-4848-4D7E-A25D-EAC9C627F9AD}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SportTrack-v1.Entidades", "SportTrack-v1.Entidades\SportTrack-v1.Entidades.csproj", "{D9CC4599-6288-43BA-8D11-1D4C60E30BD5}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{62EEB4D8-CA88-4810-A888-3C6EDDE4B34C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{62EEB4D8-CA88-4810-A888-3C6EDDE4B34C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{62EEB4D8-CA88-4810-A888-3C6EDDE4B34C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{62EEB4D8-CA88-4810-A888-3C6EDDE4B34C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6AC4B84A-05E1-4068-99E5-FDCC35D6F110}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6AC4B84A-05E1-4068-99E5-FDCC35D6F110}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6AC4B84A-05E1-4068-99E5-FDCC35D6F110}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6AC4B84A-05E1-4068-99E5-FDCC35D6F110}.Release|Any CPU.Build.0 = Release|Any CPU
+		{09161409-4848-4D7E-A25D-EAC9C627F9AD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{09161409-4848-4D7E-A25D-EAC9C627F9AD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{09161409-4848-4D7E-A25D-EAC9C627F9AD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{09161409-4848-4D7E-A25D-EAC9C627F9AD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D9CC4599-6288-43BA-8D11-1D4C60E30BD5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D9CC4599-6288-43BA-8D11-1D4C60E30BD5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D9CC4599-6288-43BA-8D11-1D4C60E30BD5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D9CC4599-6288-43BA-8D11-1D4C60E30BD5}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{62EEB4D8-CA88-4810-A888-3C6EDDE4B34C} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
+		{6AC4B84A-05E1-4068-99E5-FDCC35D6F110} = {0395C90F-E467-4FD1-B170-1C467A5BA887}
+		{09161409-4848-4D7E-A25D-EAC9C627F9AD} = {C73952BB-2BAE-47D4-B7E0-A72AEC47CE46}
+		{D9CC4599-6288-43BA-8D11-1D4C60E30BD5} = {31115E2D-843E-462D-AA42-D1BE9CCEBCB6}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {962CED25-DAE5-4995-AC29-5E27C1028E13}
+	EndGlobalSection
+EndGlobal

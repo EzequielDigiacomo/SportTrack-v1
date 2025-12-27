@@ -1,0 +1,15 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <RootNamespace>SportTrack_v1.AccesoDatos</RootNamespace>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\SportTrack-v1.Controladores\SportTrack-v1.Controladores.csproj" />
+    <ProjectReference Include="..\SportTrack-v1.Entidades\SportTrack-v1.Entidades.csproj" />
+  </ItemGroup>
+
+</Project>
