@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SportTrack_v1.Entidades.Entidades;
 using SportTrack_v1.Entidades.Enums;
@@ -18,6 +18,8 @@ namespace SportTrack.AccessDatos
         public DbSet<Bote> Botes { get; set; }
         public DbSet<Categoria> Categorias { get; set; }
         public DbSet<Distancia> Distancias { get; set; }
+        public DbSet<Club> Clubes { get; set; }
+        public DbSet<Usuario> Usuarios { get; set; }
 
         // Tablas Principales
         public DbSet<Evento> Eventos { get; set; }
@@ -25,6 +27,7 @@ namespace SportTrack.AccessDatos
         public DbSet<EventoPrueba> EventoPruebas { get; set; }
         public DbSet<Participante> Participantes { get; set; }
         public DbSet<Inscripcion> Inscripciones { get; set; }
+        public DbSet<InscripcionTripulante> InscripcionTripulantes { get; set; }
         public DbSet<Resultado> Resultados { get; set; }
         public DbSet<Penalizacion> Penalizaciones { get; set; }
 
@@ -32,11 +35,19 @@ namespace SportTrack.AccessDatos
         {
             base.OnModelCreating(modelBuilder);
 
-            // Configuración para PostgreSQL
-            if (Database.IsNpgsql())
+            // Configuración para PostgreSQL: Asegurar que todos los DateTime sean tratados como UTC
+            foreach (var entityType in modelBuilder.Model.GetEntityTypes())
             {
-                // Habilitar el plugin uuid-ossp si necesitas UUIDs
-                // modelBuilder.HasPostgresExtension("uuid-ossp");
+                foreach (var property in entityType.GetProperties())
+                {
+                    if (property.ClrType == typeof(DateTime) || property.ClrType == typeof(DateTime?))
+                    {
+                        property.SetValueConverter(new ValueConverter<DateTime, DateTime>(
+                            v => v.Kind == DateTimeKind.Utc ? v : DateTime.SpecifyKind(v, DateTimeKind.Utc),
+                            v => v.Kind == DateTimeKind.Utc ? v : DateTime.SpecifyKind(v, DateTimeKind.Utc)
+                        ));
+                    }
+                }
             }
 
             // ============================================
@@ -129,6 +140,33 @@ namespace SportTrack.AccessDatos
                 entity.HasIndex(e => e.DistanciaRegata)
                     .IsUnique()
                     .HasDatabaseName("IX_Distancias_DistanciaRegata");
+            });
+
+            // Tabla: Club
+            modelBuilder.Entity<Club>(entity =>
+            {
+                entity.ToTable("Clubes", "catalogos");
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Nombre).IsRequired().HasMaxLength(100);
+                entity.HasIndex(e => e.Nombre).IsUnique().HasDatabaseName("IX_Clubes_Nombre");
+            });
+
+            // Tabla: Usuario
+            modelBuilder.Entity<Usuario>(entity =>
+            {
+                entity.ToTable("Usuarios", "seguridad");
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Username).IsRequired().HasMaxLength(50);
+                entity.Property(e => e.Email).IsRequired().HasMaxLength(100);
+                entity.Property(e => e.Rol).IsRequired().HasMaxLength(20);
+                
+                entity.HasOne(e => e.Club)
+                    .WithMany(c => c.Usuarios)
+                    .HasForeignKey(e => e.ClubId)
+                    .OnDelete(DeleteBehavior.SetNull);
+
+                entity.HasIndex(e => e.Username).IsUnique();
+                entity.HasIndex(e => e.Email).IsUnique();
             });
 
             // ============================================
@@ -269,10 +307,10 @@ namespace SportTrack.AccessDatos
                     .OnDelete(DeleteBehavior.Restrict)
                     .HasConstraintName("FK_EventoPruebas_Pruebas");
 
-                // Índice único compuesto
-                entity.HasIndex(e => new { e.EventoId, e.PruebaId })
+                // Índice único que permite varias series (mangas) de una misma prueba en un evento, siempre que tengan distinto horario
+                entity.HasIndex(e => new { e.EventoId, e.PruebaId, e.FechaHora })
                     .IsUnique()
-                    .HasDatabaseName("IX_EventoPruebas_Unica");
+                    .HasDatabaseName("IX_EventoPruebas_EventoPrueba_Fecha");
 
                 entity.HasIndex(e => e.FechaHora)
                     .HasDatabaseName("IX_EventoPruebas_FechaHora");
@@ -306,8 +344,7 @@ namespace SportTrack.AccessDatos
                 entity.Property(e => e.Pais)
                     .HasMaxLength(50);
 
-                entity.Property(e => e.Club)
-                    .HasMaxLength(100);
+
 
                 entity.Property(e => e.Email)
                     .HasMaxLength(100);
@@ -344,8 +381,14 @@ namespace SportTrack.AccessDatos
                     .HasDatabaseName("IX_Participantes_Email")
                     .HasFilter("\"Email\" IS NOT NULL"); // CORREGIDO
 
-                entity.HasIndex(e => e.Club)
-                    .HasDatabaseName("IX_Participantes_Club");
+                entity.HasOne(e => e.Club)
+                    .WithMany(c => c.Participantes)
+                    .HasForeignKey(e => e.ClubId)
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .HasConstraintName("FK_Participantes_Clubes");
+
+                entity.HasIndex(e => e.ClubId)
+                    .HasDatabaseName("IX_Participantes_ClubId");
 
                 entity.HasIndex(e => e.Pais)
                     .HasDatabaseName("IX_Participantes_Pais");
@@ -372,6 +415,9 @@ namespace SportTrack.AccessDatos
                     .IsRequired()
                     .HasMaxLength(20);
 
+                entity.Property(e => e.Carril)
+                    .IsRequired(false);
+
                 // Configurar el enum como string en la BD
                 entity.Property(e => e.Estado)
                     .IsRequired()
@@ -391,15 +437,17 @@ namespace SportTrack.AccessDatos
                     .WithMany(p => p.Inscripciones)
                     .HasForeignKey(e => e.ParticipanteId)
                     .OnDelete(DeleteBehavior.Restrict)
+                    .IsRequired(false)
                     .HasConstraintName("FK_Inscripciones_Participantes");
 
                 // Índices
-                entity.HasIndex(e => new { e.EventoPruebaId, e.ParticipanteId })
+                entity.HasIndex(e => new { e.EventoPruebaId, e.ParticipanteId, e.Fase })
                     .IsUnique()
-                    .HasDatabaseName("IX_Inscripciones_Unica");
+                    .HasDatabaseName("IX_Inscripciones_Unica_Fase")
+                    .HasFilter("\"ParticipanteId\" IS NOT NULL");
 
+                // Quitamos el IsUnique porque un numero de dorsal puede repetirse a lo largo de las distintas series/eventos
                 entity.HasIndex(e => e.NumeroCompetidor)
-                    .IsUnique()
                     .HasDatabaseName("IX_Inscripciones_NumeroCompetidor");
 
                 entity.HasIndex(e => e.Estado)
@@ -410,6 +458,41 @@ namespace SportTrack.AccessDatos
 
                 entity.HasIndex(e => e.ParticipanteId)
                     .HasDatabaseName("IX_Inscripciones_ParticipanteId");
+
+                entity.HasIndex(e => e.Carril)
+                    .HasDatabaseName("IX_Inscripciones_Carril");
+            });
+
+            // Tabla: InscripcionTripulante
+            modelBuilder.Entity<InscripcionTripulante>(entity =>
+            {
+                entity.ToTable("InscripcionTripulantes", "regatas");
+
+                entity.HasKey(e => e.Id);
+
+                entity.Property(e => e.Id)
+                    .ValueGeneratedOnAdd();
+
+                entity.Property(e => e.PosicionEnBote)
+                    .IsRequired(false);
+
+                // Foreign Keys
+                entity.HasOne(e => e.Inscripcion)
+                    .WithMany(i => i.Tripulantes)
+                    .HasForeignKey(e => e.InscripcionId)
+                    .OnDelete(DeleteBehavior.Cascade)
+                    .HasConstraintName("FK_InscripcionTripulantes_Inscripciones");
+
+                entity.HasOne(e => e.Participante)
+                    .WithMany()
+                    .HasForeignKey(e => e.ParticipanteId)
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .HasConstraintName("FK_InscripcionTripulantes_Participantes");
+
+                // Índices
+                entity.HasIndex(e => new { e.InscripcionId, e.ParticipanteId })
+                    .IsUnique()
+                    .HasDatabaseName("IX_InscripcionTripulantes_Unica");
             });
 
             // Tabla: Resultado
@@ -591,6 +674,19 @@ namespace SportTrack.AccessDatos
                 new Distancia { Id = 14, DistanciaRegata = DistanciaRegataEnum.Metros18000 },
                 new Distancia { Id = 15, DistanciaRegata = DistanciaRegataEnum.Metros22000 },
                 new Distancia { Id = 16, DistanciaRegata = DistanciaRegataEnum.Metros30000 }
+            );
+
+            // Usuario inicial administrador
+            modelBuilder.Entity<Usuario>().HasData(
+                new Usuario { 
+                    Id = 1, 
+                    Username = "admin", 
+                    PasswordHash = "$2a$12$R9h/lSAbvI125hcnyqvQDu9fAKDLn6Y8yK/.Vz0uI3492M0h0mY3.", // admin123
+                    Email = "admin@sporttrack.com", 
+                    Rol = "Admin",
+                    FechaCreacion = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc),
+                    Activo = true
+                }
             );
         }
 

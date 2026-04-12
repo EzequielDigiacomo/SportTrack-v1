@@ -1,12 +1,12 @@
-﻿// Services/BoteService.cs
-using AutoMapper;
-using SportTrack_v1.Controladores.Bote;
+﻿using AutoMapper;
 using SportTrack_v1.Controladores.Bote.Dtos;
-using SportTrack_v1.Entidades.Entidades;
+using SportTrack_v1.Controladores.Exceptions;
 using SportTrack_v1.Entidades.Enums;
 
-public class BoteService 
+namespace SportTrack_v1.Controladores.Bote
 {
+    public class BoteService : IBoteService
+    {
     private readonly IBoteRepository _boteRepository;
     private readonly IMapper _mapper;
 
@@ -33,7 +33,7 @@ public class BoteService
 
     public async Task<BoteDto> CreateBoteAsync(BoteCreateDto boteDto)
     {
-        var bote = _mapper.Map<Bote>(boteDto);
+        var bote = _mapper.Map<Entidades.Entidades.Bote>(boteDto);
         var createdBote = await _boteRepository.CreateAsync(bote);
         return _mapper.Map<BoteDto>(createdBote);
     }
@@ -59,7 +59,7 @@ public class BoteService
 
     public async Task<IEnumerable<TipoBoteDto>> GetTiposBoteAsync()
     {
-        var tipos = Enum.GetValues<TipoBoteEnum>()
+        var tipos = Enum.GetValues<Entidades.Enums.TipoBoteEnum>()
             .Select(e => new TipoBoteDto
             {
                 Id = (int)e,
@@ -69,5 +69,5 @@ public class BoteService
 
         return await Task.FromResult(tipos);
     }
+    }
 }
-

@@ -1,55 +1,164 @@
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
+using Microsoft.IdentityModel.Tokens;
 using SportTrack.AccessDatos;
+using SportTrack_v1.Api.Hubs;
+using SportTrack_v1.Api.Middleware;
+using SportTrack_v1.Api.Services;
+using SportTrack_v1.Controladores.Auth;
 using SportTrack_v1.Controladores.Bote;
 using SportTrack_v1.Controladores.Categoria;
+using SportTrack_v1.Controladores.Club;
 using SportTrack_v1.Controladores.Distancia;
+using SportTrack_v1.Controladores.Evento;
+using SportTrack_v1.Controladores.Inscripcion;
+using SportTrack_v1.Controladores.Participante;
+using SportTrack_v1.Controladores.Mappings;
+using SportTrack_v1.Controladores.Resultado;
+using Microsoft.OpenApi.Models;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-
-builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-
-// Configurar DbContext con PostgreSQL
+// Configuraci贸n de la base de datos
 builder.Services.AddDbContext<SportTrackDbContext>(options =>
-    options.UseNpgsql(
-        builder.Configuration.GetConnectionString("DefaultConnection"),
-        npgsqlOptions => npgsqlOptions.MigrationsAssembly("SportTrack-v1.AccesoDatos")
-    )
-);
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// Configuraci髇 en Program.cs
+// SignalR para tiempo real
+builder.Services.AddSignalR();
+
+// Configuraci贸n de CORS
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("CorsPolicy", policy =>
+    {
+        policy.AllowAnyHeader()
+              .AllowAnyMethod()
+              .WithOrigins("http://localhost:3000", "http://localhost:5173") // Ajustar seg煤n el front
+              .AllowCredentials();
+    });
+});
+
+// Autenticaci贸n JWT
+var tokenKey = builder.Configuration["TokenKey"] ?? "SportTrackSuperSecretKey2026!ForEducationalPurposeOnly_LongEnoughToBeSecure";
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(tokenKey)),
+            ValidateIssuer = false,
+            ValidateAudience = false
+        };
+
+        // Soporte para SignalR con JWT en el query string
+        options.Events = new JwtBearerEvents
+        {
+            OnMessageReceived = context =>
+            {
+                var accessToken = context.Request.Query["access_token"];
+                var path = context.HttpContext.Request.Path;
+                if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/hubs"))
+                {
+                    context.Token = accessToken;
+                }
+                return Task.CompletedTask;
+            }
+        };
+    });
+
+// Inyecci贸n de Dependencias
+// Botes
 builder.Services.AddScoped<IBoteService, BoteService>();
-builder.Services.AddScoped<ICategoriaService, CategoriaService>();
-builder.Services.AddScoped<IDistanciaService, DistanciaService>();
-
 builder.Services.AddScoped<IBoteRepository, BoteRepository>();
+// Categorias
+builder.Services.AddScoped<ICategoriaService, CategoriaService>();
 builder.Services.AddScoped<ICategoriaRepository, CategoriaRepository>();
+// Distancias
+builder.Services.AddScoped<IDistanciaService, DistanciaService>();
 builder.Services.AddScoped<IDistanciaRepository, DistanciaRepository>();
+// Inscripciones
+builder.Services.AddScoped<IInscripcionService, InscripcionService>();
+builder.Services.AddScoped<IInscripcionRepository, InscripcionRepository>();
+// Participantes
+builder.Services.AddScoped<IParticipanteService, ParticipanteService>();
+builder.Services.AddScoped<IParticipanteRepository, ParticipanteRepository>();
+// Eventos
+builder.Services.AddScoped<IEventoService, EventoService>();
+builder.Services.AddScoped<IEventoRepository, EventoRepository>();
+// Resultados
+builder.Services.AddScoped<IResultadoService, ResultadoService>();
+builder.Services.AddScoped<IResultadoRepository, ResultadoRepository>();
+builder.Services.AddScoped<INotificadorResultados, NotificadorResultados>();
+// Clubes
+builder.Services.AddScoped<IClubService, ClubService>();
+builder.Services.AddScoped<IClubRepository, ClubRepository>();
+// Auth
+builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<ITokenService, TokenService>();
 
-builder.Services.AddAutoMapper(typeof(MappingProfile));
+// AutoMapper
+builder.Services.AddAutoMapper(cfg => cfg.AddProfile<MappingProfile>());
 
-// Agregar controladores
 builder.Services.AddControllers();
-
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new OpenApiInfo { Title = "SportTrack API", Version = "v1" });
+
+    // Configurar el bot贸n 'Authorize' para JWT
+    c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        Description = "JWT Authorization header usando el esquema Bearer. Ejemplo: 'Bearer 12345abcdef'",
+        Name = "Authorization",
+        In = ParameterLocation.Header,
+        Type = SecuritySchemeType.ApiKey,
+        Scheme = "Bearer"
+    });
+
+    c.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                },
+                Scheme = "oauth2",
+                Name = "Bearer",
+                In = ParameterLocation.Header
+            },
+            new List<string>()
+        }
+    });
+});
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+// Pipeline de la aplicaci贸n
+app.UseMiddleware<ExceptionMiddleware>();
+
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
+// CORS debe ir ANTES de autenticaci贸n y ANTES de HttpsRedirection
+app.UseCors("CorsPolicy");
 
+// Comentado en desarrollo para evitar conflictos con el frontend en HTTP
+// app.UseHttpsRedirection();
+
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+
+// Mapeo del Hub de SignalR
+app.MapHub<ResultsHub>("/hubs/results");
 
 app.Run();

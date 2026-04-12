@@ -4,7 +4,7 @@ using SportTrack.AccessDatos;
 using SportTrack_v1.Controladores.Categoria;
 using SportTrack_v1.Entidades.Entidades;
 
-public class CategoriaRepository
+public class CategoriaRepository : ICategoriaRepository
 {
     private readonly SportTrackDbContext _context;
 

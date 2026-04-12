@@ -1,0 +1,15 @@
+SignalR (La Mejor y Natural Opción para C#)
+
+Qué es: La librería oficial de Microsoft para aplicaciones web en tiempo real. Es el equivalente a Socket.IO para el ecosistema .NET.
+
+Ventaja: Se integra nativamente con tu backend en C#, es muy robusta y soporta automáticamente WebSockets o técnicas alternativas (long polling) si es necesario.
+
+Flujo:
+
+Backend C#: Instalas el paquete Microsoft.AspNetCore.SignalR y creas un Hub (el centro de comunicación).
+
+Base de datos SQL: Tu Hub consulta o recibe actualizaciones de la MISMA base de datos donde están las inscripciones.
+
+Frontend React: Instalas el paquete cliente @microsoft/signalr y te conectas al Hub.
+
+Resultado: Cuando actualizas un resultado en la DB, tu backend C# notifica vía SignalR a todos los clientes React en milisegundos.

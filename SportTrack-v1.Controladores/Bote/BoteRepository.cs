@@ -3,7 +3,7 @@ using SportTrack_v1.Controladores.Bote;
 using SportTrack_v1.Entidades.Entidades;
 using SportTrack.AccessDatos;
 
-public class BoteRepository 
+public class BoteRepository : IBoteRepository
 {
     private readonly SportTrackDbContext _context;
 

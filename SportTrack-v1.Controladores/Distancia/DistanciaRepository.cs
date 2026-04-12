@@ -1,11 +1,11 @@
-﻿// Repositories/DistanciaRepository.cs
+// Repositories/DistanciaRepository.cs
 using Microsoft.EntityFrameworkCore;
 using SportTrack.AccessDatos;
 using SportTrack_v1.Controladores.Distancia;
 using SportTrack_v1.Entidades.Entidades;
 using SportTrack_v1.Entidades.Enums;
 
-public class DistanciaRepository
+public class DistanciaRepository : IDistanciaRepository
 {
     private readonly SportTrackDbContext _context;
 
@@ -19,7 +19,7 @@ public class DistanciaRepository
         return await _context.Distancias
             .Include(d => d.Pruebas)
             .AsNoTracking()
-            .OrderBy(d => d.Metros)
+            .OrderBy(d => d.DistanciaRegata)
             .ToListAsync();
     }
 
@@ -80,9 +80,7 @@ public class DistanciaRepository
 
     public async Task<IEnumerable<Distancia>> GetByRangoMetrosAsync(int metrosMin, int metrosMax)
     {
-        return await _context.Distancias
-            .Where(d => d.Metros >= metrosMin && d.Metros <= metrosMax)
-            .AsNoTracking()
-            .ToListAsync();
+        var all = await _context.Distancias.AsNoTracking().ToListAsync();
+        return all.Where(d => d.Metros >= metrosMin && d.Metros <= metrosMax);
     }
 }

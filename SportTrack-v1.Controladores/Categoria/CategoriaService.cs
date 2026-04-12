@@ -1,12 +1,12 @@
-﻿// Services/CategoriaService.cs
-using AutoMapper;
-using SportTrack_v1.Controladores.Categoria;
+﻿using AutoMapper;
 using SportTrack_v1.Controladores.Categoria.Dtos;
-using SportTrack_v1.Entidades.Entidades;
+using SportTrack_v1.Controladores.Exceptions;
 using SportTrack_v1.Entidades.Enums;
 
-public class CategoriaService : ICategoriaService
+namespace SportTrack_v1.Controladores.Categoria
 {
+    public class CategoriaService : ICategoriaService
+    {
     private readonly ICategoriaRepository _categoriaRepository;
     private readonly IMapper _mapper;
 
@@ -34,9 +34,9 @@ public class CategoriaService : ICategoriaService
     public async Task<CategoriaDto> CreateCategoriaAsync(CategoriaCreateDto categoriaDto)
     {
         // Validar que no haya superposición de edades si es necesario
-        await ValidateCategoriaEdades(categoriaDto);
+        await ValidateCategoriaEdades(categoriaDto.EdadMin, categoriaDto.EdadMax);
 
-        var categoria = _mapper.Map<Categoria>(categoriaDto);
+        var categoria = _mapper.Map<Entidades.Entidades.Categoria>(categoriaDto);
         var createdCategoria = await _categoriaRepository.CreateAsync(categoria);
         return _mapper.Map<CategoriaDto>(createdCategoria);
     }
@@ -48,7 +48,7 @@ public class CategoriaService : ICategoriaService
             throw new NotFoundException($"Categoría con ID {id} no encontrada");
 
         // Validar que no haya superposición de edades si es necesario
-        await ValidateCategoriaEdades(categoriaDto, id);
+        await ValidateCategoriaEdades(categoriaDto.EdadMin, categoriaDto.EdadMax, id);
 
         _mapper.Map(categoriaDto, existingCategoria);
         var updatedCategoria = await _categoriaRepository.UpdateAsync(existingCategoria);
@@ -65,7 +65,7 @@ public class CategoriaService : ICategoriaService
 
     public async Task<IEnumerable<CategoriaEdadDto>> GetCategoriasEdadAsync()
     {
-        var categoriasEdad = Enum.GetValues<CategoriaEdadEnum>()
+        var categoriasEdad = Enum.GetValues<Entidades.Enums.CategoriaEdadEnum>()
             .Select(e => new CategoriaEdadDto
             {
                 Id = (int)e,
@@ -82,9 +82,10 @@ public class CategoriaService : ICategoriaService
         return _mapper.Map<IEnumerable<CategoriaDto>>(categorias);
     }
 
-    private async Task ValidateCategoriaEdades(CategoriaCreateDto categoriaDto, int? excludeId = null)
+    private async Task ValidateCategoriaEdades(int? edadMin, int? edadMax, int? excludeId = null)
     {
         // Implementar lógica de validación de superposición de rangos de edad
         // según las necesidades del negocio
+    }
     }
 }

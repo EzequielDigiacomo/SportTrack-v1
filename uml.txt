@@ -1,0 +1,92 @@
+erDiagram
+    CLUBS {
+        bigint id PK
+        varchar name
+        varchar email
+        varchar phone
+        timestamp created_at
+    }
+    
+    EVENTS {
+        bigint id PK
+        bigint club_id FK
+        varchar name
+        text description
+        varchar location
+        date start_date
+        date end_date
+        date registration_deadline
+        varchar status
+        timestamp created_at
+    }
+    
+    EVENT_TESTS {
+        bigint id PK
+        bigint event_id FK
+        varchar name
+        decimal distance
+        varchar unit
+        integer min_age
+        integer max_age
+        varchar gender
+        varchar category
+        integer max_participants
+        decimal fee
+    }
+    
+    ATHLETES {
+        bigint id PK
+        varchar first_name
+        varchar last_name
+        date birth_date
+        varchar gender
+        varchar nationality
+        varchar email
+        timestamp created_at
+    }
+    
+    REGISTRATIONS {
+        bigint id PK
+        bigint athlete_id FK
+        bigint test_id FK
+        timestamp registration_date
+        varchar payment_status
+        varchar bib_number
+    }
+    
+    RESULTS {
+        bigint id PK
+        bigint registration_id FK
+        bigint test_id FK
+        integer time_ms
+        decimal distance
+        integer points
+        integer rank_position
+        text notes
+        timestamp recorded_at
+    }
+    
+    AGE_CATEGORIES {
+        bigint id PK
+        varchar name
+        integer min_age
+        integer max_age
+        varchar gender
+    }
+    
+    AUDIT_LOG {
+        bigint id PK
+        varchar table_name
+        integer record_id
+        varchar action
+        jsonb changes
+        integer user_id
+        timestamp created_at
+    }
+
+    CLUBS ||--o{ EVENTS : "organiza"
+    EVENTS ||--o{ EVENT_TESTS : "contiene"
+    EVENT_TESTS ||--o{ REGISTRATIONS : "permite"
+    ATHLETES ||--o{ REGISTRATIONS : "realiza"
+    REGISTRATIONS ||--|| RESULTS : "genera"
+    EVENT_TESTS }o--o{ AGE_CATEGORIES : "aplica"

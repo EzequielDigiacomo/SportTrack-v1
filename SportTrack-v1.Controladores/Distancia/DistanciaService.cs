@@ -1,11 +1,12 @@
-﻿// Services/DistanciaService.cs
-using AutoMapper;
-using SportTrack_v1.Controladores.Distancia;
-using SportTrack_v1.Entidades.Entidades;
+﻿using AutoMapper;
+using SportTrack_v1.Controladores.Distancia.Dtos;
+using SportTrack_v1.Controladores.Exceptions;
 using SportTrack_v1.Entidades.Enums;
 
-public class DistanciaService : IDistanciaService
+namespace SportTrack_v1.Controladores.Distancia
 {
+    public class DistanciaService : IDistanciaService
+    {
     private readonly IDistanciaRepository _distanciaRepository;
     private readonly IMapper _mapper;
 
@@ -32,7 +33,7 @@ public class DistanciaService : IDistanciaService
 
     public async Task<DistanciaDto> CreateDistanciaAsync(DistanciaCreateDto distanciaDto)
     {
-        var distancia = _mapper.Map<Distancia>(distanciaDto);
+        var distancia = _mapper.Map<Entidades.Entidades.Distancia>(distanciaDto);
         var createdDistancia = await _distanciaRepository.CreateAsync(distancia);
         return _mapper.Map<DistanciaDto>(createdDistancia);
     }
@@ -58,7 +59,7 @@ public class DistanciaService : IDistanciaService
 
     public async Task<IEnumerable<DistanciaRegataDto>> GetDistanciasRegataAsync()
     {
-        var distancias = Enum.GetValues<DistanciaRegataEnum>()
+        var distancias = Enum.GetValues<Entidades.Enums.DistanciaRegataEnum>()
             .Select(e => new DistanciaRegataDto
             {
                 Id = (int)e,
@@ -68,5 +69,6 @@ public class DistanciaService : IDistanciaService
             });
 
         return await Task.FromResult(distancias);
+    }
     }
 }

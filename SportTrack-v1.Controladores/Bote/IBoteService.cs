@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace SportTrack_v1.Controladores.Bote
 {
-    public interface IBoteService : IDisposable
+    public interface IBoteService
     {
         Task<IEnumerable<BoteDto>> GetAllBotesAsync();
         Task<BoteDto> GetBoteByIdAsync(int id);
