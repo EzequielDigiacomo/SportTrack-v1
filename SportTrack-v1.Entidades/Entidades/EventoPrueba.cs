@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -21,5 +21,7 @@ namespace SportTrack_v1.Entidades.Entidades
         public Evento Evento { get; set; } = null!;
         public Prueba Prueba { get; set; } = null!;
         public ICollection<Inscripcion> Inscripciones { get; set; } = new List<Inscripcion>();
+        public ICollection<Etapa> Etapas { get; set; } = new List<Etapa>();
+        public ICollection<ReglaProgresion> ReglasProgresion { get; set; } = new List<ReglaProgresion>();
     }
 }

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -15,7 +15,9 @@ namespace SportTrack_v1.Entidades.Entidades
         public int SexoId { get; set; }
         public int? CategoriaId { get; set; }
         public string? Pais { get; set; }
-        public string? Club { get; set; }
+        public int? ClubId { get; set; }
+        public Club? Club { get; set; }
+        public string? Dni { get; set; }
         public string? Email { get; set; }
         public string? Telefono { get; set; }
         public string? Direccion { get; set; }

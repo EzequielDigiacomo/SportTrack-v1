@@ -18,7 +18,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\SportTrack-v1.Controladores\SportTrack-v1.Controladores.csproj" />
     <ProjectReference Include="..\SportTrack-v1.Entidades\SportTrack-v1.Entidades.csproj" />
   </ItemGroup>
 

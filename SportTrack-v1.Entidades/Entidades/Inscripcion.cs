@@ -1,4 +1,4 @@
-﻿using SportTrack_v1.Entidades.Enums;
+using SportTrack_v1.Entidades.Enums;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,14 +11,18 @@ namespace SportTrack_v1.Entidades.Entidades
     {
         public int Id { get; set; }
         public int EventoPruebaId { get; set; }
-        public int ParticipanteId { get; set; }
+        public int? ParticipanteId { get; set; }
         public DateTime FechaInscripcion { get; set; } = DateTime.UtcNow;
         public string NumeroCompetidor { get; set; } = string.Empty;
-        public Enums.EstadoInscripcionEnum Estado { get; set; } = EstadoInscripcionEnum.Inscrito; // Usando enum
+        public bool EsCabezaDeSerie { get; set; } = false;
+        public Enums.EstadoInscripcionEnum Estado { get; set; } = EstadoInscripcionEnum.Inscrito;
 
         // Navigation properties
         public EventoPrueba EventoPrueba { get; set; } = null!;
-        public Participante Participante { get; set; } = null!;
-        public Resultado? Resultado { get; set; }
+        public Participante? Participante { get; set; }
+        public ICollection<InscripcionTripulante> Tripulantes { get; set; } = new List<InscripcionTripulante>();
+        
+        // Relación con el historial deportivo (todas sus bajadas en heats/finales)
+        public ICollection<Resultado> Resultados { get; set; } = new List<Resultado>();
     }
 }
