@@ -209,10 +209,20 @@ app.MapGet("/api/debug-cors", () => new {
     ServerTime = DateTime.UtcNow
 });
 
-// Endpoint TEMPORAL para generar hash de contraseña (ELIMINAR DESPUÉS DEL PRIMER LOGIN)
-app.MapGet("/api/gen-hash/{password}", (string password) => new {
-    Hash = BCrypt.Net.BCrypt.HashPassword(password, 12),
-    Password = password
+// Endpoint TEMPORAL para resetear contraseña (ELIMINAR DESPUÉS DEL PRIMER LOGIN)
+app.MapGet("/api/reset-admin/{newPassword}", async (string newPassword, SportTrackDbContext db) => {
+    var user = await db.Usuarios.FirstOrDefaultAsync(u => u.Username == "admin");
+    if (user == null) return Results.NotFound("Usuario admin no encontrado");
+    
+    var hash = BCrypt.Net.BCrypt.HashPassword(newPassword, 12);
+    user.PasswordHash = hash;
+    await db.SaveChangesAsync();
+    
+    return Results.Ok(new { 
+        Message = $"Contraseña del usuario 'admin' actualizada exitosamente.",
+        NewPassword = newPassword,
+        HashGenerated = hash
+    });
 });
 
 app.Run();
