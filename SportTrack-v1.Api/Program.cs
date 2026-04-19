@@ -30,16 +30,18 @@ builder.Services.AddDbContext<SportTrackDbContext>(options =>
 builder.Services.AddSignalR();
 
 // Configuración de CORS
+var allowedOrigins = builder.Configuration.GetSection("AllowedOrigins").Get<string[]>() ?? new[] { "http://localhost:3000", "http://localhost:5173" };
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("CorsPolicy", policy =>
     {
         policy.AllowAnyHeader()
               .AllowAnyMethod()
-              .WithOrigins("http://localhost:3000", "http://localhost:5173") // Ajustar según el front
+              .WithOrigins(allowedOrigins)
               .AllowCredentials();
     });
 });
+
 
 // Autenticación JWT
 var tokenKey = builder.Configuration["TokenKey"] ?? "SportTrackSuperSecretKey2026!ForEducationalPurposeOnly_LongEnoughToBeSecure";

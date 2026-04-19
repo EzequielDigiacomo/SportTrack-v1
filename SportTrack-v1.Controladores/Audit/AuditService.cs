@@ -34,7 +34,7 @@ namespace SportTrack_v1.Controladores.Audit
                     Detalle = detalle,
                     Usuario = usuario ?? currentUserName,
                     Modulo = modulo,
-                    Fecha = DateTime.Now,
+                    Fecha = DateTime.UtcNow,
                     IP = _httpContextAccessor.HttpContext?.Connection?.RemoteIpAddress?.ToString() ?? "0.0.0.0"
                 };
 

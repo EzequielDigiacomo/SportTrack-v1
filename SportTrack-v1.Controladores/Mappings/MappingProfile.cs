@@ -44,8 +44,8 @@ namespace SportTrack_v1.Controladores.Mappings
             CreateMap<Entidades.Entidades.Inscripcion, InscripcionDto>()
                 .ForMember(dest => dest.Estado, opt => opt.MapFrom(src => src.Estado.ToString()))
                 .ForMember(dest => dest.ParticipanteNombreCompleto, opt => opt.MapFrom(src => src.Participante != null ? $"{src.Participante.Nombre} {src.Participante.Apellido}" : null))
-                .ForMember(dest => dest.ClubNombre, opt => opt.MapFrom(src => src.Participante.Club != null ? src.Participante.Club.Nombre : null))
-                .ForMember(dest => dest.ClubSigla, opt => opt.MapFrom(src => src.Participante.Club != null ? src.Participante.Club.Sigla : null));
+                .ForMember(dest => dest.ClubNombre, opt => opt.MapFrom(src => src.Participante != null && src.Participante.Club != null ? src.Participante.Club.Nombre : null))
+                .ForMember(dest => dest.ClubSigla, opt => opt.MapFrom(src => src.Participante != null && src.Participante.Club != null ? src.Participante.Club.Sigla : null));
             
             CreateMap<InscripcionCreateDto, Entidades.Entidades.Inscripcion>();
             CreateMap<InscripcionUpdateDto, Entidades.Entidades.Inscripcion>()

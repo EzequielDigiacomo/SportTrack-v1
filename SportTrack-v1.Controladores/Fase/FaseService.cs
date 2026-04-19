@@ -295,8 +295,8 @@ namespace SportTrack_v1.Controladores.Fase
             var phasesRanked = etapaActual.Fases
                                 .Select(f => f.Resultados
                                     .Where(r => r.TiempoOficial.HasValue)
-                                    .OrderBy(r => r.TiempoOficial.Value)
-                                    .Select(r => r.Inscripcion)
+                                    .OrderBy(r => r.TiempoOficial!.Value)
+                                    .Select(r => r.Inscripcion!)
                                     .ToList())
                                 .ToList();
 
@@ -320,7 +320,7 @@ namespace SportTrack_v1.Controladores.Fase
                     var eighths = phasesRanked
                         .Select(s => s.Count >= 8 ? s[7] : null)
                         .Where(i => i != null)
-                        .Select(i => new { Insc = i, Tiempo = etapaActual.Fases.SelectMany(f => f.Resultados).First(r => r.InscripcionId == i.Id).TiempoOficial })
+                        .Select(i => new { Insc = i!, Tiempo = etapaActual.Fases.SelectMany(f => f.Resultados).First(r => r.InscripcionId == i!.Id).TiempoOficial })
                         .OrderBy(x => x.Tiempo)
                         .ToList();
                     if (eighths.Any()) nextSemis.Add(eighths[0].Insc);
@@ -339,7 +339,7 @@ namespace SportTrack_v1.Controladores.Fase
                     var sevenths = phasesRanked
                         .Select(s => s.Count >= 7 ? s[6] : null)
                         .Where(i => i != null)
-                        .Select(i => new { Insc = i, Tiempo = etapaActual.Fases.SelectMany(f => f.Resultados).First(r => r.InscripcionId == i.Id).TiempoOficial })
+                        .Select(i => new { Insc = i!, Tiempo = etapaActual.Fases.SelectMany(f => f.Resultados).First(r => r.InscripcionId == i!.Id).TiempoOficial })
                         .OrderBy(x => x.Tiempo)
                         .ToList();
                     nextSemis.AddRange(sevenths.Take(3).Select(x => x.Insc));
@@ -351,7 +351,7 @@ namespace SportTrack_v1.Controladores.Fase
                     var sixths = phasesRanked
                         .Select(s => s.Count >= 6 ? s[5] : null)
                         .Where(i => i != null)
-                        .Select(i => new { Insc = i, Tiempo = etapaActual.Fases.SelectMany(f => f.Resultados).First(r => r.InscripcionId == i.Id).TiempoOficial })
+                        .Select(i => new { Insc = i!, Tiempo = etapaActual.Fases.SelectMany(f => f.Resultados).First(r => r.InscripcionId == i!.Id).TiempoOficial })
                         .OrderBy(x => x.Tiempo)
                         .ToList();
                     nextSemis.AddRange(sixths.Take(2).Select(x => x.Insc));
@@ -366,8 +366,8 @@ namespace SportTrack_v1.Controladores.Fase
                     var elimRanked = etapaElim.Fases
                         .Select(f => f.Resultados
                             .Where(r => r.TiempoOficial.HasValue)
-                            .OrderBy(r => r.TiempoOficial.Value)
-                            .Select(r => r.Inscripcion)
+                            .OrderBy(r => r.TiempoOficial!.Value)
+                            .Select(r => r.Inscripcion!)
                             .ToList())
                         .ToList();
                     
