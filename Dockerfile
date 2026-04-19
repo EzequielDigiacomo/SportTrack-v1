@@ -27,4 +27,8 @@ COPY --from=publish /app/publish .
 ENV ASPNETCORE_URLS=http://+:8080
 EXPOSE 8080
 
+# Desactivar file watchers (fix para Render free tier - límite de inotify)
+ENV DOTNET_HOSTBUILDER__RELOADCONFIGONCHANGE=false
+ENV DOTNET_USE_POLLING_FILE_WATCHER=true
+
 ENTRYPOINT ["dotnet", "SportTrack-v1.Api.dll"]
