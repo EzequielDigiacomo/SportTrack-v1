@@ -30,7 +30,11 @@ builder.Services.AddDbContext<SportTrackDbContext>(options =>
 builder.Services.AddSignalR();
 
 // Configuración de CORS
-var allowedOrigins = builder.Configuration.GetSection("AllowedOrigins").Get<string[]>() ?? new[] { "http://localhost:3000", "http://localhost:5173" };
+var originsConfig = builder.Configuration["AllowedOrigins"];
+var allowedOrigins = !string.IsNullOrEmpty(originsConfig) 
+    ? originsConfig.Split(',', StringSplitOptions.RemoveEmptyEntries) 
+    : new[] { "http://localhost:3000", "http://localhost:5173" };
+
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("CorsPolicy", policy =>
@@ -152,6 +156,26 @@ builder.Services.AddSwaggerGen(c =>
 });
 
 var app = builder.Build();
+
+// Ejecutar migraciones automáticamente al iniciar (útil para el despliegue inicial en Render)
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    try
+    {
+        var context = services.GetRequiredService<SportTrackDbContext>();
+        if (context.Database.GetPendingMigrations().Any())
+        {
+            Console.WriteLine("Aplicando migraciones pendientes...");
+            context.Database.Migrate();
+            Console.WriteLine("Migraciones aplicadas con éxito.");
+        }
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"Error al aplicar migraciones: {ex.Message}");
+    }
+}
 
 // Pipeline de la aplicación
 app.UseMiddleware<ExceptionMiddleware>();
