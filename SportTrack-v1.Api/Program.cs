@@ -202,4 +202,11 @@ app.MapControllers();
 // Mapeo del Hub de SignalR
 app.MapHub<ResultsHub>("/hubs/results");
 
+// Endpoint de diagnóstico para CORS
+app.MapGet("/api/debug-cors", () => new { 
+    AllowedOrigins = allowedOrigins, 
+    Environment = app.Environment.EnvironmentName,
+    ServerTime = DateTime.UtcNow
+});
+
 app.Run();
