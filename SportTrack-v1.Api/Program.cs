@@ -209,4 +209,10 @@ app.MapGet("/api/debug-cors", () => new {
     ServerTime = DateTime.UtcNow
 });
 
+// Endpoint TEMPORAL para generar hash de contraseña (ELIMINAR DESPUÉS DEL PRIMER LOGIN)
+app.MapGet("/api/gen-hash/{password}", (string password) => new {
+    Hash = BCrypt.Net.BCrypt.HashPassword(password, 12),
+    Password = password
+});
+
 app.Run();
