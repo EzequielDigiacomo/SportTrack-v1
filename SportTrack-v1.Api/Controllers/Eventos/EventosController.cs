@@ -1,7 +1,10 @@
 using Microsoft.AspNetCore.Mvc;
 using SportTrack_v1.Controladores.Evento;
 using SportTrack_v1.Controladores.Evento.Dtos;
+using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace SportTrack_v1.Api.Controllers.Eventos
@@ -20,7 +23,16 @@ namespace SportTrack_v1.Api.Controllers.Eventos
         [HttpGet]
         public async Task<ActionResult<IEnumerable<EventoDto>>> GetEventos()
         {
-            var result = await _eventoService.GetAllEventosAsync();
+            int? clubId = null;
+            var role = User.FindFirst(ClaimTypes.Role)?.Value;
+            
+            if (role == "Club")
+            {
+                var clubIdClaim = User.FindFirst("ClubId")?.Value;
+                if (int.TryParse(clubIdClaim, out int id) && id > 0) clubId = id;
+            }
+
+            var result = await _eventoService.GetAllEventosAsync(clubId);
             return Ok(result);
         }
 
@@ -39,26 +51,46 @@ namespace SportTrack_v1.Api.Controllers.Eventos
         }
 
         [HttpPost]
-        // [Authorize(Roles = "Admin")] // Habilitar cuando esté la auth lista
         public async Task<ActionResult<EventoDto>> CreateEvento(EventoCreateDto eventoDto)
         {
+            var role = User.FindFirst(ClaimTypes.Role)?.Value;
+            if (role == "Club")
+            {
+                var clubIdClaim = User.FindFirst("ClubId")?.Value;
+                if (int.TryParse(clubIdClaim, out int id) && id > 0) eventoDto.ClubId = id;
+            }
+
             var result = await _eventoService.CreateEventoAsync(eventoDto);
             return CreatedAtAction(nameof(GetEvento), new { id = result.Id }, result);
         }
 
         [HttpPut("{id}")]
-        // [Authorize(Roles = "Admin")]
         public async Task<ActionResult<EventoDto>> UpdateEvento(int id, EventoUpdateDto eventoDto)
         {
-            var result = await _eventoService.UpdateEventoAsync(id, eventoDto);
+            int? clubId = null;
+            var role = User.FindFirst(ClaimTypes.Role)?.Value;
+            if (role == "Club")
+            {
+                var clubIdClaim = User.FindFirst("ClubId")?.Value;
+                if (int.TryParse(clubIdClaim, out int cid) && cid > 0) clubId = cid;
+            }
+
+            var result = await _eventoService.UpdateEventoAsync(id, eventoDto, clubId);
             return Ok(result);
         }
 
         [HttpDelete("{id}")]
-        // [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteEvento(int id)
         {
-            await _eventoService.DeleteEventoAsync(id);
+            int? clubId = null;
+            var role = User.FindFirst(ClaimTypes.Role)?.Value;
+            if (role == "Club")
+            {
+                var clubIdClaim = User.FindFirst("ClubId")?.Value;
+                if (int.TryParse(clubIdClaim, out int cid) && cid > 0) clubId = cid;
+            }
+
+            await _eventoService.DeleteEventoAsync(id, clubId);
             return NoContent();
         }
 

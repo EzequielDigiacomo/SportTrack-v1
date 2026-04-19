@@ -54,23 +54,8 @@ namespace SportTrack_v1.Controladores.Inscripcion
             if (inscripcionDto.EventoPruebaId.HasValue)
                 existingInscripcion.EventoPruebaId = inscripcionDto.EventoPruebaId.Value;
 
-            if (inscripcionDto.Carril.HasValue)
-                existingInscripcion.Carril = inscripcionDto.Carril;
-
             if (inscripcionDto.NumeroCompetidor != null)
                 existingInscripcion.NumeroCompetidor = inscripcionDto.NumeroCompetidor;
-
-            if (inscripcionDto.EsCabezaDeSerie.HasValue)
-                existingInscripcion.EsCabezaDeSerie = inscripcionDto.EsCabezaDeSerie.Value;
-
-            if (inscripcionDto.Fase != null)
-                existingInscripcion.Fase = inscripcionDto.Fase;
-
-            if (inscripcionDto.NumeroManga.HasValue)
-                existingInscripcion.NumeroManga = inscripcionDto.NumeroManga.Value;
-
-            if (inscripcionDto.BoteIdentificador != null)
-                existingInscripcion.BoteIdentificador = inscripcionDto.BoteIdentificador;
 
             var updatedInscripcion = await _inscripcionRepository.UpdateAsync(existingInscripcion);
             return _mapper.Map<InscripcionDto>(updatedInscripcion);
@@ -98,6 +83,16 @@ namespace SportTrack_v1.Controladores.Inscripcion
         {
             var inscripciones = await _inscripcionRepository.GetByEventoAndClubAsync(eventoId, clubId);
             return _mapper.Map<IEnumerable<InscripcionDto>>(inscripciones);
+        }
+
+        public async Task<bool> ToggleEsCabezaDeSerieAsync(int id)
+        {
+            var inscripcion = await _inscripcionRepository.GetByIdAsync(id);
+            if (inscripcion == null) throw new NotFoundException($"Inscripción {id} no encontrada");
+
+            inscripcion.EsCabezaDeSerie = !inscripcion.EsCabezaDeSerie;
+            await _inscripcionRepository.UpdateAsync(inscripcion);
+            return true;
         }
     }
 }

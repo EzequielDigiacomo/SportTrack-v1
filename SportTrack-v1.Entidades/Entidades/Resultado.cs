@@ -1,15 +1,16 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SportTrack_v1.Entidades.Entidades
 {
     public class Resultado
     {
         public int Id { get; set; }
+        public int FaseId { get; set; }
         public int InscripcionId { get; set; }
+        
+        public int? Carril { get; set; }
+        public bool EsCabezaDeSerie { get; set; } = false;
 
         // Tiempos
         public TimeSpan? TiempoOficial { get; set; }
@@ -20,7 +21,7 @@ namespace SportTrack_v1.Entidades.Entidades
         public decimal? VelocidadMedia { get; set; }
 
         // Estado del resultado
-        public Enums.EstadoResultadoEnum Estado { get; set; } = Enums.EstadoResultadoEnum.Pendiente; // Usando enum
+        public Enums.EstadoResultadoEnum Estado { get; set; } = Enums.EstadoResultadoEnum.Pendiente;
 
         // Información adicional
         public string? Observaciones { get; set; }
@@ -32,6 +33,7 @@ namespace SportTrack_v1.Entidades.Entidades
         public string? UsuarioActualizacion { get; set; }
 
         // Navigation properties
+        public Fase Fase { get; set; } = null!;
         public Inscripcion Inscripcion { get; set; } = null!;
         public ICollection<Penalizacion> Penalizaciones { get; set; } = new List<Penalizacion>();
     }

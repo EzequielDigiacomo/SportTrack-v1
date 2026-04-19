@@ -13,8 +13,10 @@ using SportTrack_v1.Controladores.Distancia;
 using SportTrack_v1.Controladores.Evento;
 using SportTrack_v1.Controladores.Inscripcion;
 using SportTrack_v1.Controladores.Participante;
+using SportTrack_v1.Controladores.Fase.Dtos;
+using SportTrack_v1.Controladores.Participante.Dtos;
 using SportTrack_v1.Controladores.Mappings;
-using SportTrack_v1.Controladores.Resultado;
+using SportTrack_v1.Controladores.Audit;
 using Microsoft.OpenApi.Models;
 using System.Text;
 
@@ -87,10 +89,13 @@ builder.Services.AddScoped<IParticipanteRepository, ParticipanteRepository>();
 // Eventos
 builder.Services.AddScoped<IEventoService, EventoService>();
 builder.Services.AddScoped<IEventoRepository, EventoRepository>();
-// Resultados
-builder.Services.AddScoped<IResultadoService, ResultadoService>();
-builder.Services.AddScoped<IResultadoRepository, ResultadoRepository>();
-builder.Services.AddScoped<INotificadorResultados, NotificadorResultados>();
+// Fases y Resultados
+builder.Services.AddScoped<SportTrack_v1.Controladores.Fase.IEtapaRepository, SportTrack_v1.Controladores.Fase.EtapaRepository>();
+builder.Services.AddScoped<SportTrack_v1.Controladores.Fase.IFaseRepository, SportTrack_v1.Controladores.Fase.FaseRepository>();
+builder.Services.AddScoped<SportTrack_v1.Controladores.Fase.IFaseService, SportTrack_v1.Controladores.Fase.FaseService>();
+builder.Services.AddScoped<SportTrack_v1.Controladores.Resultado.IResultadoRepository, SportTrack_v1.Controladores.Resultado.ResultadoRepository>();
+// Notificador (vamos a inyectarlo si es necesario luego)
+builder.Services.AddScoped<SportTrack_v1.Api.Services.INotificadorResultados, SportTrack_v1.Api.Services.NotificadorResultados>();
 // Clubes
 builder.Services.AddScoped<IClubService, ClubService>();
 builder.Services.AddScoped<IClubRepository, ClubRepository>();
@@ -98,10 +103,18 @@ builder.Services.AddScoped<IClubRepository, ClubRepository>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<ITokenService, TokenService>();
 
+// Auditoria
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<IAuditService, AuditService>();
+
 // AutoMapper
 builder.Services.AddAutoMapper(cfg => cfg.AddProfile<MappingProfile>());
 
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
+    });
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {

@@ -7,6 +7,14 @@ using System.Threading.Tasks;
 
 namespace SportTrack_v1.Controladores.Resultado
 {
+    public interface IResultadoRepository
+    {
+        Task<IEnumerable<Entidades.Entidades.Resultado>> GetByFaseIdAsync(int faseId);
+        Task<Entidades.Entidades.Resultado?> GetByIdAsync(int id);
+        Task<Entidades.Entidades.Resultado> UpdateAsync(Entidades.Entidades.Resultado resultado);
+        Task<IEnumerable<Entidades.Entidades.Resultado>> UpdateManyAsync(IEnumerable<Entidades.Entidades.Resultado> resultados);
+    }
+
     public class ResultadoRepository : IResultadoRepository
     {
         private readonly SportTrackDbContext _context;
@@ -16,34 +24,26 @@ namespace SportTrack_v1.Controladores.Resultado
             _context = context;
         }
 
-        public async Task<IEnumerable<Entidades.Entidades.Resultado>> GetAllAsync()
+        public async Task<IEnumerable<Entidades.Entidades.Resultado>> GetByFaseIdAsync(int faseId)
         {
             return await _context.Resultados
                 .Include(r => r.Inscripcion)
                     .ThenInclude(i => i.Participante)
-                .AsNoTracking()
+                        .ThenInclude(p => p.Club)
+                .Where(r => r.FaseId == faseId)
+                .OrderBy(r => r.Posicion ?? int.MaxValue)
                 .ToListAsync();
         }
 
         public async Task<Entidades.Entidades.Resultado?> GetByIdAsync(int id)
         {
             return await _context.Resultados
+                .Include(r => r.Fase)
+                    .ThenInclude(f => f.Etapa)
                 .Include(r => r.Inscripcion)
                     .ThenInclude(i => i.Participante)
+                        .ThenInclude(p => p.Club)
                 .FirstOrDefaultAsync(r => r.Id == id);
-        }
-
-        public async Task<Entidades.Entidades.Resultado?> GetByInscripcionIdAsync(int inscripcionId)
-        {
-            return await _context.Resultados
-                .FirstOrDefaultAsync(r => r.InscripcionId == inscripcionId);
-        }
-
-        public async Task<Entidades.Entidades.Resultado> CreateAsync(Entidades.Entidades.Resultado resultado)
-        {
-            _context.Resultados.Add(resultado);
-            await _context.SaveChangesAsync();
-            return resultado;
         }
 
         public async Task<Entidades.Entidades.Resultado> UpdateAsync(Entidades.Entidades.Resultado resultado)
@@ -53,28 +53,14 @@ namespace SportTrack_v1.Controladores.Resultado
             return resultado;
         }
 
-        public async Task<bool> DeleteAsync(int id)
+        public async Task<IEnumerable<Entidades.Entidades.Resultado>> UpdateManyAsync(IEnumerable<Entidades.Entidades.Resultado> resultados)
         {
-            var resultado = await _context.Resultados.FindAsync(id);
-            if (resultado == null) return false;
-            _context.Resultados.Remove(resultado);
+            foreach (var res in resultados)
+            {
+                _context.Entry(res).State = EntityState.Modified;
+            }
             await _context.SaveChangesAsync();
-            return true;
-        }
-
-        public async Task<IEnumerable<Entidades.Entidades.Resultado>> GetByEventoPruebaIdAsync(int eventoPruebaId)
-        {
-            return await _context.Resultados
-                .Include(r => r.Inscripcion)
-                    .ThenInclude(i => i.Participante)
-                .Include(r => r.Inscripcion)
-                    .ThenInclude(i => i.Participante)
-                        .ThenInclude(p => p.Club)
-                .Where(r => r.Inscripcion.EventoPruebaId == eventoPruebaId)
-                .OrderBy(r => r.Posicion ?? int.MaxValue)
-                .ThenBy(r => r.TiempoOficial)
-                .AsNoTracking()
-                .ToListAsync();
+            return resultados;
         }
     }
 }

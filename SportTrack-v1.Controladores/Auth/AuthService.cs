@@ -13,12 +13,14 @@ namespace SportTrack_v1.Controladores.Auth
         private readonly SportTrackDbContext _context;
         private readonly ITokenService _tokenService;
         private readonly IMapper _mapper;
+        private readonly Audit.IAuditService _auditService;
 
-        public AuthService(SportTrackDbContext context, ITokenService tokenService, IMapper mapper)
+        public AuthService(SportTrackDbContext context, ITokenService tokenService, IMapper mapper, Audit.IAuditService auditService)
         {
             _context = context;
             _tokenService = tokenService;
             _mapper = mapper;
+            _auditService = auditService;
         }
 
         public async Task<AuthResponseDto> LoginAsync(LoginDto loginDto)
@@ -27,14 +29,23 @@ namespace SportTrack_v1.Controladores.Auth
                 .Include(u => u.Club)
                 .FirstOrDefaultAsync(u => u.Username == loginDto.Username.ToLower());
 
-            if (user == null) throw new UnauthorizedException("Usuario inválido");
+            if (user == null) 
+            {
+                await _auditService.RegistrarAccionAsync("LOGIN_FAILED", $"Intento fallido: Usuario '{loginDto.Username}' no encontrado.", loginDto.Username, "Auth");
+                throw new UnauthorizedException("Usuario inválido");
+            }
 
             if (!BCrypt.Net.BCrypt.Verify(loginDto.Password, user.PasswordHash))
+            {
+                await _auditService.RegistrarAccionAsync("LOGIN_FAILED", $"Intento fallido: Contraseña incorrecta para usuario '{loginDto.Username}'.", loginDto.Username, "Auth");
                 throw new UnauthorizedException("Contraseña incorrecta");
+            }
 
             var response = _mapper.Map<AuthResponseDto>(user);
             response.Token = _tokenService.CreateToken(user);
             
+            await _auditService.RegistrarAccionAsync("LOGIN_SUCCESS", $"Usuario '{user.Username}' inició sesión correctamente.", user.Username, "Auth");
+
             return response;
         }
 
@@ -48,7 +59,15 @@ namespace SportTrack_v1.Controladores.Auth
             user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(registerDto.Password);
             
             _context.Usuarios.Add(user);
-            return await _context.SaveChangesAsync() > 0;
+            var res = await _context.SaveChangesAsync() > 0;
+
+            if (res)
+            {
+                await _auditService.RegistrarAccionAsync("REGISTER_USER", 
+                    $"Nuevo usuario registrado: '{user.Username}' (Rol: {user.Rol})", null, "Auth");
+            }
+
+            return res;
         }
 
         public async Task<bool> UserExistsAsync(string username)

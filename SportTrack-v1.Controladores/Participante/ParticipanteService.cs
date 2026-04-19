@@ -11,11 +11,13 @@ namespace SportTrack_v1.Controladores.Participante
     {
         private readonly IParticipanteRepository _participanteRepository;
         private readonly IMapper _mapper;
+        private readonly Audit.IAuditService _auditService;
 
-        public ParticipanteService(IParticipanteRepository participanteRepository, IMapper mapper)
+        public ParticipanteService(IParticipanteRepository participanteRepository, IMapper mapper, Audit.IAuditService auditService)
         {
             _participanteRepository = participanteRepository;
             _mapper = mapper;
+            _auditService = auditService;
         }
 
         public async Task<IEnumerable<ParticipanteDto>> GetAllParticipantesAsync()
@@ -41,6 +43,11 @@ namespace SportTrack_v1.Controladores.Participante
         {
             var participante = _mapper.Map<Entidades.Entidades.Participante>(participanteDto);
             var result = await _participanteRepository.CreateAsync(participante);
+            
+            // Auditoria
+            await _auditService.RegistrarAccionAsync("CREATE_ATHLETE", 
+                $"Atleta creado: {result.Nombre} {result.Apellido} (DNI: {result.Dni})", null, "Atletas");
+
             // Recargar para traer navegaciones
             var fullResult = await _participanteRepository.GetByIdAsync(result.Id);
             return _mapper.Map<ParticipanteDto>(fullResult);
@@ -53,13 +60,28 @@ namespace SportTrack_v1.Controladores.Participante
             
             _mapper.Map(participanteDto, existing);
             var result = await _participanteRepository.UpdateAsync(existing);
+
+            // Auditoria
+            await _auditService.RegistrarAccionAsync("UPDATE_ATHLETE", 
+                $"Atleta actualizado: {result.Nombre} {result.Apellido} (ID: {id})", null, "Atletas");
+
             return _mapper.Map<ParticipanteDto>(result);
         }
 
         public async Task<bool> DeleteParticipanteAsync(int id)
         {
-            if (!await _participanteRepository.ExistsAsync(id)) throw new NotFoundException($"Participante con ID {id} no encontrado");
-            return await _participanteRepository.DeleteAsync(id);
+            var existing = await _participanteRepository.GetByIdAsync(id);
+            if (existing == null) throw new NotFoundException($"Participante con ID {id} no encontrado");
+            
+            var res = await _participanteRepository.DeleteAsync(id);
+
+            // Auditoria
+            if (res) {
+                await _auditService.RegistrarAccionAsync("DELETE_ATHLETE", 
+                    $"Atleta eliminado: {existing.Nombre} {existing.Apellido} (DNI: {existing.Dni})", null, "Atletas");
+            }
+
+            return res;
         }
     }
 }

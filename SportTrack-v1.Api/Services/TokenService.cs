@@ -25,6 +25,7 @@ namespace SportTrack_v1.Api.Services
             var claims = new List<Claim>
             {
                 new Claim(JwtRegisteredClaimNames.NameId, usuario.Username),
+                new Claim(ClaimTypes.Name, usuario.Username),
                 new Claim(ClaimTypes.Role, usuario.Rol),
                 new Claim("ClubId", usuario.ClubId?.ToString() ?? "0")
             };
@@ -34,7 +35,7 @@ namespace SportTrack_v1.Api.Services
             var tokenDescriptor = new SecurityTokenDescriptor
             {
                 Subject = new ClaimsIdentity(claims),
-                Expires = DateTime.Now.AddDays(7),
+                Expires = DateTime.Now.AddHours(5),
                 SigningCredentials = creds
             };
 

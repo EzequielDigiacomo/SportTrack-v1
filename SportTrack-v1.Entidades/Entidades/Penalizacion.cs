@@ -1,4 +1,4 @@
-﻿using SportTrack_v1.Entidades.Enums;
+using SportTrack_v1.Entidades.Enums;
 using System;
 using System.Collections.Generic;
 using System.Linq;

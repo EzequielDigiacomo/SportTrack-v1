@@ -1,0 +1,48 @@
+using Microsoft.AspNetCore.Mvc;
+using SportTrack_v1.Controladores.Fase;
+using SportTrack_v1.Controladores.Fase.Dtos;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+
+namespace SportTrack_v1.Api.Controllers
+{
+    [ApiController]
+    [Route("api/[controller]")]
+    public class FasesController : ControllerBase
+    {
+        private readonly IFaseService _faseService;
+
+        public FasesController(IFaseService faseService)
+        {
+            _faseService = faseService;
+        }
+
+        [HttpGet("EventoPrueba/{eventoPruebaId}")]
+        public async Task<ActionResult<IEnumerable<FaseDto>>> GetFasesPorEventoPrueba(int eventoPruebaId)
+        {
+            var fases = await _faseService.GetFasesPorEventoPruebaAsync(eventoPruebaId);
+            return Ok(fases);
+        }
+
+        [HttpPost("Generar/{eventoPruebaId}")]
+        public async Task<ActionResult<IEnumerable<FaseDto>>> GenerarFases(int eventoPruebaId)
+        {
+            var fases = await _faseService.GenerarFasesAutoAsync(eventoPruebaId);
+            return Ok(fases);
+        }
+
+        [HttpPost("Promover/{eventoPruebaId}")]
+        public async Task<ActionResult<IEnumerable<FaseDto>>> Promover(int eventoPruebaId)
+        {
+            var fases = await _faseService.PromoverFasesAsync(eventoPruebaId);
+            return Ok(fases);
+        }
+
+        [HttpDelete("{id}")]
+        public async Task<ActionResult> Delete(int id)
+        {
+            await _faseService.DeleteFaseAsync(id);
+            return NoContent();
+        }
+    }
+}

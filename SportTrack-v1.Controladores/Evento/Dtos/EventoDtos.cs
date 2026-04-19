@@ -11,28 +11,53 @@ namespace SportTrack_v1.Controladores.Evento.Dtos
         public int Id { get; set; }
         public string Nombre { get; set; } = string.Empty;
         public DateTime Fecha { get; set; }
+        public DateTime? FechaFin { get; set; }
         public string? Ubicacion { get; set; }
         public string Estado { get; set; } = string.Empty;
         public DateTime FechaCreacion { get; set; }
         public DateTime? FechaFinInscripciones { get; set; }
-        public bool InscripcionesAbiertas => Estado == "Programada" && (!FechaFinInscripciones.HasValue || FechaFinInscripciones.Value > DateTime.UtcNow);
+        public int? ClubId { get; set; }
+        public bool InscripcionesHabilitadas { get; set; }
+        public bool InscripcionesAbiertas => InscripcionesHabilitadas && Estado == "Programada" && (!FechaFinInscripciones.HasValue || FechaFinInscripciones.Value > DateTime.UtcNow);
+        
+        // Reglas de Competencia
+        public bool RestringirSoloCategoriaPropia { get; set; }
+        public bool PermitirSub23EnSenior { get; set; }
+        public bool PermitirMasterBajarASenior { get; set; }
+        public bool PermitirCompletarK4 { get; set; }
+        public bool LimitacionBotesAB { get; set; }
     }
 
     public class EventoCreateDto
     {
         public string Nombre { get; set; } = string.Empty;
         public DateTime Fecha { get; set; }
+        public DateTime? FechaFin { get; set; }
         public string? Ubicacion { get; set; }
         public DateTime? FechaFinInscripciones { get; set; }
+        public bool RestringirSoloCategoriaPropia { get; set; } = false;
+        public bool PermitirSub23EnSenior { get; set; } = false;
+        public bool PermitirMasterBajarASenior { get; set; } = false;
+        public bool PermitirCompletarK4 { get; set; } = false;
+        public bool LimitacionBotesAB { get; set; } = false;
+        public int? ClubId { get; set; }
+        public bool InscripcionesHabilitadas { get; set; } = true;
     }
 
     public class EventoUpdateDto
     {
         public string? Nombre { get; set; }
         public DateTime? Fecha { get; set; }
+        public DateTime? FechaFin { get; set; }
         public string? Ubicacion { get; set; }
         public string? Estado { get; set; }
         public DateTime? FechaFinInscripciones { get; set; }
+        public bool? RestringirSoloCategoriaPropia { get; set; }
+        public bool? PermitirSub23EnSenior { get; set; }
+        public bool? PermitirMasterBajarASenior { get; set; }
+        public bool? PermitirCompletarK4 { get; set; }
+        public bool? LimitacionBotesAB { get; set; }
+        public bool? InscripcionesHabilitadas { get; set; }
     }
 
     public class EventoPruebaDto

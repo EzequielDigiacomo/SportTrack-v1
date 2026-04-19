@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using SportTrack_v1.Controladores.Bote;
 using SportTrack_v1.Entidades.Entidades;
 using SportTrack.AccessDatos;
@@ -15,7 +15,6 @@ public class BoteRepository : IBoteRepository
     public async Task<IEnumerable<Bote>> GetAllAsync()
     {
         return await _context.Botes
-            .Include(b => b.Pruebas)
             .AsNoTracking()
             .ToListAsync();
     }
@@ -23,7 +22,6 @@ public class BoteRepository : IBoteRepository
     public async Task<Bote?> GetByIdAsync(int id)
     {
         return await _context.Botes
-            .Include(b => b.Pruebas)
             .FirstOrDefaultAsync(b => b.Id == id);
     }
 

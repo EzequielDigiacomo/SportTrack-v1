@@ -73,5 +73,13 @@ namespace SportTrack_v1.Api.Controllers.Inscripciones
             var result = await _inscripcionService.GetInscripcionesByEventoAndClubAsync(eventoId, clubId);
             return Ok(result);
         }
+
+        [HttpPatch("{id}/toggle-seeding")]
+        [Authorize]
+        public async Task<ActionResult> ToggleSeeding(int id)
+        {
+            await _inscripcionService.ToggleEsCabezaDeSerieAsync(id);
+            return Ok();
+        }
     }
 }

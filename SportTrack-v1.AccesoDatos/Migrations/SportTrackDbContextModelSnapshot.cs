@@ -22,6 +22,44 @@ namespace SportTrack_v1.AccesoDatos.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("SportTrack_v1.Entidades.Entidades.Auditoria", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Accion")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("Detalle")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("Fecha")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("IP")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<string>("Modulo")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Usuario")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Auditoria");
+                });
+
             modelBuilder.Entity("SportTrack_v1.Entidades.Entidades.Bote", b =>
                 {
                     b.Property<int>("Id")
@@ -315,6 +353,35 @@ namespace SportTrack_v1.AccesoDatos.Migrations
                         });
                 });
 
+            modelBuilder.Entity("SportTrack_v1.Entidades.Entidades.Etapa", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("EventoPruebaId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Nombre")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<int>("Orden")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Tipo")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EventoPruebaId");
+
+                    b.ToTable("Etapas", "regatas");
+                });
+
             modelBuilder.Entity("SportTrack_v1.Entidades.Entidades.Evento", b =>
                 {
                     b.Property<int>("Id")
@@ -322,6 +389,9 @@ namespace SportTrack_v1.AccesoDatos.Migrations
                         .HasColumnType("integer");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int?>("ClubId")
+                        .HasColumnType("integer");
 
                     b.Property<string>("Estado")
                         .IsRequired()
@@ -338,19 +408,42 @@ namespace SportTrack_v1.AccesoDatos.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasDefaultValueSql("NOW()");
 
+                    b.Property<DateTime?>("FechaFin")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<DateTime?>("FechaFinInscripciones")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("InscripcionesHabilitadas")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("LimitacionBotesAB")
+                        .HasColumnType("boolean");
 
                     b.Property<string>("Nombre")
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
 
+                    b.Property<bool>("PermitirCompletarK4")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("PermitirMasterBajarASenior")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("PermitirSub23EnSenior")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("RestringirSoloCategoriaPropia")
+                        .HasColumnType("boolean");
+
                     b.Property<string>("Ubicacion")
                         .HasMaxLength(200)
                         .HasColumnType("character varying(200)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("ClubId");
 
                     b.HasIndex("Estado")
                         .HasDatabaseName("IX_Eventos_Estado");
@@ -414,6 +507,40 @@ namespace SportTrack_v1.AccesoDatos.Migrations
                     b.ToTable("EventoPruebas", "regatas");
                 });
 
+            modelBuilder.Entity("SportTrack_v1.Entidades.Entidades.Fase", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Estado")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<int>("EtapaId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime?>("FechaHoraProgramada")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("NombreFase")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<int>("NumeroFase")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EtapaId");
+
+                    b.ToTable("Fases", "regatas");
+                });
+
             modelBuilder.Entity("SportTrack_v1.Entidades.Entidades.Inscripcion", b =>
                 {
                     b.Property<int>("Id")
@@ -422,15 +549,10 @@ namespace SportTrack_v1.AccesoDatos.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("BoteIdentificador")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<int?>("Carril")
-                        .HasColumnType("integer");
-
                     b.Property<bool>("EsCabezaDeSerie")
-                        .HasColumnType("boolean");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false);
 
                     b.Property<string>("Estado")
                         .IsRequired()
@@ -442,10 +564,6 @@ namespace SportTrack_v1.AccesoDatos.Migrations
                     b.Property<int>("EventoPruebaId")
                         .HasColumnType("integer");
 
-                    b.Property<string>("Fase")
-                        .IsRequired()
-                        .HasColumnType("text");
-
                     b.Property<DateTime>("FechaInscripcion")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
@@ -456,19 +574,15 @@ namespace SportTrack_v1.AccesoDatos.Migrations
                         .HasMaxLength(20)
                         .HasColumnType("character varying(20)");
 
-                    b.Property<int>("NumeroManga")
-                        .HasColumnType("integer");
-
                     b.Property<int?>("ParticipanteId")
                         .HasColumnType("integer");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("Carril")
-                        .HasDatabaseName("IX_Inscripciones_Carril");
-
                     b.HasIndex("Estado")
                         .HasDatabaseName("IX_Inscripciones_Estado");
+
+                    b.HasIndex("EventoPruebaId");
 
                     b.HasIndex("FechaInscripcion")
                         .HasDatabaseName("IX_Inscripciones_FechaInscripcion");
@@ -478,11 +592,6 @@ namespace SportTrack_v1.AccesoDatos.Migrations
 
                     b.HasIndex("ParticipanteId")
                         .HasDatabaseName("IX_Inscripciones_ParticipanteId");
-
-                    b.HasIndex("EventoPruebaId", "ParticipanteId", "Fase")
-                        .IsUnique()
-                        .HasDatabaseName("IX_Inscripciones_Unica_Fase")
-                        .HasFilter("\"ParticipanteId\" IS NOT NULL");
 
                     b.ToTable("Inscripciones", "regatas");
                 });
@@ -691,6 +800,46 @@ namespace SportTrack_v1.AccesoDatos.Migrations
                     b.ToTable("Pruebas", "regatas");
                 });
 
+            modelBuilder.Entity("SportTrack_v1.Entidades.Entidades.ReglaProgresion", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int?>("CantidadATomar")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("EtapaDestinoId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("EtapaOrigenId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("EventoPruebaId")
+                        .HasColumnType("integer");
+
+                    b.Property<bool>("PorTiempo")
+                        .HasColumnType("boolean");
+
+                    b.Property<int>("PosicionDesde")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("PosicionHasta")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EtapaDestinoId");
+
+                    b.HasIndex("EtapaOrigenId");
+
+                    b.HasIndex("EventoPruebaId");
+
+                    b.ToTable("ReglasProgresion", "regatas");
+                });
+
             modelBuilder.Entity("SportTrack_v1.Entidades.Entidades.Resultado", b =>
                 {
                     b.Property<int>("Id")
@@ -699,12 +848,21 @@ namespace SportTrack_v1.AccesoDatos.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
+                    b.Property<int?>("Carril")
+                        .HasColumnType("integer");
+
+                    b.Property<bool>("EsCabezaDeSerie")
+                        .HasColumnType("boolean");
+
                     b.Property<string>("Estado")
                         .IsRequired()
                         .ValueGeneratedOnAdd()
                         .HasMaxLength(20)
                         .HasColumnType("character varying(20)")
                         .HasDefaultValue("Pendiente");
+
+                    b.Property<int>("FaseId")
+                        .HasColumnType("integer");
 
                     b.Property<DateTime?>("FechaActualizacion")
                         .HasColumnType("timestamp with time zone");
@@ -731,12 +889,10 @@ namespace SportTrack_v1.AccesoDatos.Migrations
                         .HasColumnType("interval");
 
                     b.Property<string>("UsuarioActualizacion")
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)");
+                        .HasColumnType("text");
 
                     b.Property<string>("UsuarioRegistro")
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)");
+                        .HasColumnType("text");
 
                     b.Property<decimal?>("VelocidadMedia")
                         .HasPrecision(10, 2)
@@ -744,21 +900,10 @@ namespace SportTrack_v1.AccesoDatos.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("Estado")
-                        .HasDatabaseName("IX_Resultados_Estado");
+                    b.HasIndex("InscripcionId");
 
-                    b.HasIndex("InscripcionId")
-                        .IsUnique()
-                        .HasDatabaseName("IX_Resultados_InscripcionId");
-
-                    b.HasIndex("Posicion")
-                        .HasDatabaseName("IX_Resultados_Posicion");
-
-                    b.HasIndex("Puntos")
-                        .HasDatabaseName("IX_Resultados_Puntos");
-
-                    b.HasIndex("InscripcionId", "Posicion")
-                        .HasDatabaseName("IX_Resultados_InscripcionPosicion");
+                    b.HasIndex("FaseId", "Carril")
+                        .HasDatabaseName("IX_Resultados_Carril");
 
                     b.ToTable("Resultados", "regatas");
                 });
@@ -863,6 +1008,28 @@ namespace SportTrack_v1.AccesoDatos.Migrations
                         });
                 });
 
+            modelBuilder.Entity("SportTrack_v1.Entidades.Entidades.Etapa", b =>
+                {
+                    b.HasOne("SportTrack_v1.Entidades.Entidades.EventoPrueba", "EventoPrueba")
+                        .WithMany("Etapas")
+                        .HasForeignKey("EventoPruebaId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("FK_Etapas_EventoPruebas");
+
+                    b.Navigation("EventoPrueba");
+                });
+
+            modelBuilder.Entity("SportTrack_v1.Entidades.Entidades.Evento", b =>
+                {
+                    b.HasOne("SportTrack_v1.Entidades.Entidades.Club", "Club")
+                        .WithMany()
+                        .HasForeignKey("ClubId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("Club");
+                });
+
             modelBuilder.Entity("SportTrack_v1.Entidades.Entidades.EventoPrueba", b =>
                 {
                     b.HasOne("SportTrack_v1.Entidades.Entidades.Evento", "Evento")
@@ -882,6 +1049,18 @@ namespace SportTrack_v1.AccesoDatos.Migrations
                     b.Navigation("Evento");
 
                     b.Navigation("Prueba");
+                });
+
+            modelBuilder.Entity("SportTrack_v1.Entidades.Entidades.Fase", b =>
+                {
+                    b.HasOne("SportTrack_v1.Entidades.Entidades.Etapa", "Etapa")
+                        .WithMany("Fases")
+                        .HasForeignKey("EtapaId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("FK_Fases_Etapas");
+
+                    b.Navigation("Etapa");
                 });
 
             modelBuilder.Entity("SportTrack_v1.Entidades.Entidades.Inscripcion", b =>
@@ -1004,14 +1183,53 @@ namespace SportTrack_v1.AccesoDatos.Migrations
                     b.Navigation("Sexo");
                 });
 
+            modelBuilder.Entity("SportTrack_v1.Entidades.Entidades.ReglaProgresion", b =>
+                {
+                    b.HasOne("SportTrack_v1.Entidades.Entidades.Etapa", "EtapaDestino")
+                        .WithMany("ReglasComoDestino")
+                        .HasForeignKey("EtapaDestinoId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("FK_ReglasProgresion_Etapas_Destino");
+
+                    b.HasOne("SportTrack_v1.Entidades.Entidades.Etapa", "EtapaOrigen")
+                        .WithMany("ReglasComoOrigen")
+                        .HasForeignKey("EtapaOrigenId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("FK_ReglasProgresion_Etapas_Origen");
+
+                    b.HasOne("SportTrack_v1.Entidades.Entidades.EventoPrueba", "EventoPrueba")
+                        .WithMany("ReglasProgresion")
+                        .HasForeignKey("EventoPruebaId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("FK_ReglasProgresion_EventoPruebas");
+
+                    b.Navigation("EtapaDestino");
+
+                    b.Navigation("EtapaOrigen");
+
+                    b.Navigation("EventoPrueba");
+                });
+
             modelBuilder.Entity("SportTrack_v1.Entidades.Entidades.Resultado", b =>
                 {
+                    b.HasOne("SportTrack_v1.Entidades.Entidades.Fase", "Fase")
+                        .WithMany("Resultados")
+                        .HasForeignKey("FaseId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("FK_Resultados_Fases");
+
                     b.HasOne("SportTrack_v1.Entidades.Entidades.Inscripcion", "Inscripcion")
-                        .WithOne("Resultado")
-                        .HasForeignKey("SportTrack_v1.Entidades.Entidades.Resultado", "InscripcionId")
+                        .WithMany("Resultados")
+                        .HasForeignKey("InscripcionId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("FK_Resultados_Inscripciones");
+
+                    b.Navigation("Fase");
 
                     b.Navigation("Inscripcion");
                 });
@@ -1050,6 +1268,15 @@ namespace SportTrack_v1.AccesoDatos.Migrations
                     b.Navigation("Pruebas");
                 });
 
+            modelBuilder.Entity("SportTrack_v1.Entidades.Entidades.Etapa", b =>
+                {
+                    b.Navigation("Fases");
+
+                    b.Navigation("ReglasComoDestino");
+
+                    b.Navigation("ReglasComoOrigen");
+                });
+
             modelBuilder.Entity("SportTrack_v1.Entidades.Entidades.Evento", b =>
                 {
                     b.Navigation("EventoPruebas");
@@ -1057,12 +1284,21 @@ namespace SportTrack_v1.AccesoDatos.Migrations
 
             modelBuilder.Entity("SportTrack_v1.Entidades.Entidades.EventoPrueba", b =>
                 {
+                    b.Navigation("Etapas");
+
                     b.Navigation("Inscripciones");
+
+                    b.Navigation("ReglasProgresion");
+                });
+
+            modelBuilder.Entity("SportTrack_v1.Entidades.Entidades.Fase", b =>
+                {
+                    b.Navigation("Resultados");
                 });
 
             modelBuilder.Entity("SportTrack_v1.Entidades.Entidades.Inscripcion", b =>
                 {
-                    b.Navigation("Resultado");
+                    b.Navigation("Resultados");
 
                     b.Navigation("Tripulantes");
                 });

@@ -1,0 +1,83 @@
+using Microsoft.EntityFrameworkCore;
+using SportTrack.AccessDatos;
+using SportTrack_v1.Entidades.Entidades;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+
+namespace SportTrack_v1.Controladores.Fase
+{
+    public interface IFaseRepository
+    {
+        Task<IEnumerable<Entidades.Entidades.Fase>> GetByEventoPruebaIdAsync(int eventoPruebaId);
+        Task<Entidades.Entidades.Fase?> GetByIdAsync(int id);
+        Task<Entidades.Entidades.Fase> CreateAsync(Entidades.Entidades.Fase fase);
+        Task<IEnumerable<Entidades.Entidades.Fase>> CreateManyAsync(IEnumerable<Entidades.Entidades.Fase> fases);
+        Task DeleteByEventoPruebaIdAsync(int eventoPruebaId);
+        Task DeleteAsync(int id);
+    }
+
+    public class FaseRepository : IFaseRepository
+    {
+        private readonly SportTrackDbContext _context;
+
+        public FaseRepository(SportTrackDbContext context)
+        {
+            _context = context;
+        }
+
+        public async Task<IEnumerable<Entidades.Entidades.Fase>> GetByEventoPruebaIdAsync(int eventoPruebaId)
+        {
+            return await _context.Fases
+                .Include(f => f.Etapa)
+                .Include(f => f.Resultados)
+                    .ThenInclude(r => r.Inscripcion)
+                        .ThenInclude(i => i.Participante)
+                            .ThenInclude(p => p.Club)
+                .Where(f => f.Etapa.EventoPruebaId == eventoPruebaId)
+                .OrderBy(f => f.Etapa.Orden)
+                .ThenBy(f => f.NumeroFase)
+                .ToListAsync();
+        }
+
+        public async Task<Entidades.Entidades.Fase?> GetByIdAsync(int id)
+        {
+            return await _context.Fases
+                .Include(f => f.Etapa)
+                .Include(f => f.Resultados)
+                    .ThenInclude(r => r.Inscripcion)
+                        .ThenInclude(i => i.Participante)
+                .FirstOrDefaultAsync(f => f.Id == id);
+        }
+
+        public async Task<Entidades.Entidades.Fase> CreateAsync(Entidades.Entidades.Fase fase)
+        {
+            _context.Fases.Add(fase);
+            await _context.SaveChangesAsync();
+            return fase;
+        }
+
+        public async Task<IEnumerable<Entidades.Entidades.Fase>> CreateManyAsync(IEnumerable<Entidades.Entidades.Fase> fases)
+        {
+            _context.Fases.AddRange(fases);
+            await _context.SaveChangesAsync();
+            return fases;
+        }
+
+        public async Task DeleteByEventoPruebaIdAsync(int eventoPruebaId)
+        {
+            var fases = await _context.Fases.Where(f => f.Etapa.EventoPruebaId == eventoPruebaId).ToListAsync();
+            _context.Fases.RemoveRange(fases);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task DeleteAsync(int id)
+        {
+            var f = await _context.Fases.FirstOrDefaultAsync(x => x.Id == id);
+            if (f != null) {
+                _context.Fases.Remove(f);
+                await _context.SaveChangesAsync();
+            }
+        }
+    }
+}

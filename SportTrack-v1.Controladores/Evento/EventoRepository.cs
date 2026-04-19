@@ -17,9 +17,16 @@ namespace SportTrack_v1.Controladores.Evento
             _context = context;
         }
 
-        public async Task<IEnumerable<Entidades.Entidades.Evento>> GetAllAsync()
+        public async Task<IEnumerable<Entidades.Entidades.Evento>> GetAllAsync(int? clubId = null)
         {
-            return await _context.Eventos
+            var query = _context.Eventos.AsQueryable();
+            
+            if (clubId.HasValue)
+            {
+                query = query.Where(e => e.ClubId == clubId.Value);
+            }
+
+            return await query
                 .AsNoTracking()
                 .OrderByDescending(e => e.Fecha)
                 .ToListAsync();
@@ -46,6 +53,7 @@ namespace SportTrack_v1.Controladores.Evento
             await _context.SaveChangesAsync();
             return evento;
         }
+
 
         public async Task<bool> DeleteAsync(int id)
         {
@@ -83,6 +91,7 @@ namespace SportTrack_v1.Controladores.Evento
                     .ThenInclude(p => p.Sexo)
                 .Include(ep => ep.Inscripciones)
                 .Where(ep => ep.EventoId == eventoId)
+                .OrderBy(ep => ep.FechaHora)
                 .ToListAsync();
         }
 

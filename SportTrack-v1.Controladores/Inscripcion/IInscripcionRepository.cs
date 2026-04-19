@@ -6,7 +6,7 @@ namespace SportTrack_v1.Controladores.Inscripcion
 {
     public interface IInscripcionRepository
     {
-        Task<Entidades.Entidades.Inscripcion> GetByIdAsync(int id);
+        Task<Entidades.Entidades.Inscripcion?> GetByIdAsync(int id);
         Task<IEnumerable<Entidades.Entidades.Inscripcion>> GetAllAsync();
         Task<Entidades.Entidades.Inscripcion> CreateAsync(Entidades.Entidades.Inscripcion inscripcion);
         Task<Entidades.Entidades.Inscripcion> UpdateAsync(Entidades.Entidades.Inscripcion inscripcion);

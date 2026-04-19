@@ -6,7 +6,7 @@ namespace SportTrack_v1.Controladores.Evento
 {
     public interface IEventoRepository
     {
-        Task<IEnumerable<Entidades.Entidades.Evento>> GetAllAsync();
+        Task<IEnumerable<Entidades.Entidades.Evento>> GetAllAsync(int? clubId = null);
         Task<Entidades.Entidades.Evento?> GetByIdAsync(int id);
         Task<Entidades.Entidades.Evento> CreateAsync(Entidades.Entidades.Evento evento);
         Task<Entidades.Entidades.Evento> UpdateAsync(Entidades.Entidades.Evento evento);
@@ -24,11 +24,11 @@ namespace SportTrack_v1.Controladores.Evento
 
     public interface IEventoService
     {
-        Task<IEnumerable<EventoDto>> GetAllEventosAsync();
+        Task<IEnumerable<EventoDto>> GetAllEventosAsync(int? clubId = null);
         Task<EventoDto> GetEventoByIdAsync(int id);
         Task<EventoDto> CreateEventoAsync(EventoCreateDto eventoDto);
-        Task<EventoDto> UpdateEventoAsync(int id, EventoUpdateDto eventoDto);
-        Task<bool> DeleteEventoAsync(int id);
+        Task<EventoDto> UpdateEventoAsync(int id, EventoUpdateDto eventoDto, int? clubId = null);
+        Task<bool> DeleteEventoAsync(int id, int? clubId = null);
         Task<IEnumerable<EventoDto>> GetProximosEventosAsync();
         Task<IEnumerable<EventoPruebaDto>> GetPruebasByEventoAsync(int eventoId);
         Task<EventoPruebaDto> AssignPruebaToEventoAsync(int eventoId, EventoPruebaCreateDto assignDto);

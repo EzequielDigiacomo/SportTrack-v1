@@ -14,5 +14,6 @@ namespace SportTrack_v1.Controladores.Inscripcion
         Task<int> GetCountByEventoPruebaIdAsync(int eventoPruebaId);
         Task<IEnumerable<InscripcionDto>> GetInscripcionesByEventoPruebaIdAsync(int eventoPruebaId);
         Task<IEnumerable<InscripcionDto>> GetInscripcionesByEventoAndClubAsync(int eventoId, int clubId);
+        Task<bool> ToggleEsCabezaDeSerieAsync(int id);
     }
 }

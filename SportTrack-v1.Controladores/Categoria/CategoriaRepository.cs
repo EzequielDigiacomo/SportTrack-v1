@@ -1,4 +1,4 @@
-﻿// Repositories/CategoriaRepository.cs
+// Repositories/CategoriaRepository.cs
 using Microsoft.EntityFrameworkCore;
 using SportTrack.AccessDatos;
 using SportTrack_v1.Controladores.Categoria;
@@ -16,8 +16,6 @@ public class CategoriaRepository : ICategoriaRepository
     public async Task<IEnumerable<Categoria>> GetAllAsync()
     {
         return await _context.Categorias
-            .Include(c => c.Pruebas)
-            .Include(c => c.Participantes)
             .AsNoTracking()
             .OrderBy(c => c.EdadMin)
             .ToListAsync();
@@ -26,8 +24,6 @@ public class CategoriaRepository : ICategoriaRepository
     public async Task<Categoria?> GetByIdAsync(int id)
     {
         return await _context.Categorias
-            .Include(c => c.Pruebas)
-            .Include(c => c.Participantes)
             .FirstOrDefaultAsync(c => c.Id == id);
     }
 

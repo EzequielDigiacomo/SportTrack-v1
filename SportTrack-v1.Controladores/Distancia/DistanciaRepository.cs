@@ -17,7 +17,6 @@ public class DistanciaRepository : IDistanciaRepository
     public async Task<IEnumerable<Distancia>> GetAllAsync()
     {
         return await _context.Distancias
-            .Include(d => d.Pruebas)
             .AsNoTracking()
             .OrderBy(d => d.DistanciaRegata)
             .ToListAsync();
@@ -26,7 +25,6 @@ public class DistanciaRepository : IDistanciaRepository
     public async Task<Distancia?> GetByIdAsync(int id)
     {
         return await _context.Distancias
-            .Include(d => d.Pruebas)
             .FirstOrDefaultAsync(d => d.Id == id);
     }
 

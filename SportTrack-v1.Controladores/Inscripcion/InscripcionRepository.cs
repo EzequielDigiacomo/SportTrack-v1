@@ -90,7 +90,8 @@ namespace SportTrack_v1.Controladores.Inscripcion
                 .Include(i => i.Tripulantes)
                     .ThenInclude(t => t.Participante)
                 .Include(i => i.EventoPrueba)
-                .Where(i => i.EventoPrueba.EventoId == eventoId && i.Participante.ClubId == clubId)
+                .Where(i => i.EventoPrueba.EventoId == eventoId && 
+                            (i.Participante.ClubId == clubId || i.Tripulantes.Any(t => t.Participante.ClubId == clubId)))
                 .ToListAsync();
         }
     }
