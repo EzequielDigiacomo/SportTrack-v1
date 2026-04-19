@@ -25,21 +25,32 @@ namespace SportTrack_v1.Controladores.Auth
 
         public async Task<AuthResponseDto> LoginAsync(LoginDto loginDto)
         {
+            var cleanUsername = loginDto.Username.Trim().ToLower();
+            var cleanPassword = loginDto.Password.Trim();
+
+            Console.WriteLine($"--- INTENTO DE LOGIN: {cleanUsername} ---");
+
             var user = await _context.Usuarios
                 .Include(u => u.Club)
-                .FirstOrDefaultAsync(u => u.Username == loginDto.Username.ToLower());
+                .FirstOrDefaultAsync(u => u.Username == cleanUsername);
 
             if (user == null) 
             {
-                await _auditService.RegistrarAccionAsync("LOGIN_FAILED", $"Intento fallido: Usuario '{loginDto.Username}' no encontrado.", loginDto.Username, "Auth");
-                throw new UnauthorizedException("Usuario inválido");
+                Console.WriteLine($"USUARIO NO ENCONTRADO: {cleanUsername}");
+                await _auditService.RegistrarAccionAsync("LOGIN_FAILED", $"Intento fallido: Usuario '{cleanUsername}' no encontrado.", cleanUsername, "Auth");
+                throw new UnauthorizedException("Usuario no encontrado en la base de datos");
             }
 
-            if (!BCrypt.Net.BCrypt.Verify(loginDto.Password, user.PasswordHash))
+            Console.WriteLine($"USUARIO ENCONTRADO. Verificando hash para: {cleanUsername}");
+
+            if (!BCrypt.Net.BCrypt.Verify(cleanPassword, user.PasswordHash))
             {
-                await _auditService.RegistrarAccionAsync("LOGIN_FAILED", $"Intento fallido: Contraseña incorrecta para usuario '{loginDto.Username}'.", loginDto.Username, "Auth");
-                throw new UnauthorizedException("Contraseña incorrecta");
+                Console.WriteLine($"CONTRASEÑA INCORRECTA para: {cleanUsername}");
+                await _auditService.RegistrarAccionAsync("LOGIN_FAILED", $"Intento fallido: Contraseña incorrecta para usuario '{cleanUsername}'.", cleanUsername, "Auth");
+                throw new UnauthorizedException("Contraseña incorrecta. Verificá mayúsculas/minúsculas.");
             }
+
+            Console.WriteLine($"LOGIN EXITOSO: {cleanUsername}");
 
             var response = _mapper.Map<AuthResponseDto>(user);
             response.Token = _tokenService.CreateToken(user);
