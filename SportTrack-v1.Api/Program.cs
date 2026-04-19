@@ -32,8 +32,10 @@ builder.Services.AddSignalR();
 // Configuración de CORS
 var originsConfig = builder.Configuration["AllowedOrigins"];
 var allowedOrigins = !string.IsNullOrEmpty(originsConfig) 
-    ? originsConfig.Split(',', StringSplitOptions.RemoveEmptyEntries) 
+    ? originsConfig.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(o => o.Trim()).ToArray() 
     : new[] { "http://localhost:3000", "http://localhost:5173" };
+
+Console.WriteLine($"Configurando CORS para orígenes: {string.Join(", ", allowedOrigins)}");
 
 builder.Services.AddCors(options =>
 {
