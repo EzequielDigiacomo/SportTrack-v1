@@ -1,6 +1,9 @@
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using SportTrack_v1.Controladores.Auth;
 using SportTrack_v1.Controladores.Auth.Dtos;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace SportTrack_v1.Api.Controllers.Auth
