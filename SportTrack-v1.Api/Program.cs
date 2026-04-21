@@ -67,9 +67,17 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         {
             OnMessageReceived = context =>
             {
+                // 1. Intentar desde Query String (SignalR)
                 var accessToken = context.Request.Query["access_token"];
+                
+                // 2. Intentar desde Cookies (HttpOnly)
+                if (string.IsNullOrEmpty(accessToken))
+                {
+                    accessToken = context.Request.Cookies["X-Access-Token"];
+                }
+
                 var path = context.HttpContext.Request.Path;
-                if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/hubs"))
+                if (!string.IsNullOrEmpty(accessToken))
                 {
                     context.Token = accessToken;
                 }

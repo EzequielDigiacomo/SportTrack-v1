@@ -16,11 +16,50 @@ namespace SportTrack_v1.Api.Controllers.Auth
             _authService = authService;
         }
 
+        [HttpGet("me")]
+        [Authorize]
+        public async Task<ActionResult<UsuarioDto>> GetMe()
+        {
+            var username = User.Identity?.Name;
+            if (string.IsNullOrEmpty(username)) return Unauthorized();
+
+            var usuarios = await _authService.GetUsuariosAsync();
+            var user = usuarios.FirstOrDefault(u => u.Username == username);
+            
+            if (user == null) return NotFound();
+            return Ok(user);
+        }
+
         [HttpPost("login")]
         public async Task<ActionResult<AuthResponseDto>> Login(LoginDto loginDto)
         {
             var result = await _authService.LoginAsync(loginDto);
+            
+            // Configurar la Cookie HttpOnly
+            var cookieOptions = new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = true, // En producción debería ser true
+                SameSite = SameSiteMode.None, // Necesario para Cross-Site si el front/back están en distintos dominios
+                Expires = DateTime.UtcNow.AddHours(5)
+            };
+
+            Response.Cookies.Append("X-Access-Token", result.Token, cookieOptions);
+
+            // Devolvemos el resultado pero ya no es estrictamente necesario que el front guarde el token en localStorage
             return Ok(result);
+        }
+
+        [HttpPost("logout")]
+        public IActionResult Logout()
+        {
+            Response.Cookies.Delete("X-Access-Token", new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = true,
+                SameSite = SameSiteMode.None
+            });
+            return Ok(new { message = "Sesión cerrada correctamente" });
         }
 
         [HttpPost("register")]
