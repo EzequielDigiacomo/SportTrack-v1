@@ -53,7 +53,8 @@ namespace SportTrack_v1.Controladores.Mappings
 
             // Mapeos de Evento
             CreateMap<Entidades.Entidades.Evento, EventoDto>()
-                .ForMember(dest => dest.Estado, opt => opt.MapFrom(src => src.Estado.ToString()));
+                .ForMember(dest => dest.Estado, opt => opt.MapFrom(src => src.Estado.ToString()))
+                .ForMember(dest => dest.ClubNombre, opt => opt.MapFrom(src => src.Club != null ? src.Club.Nombre : "Federación"));
             CreateMap<EventoCreateDto, Entidades.Entidades.Evento>();
             CreateMap<EventoUpdateDto, Entidades.Entidades.Evento>();
 

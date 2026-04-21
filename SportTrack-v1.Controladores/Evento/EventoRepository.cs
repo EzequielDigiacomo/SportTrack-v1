@@ -27,6 +27,7 @@ namespace SportTrack_v1.Controladores.Evento
             }
 
             return await query
+                .Include(e => e.Club)
                 .AsNoTracking()
                 .OrderByDescending(e => e.Fecha)
                 .ToListAsync();

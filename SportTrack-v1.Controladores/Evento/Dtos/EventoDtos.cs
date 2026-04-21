@@ -17,6 +17,7 @@ namespace SportTrack_v1.Controladores.Evento.Dtos
         public DateTime FechaCreacion { get; set; }
         public DateTime? FechaFinInscripciones { get; set; }
         public int? ClubId { get; set; }
+        public string? ClubNombre { get; set; }
         public bool InscripcionesHabilitadas { get; set; }
         public bool InscripcionesAbiertas => InscripcionesHabilitadas && Estado == "Programada" && (!FechaFinInscripciones.HasValue || FechaFinInscripciones.Value > DateTime.UtcNow);
         
@@ -58,6 +59,7 @@ namespace SportTrack_v1.Controladores.Evento.Dtos
         public bool? PermitirCompletarK4 { get; set; }
         public bool? LimitacionBotesAB { get; set; }
         public bool? InscripcionesHabilitadas { get; set; }
+        public int? ClubId { get; set; }
     }
 
     public class EventoPruebaDto

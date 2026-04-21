@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SportTrack_v1.Controladores.Evento;
 using SportTrack_v1.Controladores.Evento.Dtos;
@@ -11,6 +12,7 @@ namespace SportTrack_v1.Api.Controllers.Eventos
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize]
     public class EventosController : ControllerBase
     {
         private readonly IEventoService _eventoService;
@@ -37,6 +39,7 @@ namespace SportTrack_v1.Api.Controllers.Eventos
         }
 
         [HttpGet("proximos")]
+        [AllowAnonymous]
         public async Task<ActionResult<IEnumerable<EventoDto>>> GetProximosEventos()
         {
             var result = await _eventoService.GetProximosEventosAsync();
@@ -44,6 +47,7 @@ namespace SportTrack_v1.Api.Controllers.Eventos
         }
 
         [HttpGet("{id}")]
+        [AllowAnonymous]
         public async Task<ActionResult<EventoDto>> GetEvento(int id)
         {
             var result = await _eventoService.GetEventoByIdAsync(id);

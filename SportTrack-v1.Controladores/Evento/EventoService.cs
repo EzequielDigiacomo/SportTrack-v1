@@ -54,12 +54,15 @@ namespace SportTrack_v1.Controladores.Evento
             evento.ClubId = eventoDto.ClubId;
             
             var result = await _eventoRepository.CreateAsync(evento);
+            
+            // Recargar con Club para que el DTO tenga el nombre
+            var fullEvento = await _eventoRepository.GetByIdAsync(result.Id);
 
             // Auditoria
             await _auditService.RegistrarAccionAsync("CREATE_EVENT", 
                 $"Evento creado: {result.Nombre} (Ubicación: {result.Ubicacion}, Fecha: {result.Fecha:dd/MM/yyyy})", null, "Eventos");
 
-            return _mapper.Map<EventoDto>(result);
+            return _mapper.Map<EventoDto>(fullEvento);
         }
 
         public async Task<EventoDto> UpdateEventoAsync(int id, EventoUpdateDto eventoDto, int? clubId = null)
@@ -86,12 +89,15 @@ namespace SportTrack_v1.Controladores.Evento
             }
 
             var result = await _eventoRepository.UpdateAsync(existing);
+            
+            // Recargar con Club para que el DTO tenga el nombre
+            var fullEvento = await _eventoRepository.GetByIdAsync(result.Id);
 
             // Auditoria
             await _auditService.RegistrarAccionAsync("UPDATE_EVENT", 
                 $"Evento actualizado: {result.Nombre} (ID: {id})", null, "Eventos");
 
-            return _mapper.Map<EventoDto>(result);
+            return _mapper.Map<EventoDto>(fullEvento);
         }
 
         public async Task<bool> DeleteEventoAsync(int id, int? clubId = null)
