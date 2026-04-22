@@ -40,6 +40,7 @@ namespace SportTrack_v1.Controladores.Participante
             return await _context.Participantes
                 .Include(p => p.Sexo)
                 .Include(p => p.Categoria)
+                .Include(p => p.Club)
                 .Where(p => p.ClubId == clubId)
                 .AsNoTracking()
                 .ToListAsync();
