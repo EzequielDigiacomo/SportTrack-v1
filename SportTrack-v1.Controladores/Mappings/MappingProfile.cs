@@ -16,7 +16,9 @@ namespace SportTrack_v1.Controladores.Mappings
         public MappingProfile()
         {
             // Mapeos de Club
-            CreateMap<Entidades.Entidades.Club, ClubDto>().ReverseMap();
+            CreateMap<Entidades.Entidades.Club, ClubDto>()
+                .ForMember(dest => dest.CantidadAtletas, opt => opt.MapFrom(src => src.Participantes != null ? src.Participantes.Count : 0))
+                .ReverseMap();
             CreateMap<ClubCreateDto, Entidades.Entidades.Club>();
             CreateMap<ClubUpdateDto, Entidades.Entidades.Club>();
 

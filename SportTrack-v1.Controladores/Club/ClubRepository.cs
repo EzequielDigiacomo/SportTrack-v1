@@ -17,12 +17,12 @@ namespace SportTrack_v1.Controladores.Club
 
         public async Task<IEnumerable<Entidades.Entidades.Club>> GetAllAsync()
         {
-            return await _context.Clubes.AsNoTracking().ToListAsync();
+            return await _context.Clubes.Include(c => c.Participantes).AsNoTracking().ToListAsync();
         }
 
         public async Task<Entidades.Entidades.Club?> GetByIdAsync(int id)
         {
-            return await _context.Clubes.FindAsync(id);
+            return await _context.Clubes.Include(c => c.Participantes).FirstOrDefaultAsync(c => c.Id == id);
         }
 
         public async Task<Entidades.Entidades.Club> CreateAsync(Entidades.Entidades.Club club)
