@@ -300,9 +300,9 @@ namespace SportTrack_v1.Controladores.Fase
             var lastFaseTime = fasesDeLaEtapa.Max(f => f.FechaHoraProgramada) ?? DateTime.Now;
             DateTime nextTime = lastFaseTime.AddMinutes(40);
 
-            // LOGICA DE PROMOSION BASADA EN TIPO DE ETAPA Y NUMERO DE FASES
             var finalistsA = new List<Entidades.Entidades.Inscripcion>();
             var finalistsB = new List<Entidades.Entidades.Inscripcion>();
+            var finalistsC = new List<Entidades.Entidades.Inscripcion>();
             var nextSemis = new List<Entidades.Entidades.Inscripcion>();
 
             var phasesRanked = fasesDeLaEtapa
@@ -313,23 +313,21 @@ namespace SportTrack_v1.Controladores.Fase
                                     .ToList())
                                 .ToList();
 
-            int numPhases = phasesRanked.Count;
+            int numHeats = phasesRanked.Count;
 
             if (etapaActual.Tipo == SportTrack_v1.Entidades.Enums.TipoEtapaEnum.Eliminatoria)
             {
-                if (numPhases == 1) 
+                if (numHeats == 1) 
                 {
                     finalistsA.AddRange(phasesRanked[0].Take(9));
                 }
-                else if (numPhases == 2)
+                else if (numHeats == 2)
                 {
-                    // 1st-3rd direct to Final A
+                    // 1-3 direct to Final A
                     foreach (var s in phasesRanked) finalistsA.AddRange(s.Take(3));
-                    
-                    // 4th-7th to SF
+                    // 4-7 to SF
                     foreach (var s in phasesRanked) nextSemis.AddRange(s.Skip(3).Take(4));
-                    
-                    // + 1x8th BT (Best Time) to SF
+                    // + 1x8th BT to SF
                     var eighths = phasesRanked
                         .Select(s => s.Count >= 8 ? s[7] : null)
                         .Where(i => i != null)
@@ -338,16 +336,16 @@ namespace SportTrack_v1.Controladores.Fase
                         .ToList();
                     if (eighths.Any()) nextSemis.Add(eighths[0].Insc);
                 }
-                else if (numPhases == 3)
+                else if (numHeats == 3)
                 {
-                    // 1st to Final A
+                    // 1st direct to Final A
                     foreach (var s in phasesRanked) finalistsA.Add(s.First());
-                    // 2nd-7th to SF (18 total)
+                    // 2-7 to SF (18 total)
                     foreach (var s in phasesRanked) nextSemis.AddRange(s.Skip(1).Take(6));
                 }
-                else if (numPhases == 4)
+                else if (numHeats == 4)
                 {
-                    // 1st-6th + 3x7th BT to SF
+                    // 1-6 + 3x7th BT to SF (27 total)
                     foreach (var s in phasesRanked) nextSemis.AddRange(s.Take(6));
                     var sevenths = phasesRanked
                         .Select(s => s.Count >= 7 ? s[6] : null)
@@ -357,9 +355,9 @@ namespace SportTrack_v1.Controladores.Fase
                         .ToList();
                     nextSemis.AddRange(sevenths.Take(3).Select(x => x.Insc));
                 }
-                else if (numPhases == 5)
+                else if (numHeats == 5)
                 {
-                    // 1st-5th + 2x6th BT to SF
+                    // 1-5 + 2x6th BT to SF (27 total)
                     foreach (var s in phasesRanked) nextSemis.AddRange(s.Take(5));
                     var sixths = phasesRanked
                         .Select(s => s.Count >= 6 ? s[5] : null)
@@ -369,29 +367,16 @@ namespace SportTrack_v1.Controladores.Fase
                         .ToList();
                     nextSemis.AddRange(sixths.Take(2).Select(x => x.Insc));
                 }
-                else if (numPhases >= 6)
-                {
-                    // 1st-4th + Best 5ths to fill SF (Assuming 3 SF of 9 = 27 total)
-                    foreach (var s in phasesRanked) nextSemis.AddRange(s.Take(4));
-                    int currentCount = nextSemis.Count;
-                    int needed = 27 - currentCount;
-
-                    var fifths = phasesRanked
-                        .Select(s => s.Count >= 5 ? s[4] : null)
-                        .Where(i => i != null)
-                        .Select(i => new { Insc = i!, Tiempo = etapaActual.Fases.SelectMany(f => f.Resultados).First(r => r.InscripcionId == i!.Id).TiempoOficial })
-                        .OrderBy(x => x.Tiempo)
-                        .ToList();
-                    nextSemis.AddRange(fifths.Take(needed).Select(x => x.Insc));
-                }
             }
             else if (etapaActual.Tipo == SportTrack_v1.Entidades.Enums.TipoEtapaEnum.Semifinal)
             {
-                // 1. Recuperar finalistas directos de Eliminatorias (si existen)
+                // 1. Recuperar finalistas directos de Eliminatorias para sumarlos a la Final A
                 var etapaElim = etapas.FirstOrDefault(e => e.Tipo == SportTrack_v1.Entidades.Enums.TipoEtapaEnum.Eliminatoria);
                 if (etapaElim != null)
                 {
-                    var elimRanked = etapaElim.Fases
+                    var todasFasesPrueba = (await _faseRepository.GetByEventoPruebaIdAsync(eventoPruebaId)).ToList();
+                    var fasesElim = todasFasesPrueba.Where(f => f.EtapaId == etapaElim.Id).ToList();
+                    var elimRanked = fasesElim
                         .Select(f => f.Resultados
                             .Where(r => r.TiempoOficial.HasValue)
                             .OrderBy(r => r.TiempoOficial!.Value)
@@ -399,32 +384,55 @@ namespace SportTrack_v1.Controladores.Fase
                             .ToList())
                         .ToList();
                     
-                    if (elimRanked.Count() == 2) {
+                    if (elimRanked.Count == 2) {
+                        // Traemos los 1-3 directos
                         foreach (var s in elimRanked) finalistsA.AddRange(s.Take(3));
                     }
-                    else if (elimRanked.Count() == 3) {
+                    else if (elimRanked.Count == 3) {
+                        // Traemos los 1st directos
                         foreach (var s in elimRanked) finalistsA.Add(s.First());
                     }
                 }
 
-                // 2. Agregar ganadores de Semifinal segun reglas oficiales
-                if (numPhases == 1)
+                // 2. Clasificación desde las Semifinales actuales
+                if (numHeats == 1) // Caso 2 Heats -> 1 Semi
                 {
-                    // 1-3 to Final A (rest out)
+                    // 1-3 to Final A
                     finalistsA.AddRange(phasesRanked[0].Take(3));
                 }
-                else if (numPhases == 2)
+                else if (numHeats == 2) // Caso 3 Heats -> 2 Semis
                 {
-                    // 1-3 each to Final A
+                    // 1-3 to Final A
                     foreach (var s in phasesRanked) finalistsA.AddRange(s.Take(3));
-                    // Nota: El usuario especificó que para 2 semis NO hay Final B.
+                    // 4-7 + 1x8th BT to Final B
+                    foreach (var s in phasesRanked) finalistsB.AddRange(s.Skip(3).Take(4));
+                    var eighths = phasesRanked
+                        .Select(s => s.Count >= 8 ? s[7] : null)
+                        .Where(i => i != null)
+                        .Select(i => new { Insc = i!, Tiempo = etapaActual.Fases.SelectMany(f => f.Resultados).First(r => r.InscripcionId == i!.Id).TiempoOficial })
+                        .OrderBy(x => x.Tiempo)
+                        .ToList();
+                    if (eighths.Any()) finalistsB.Add(eighths[0].Insc);
                 }
-                else if (numPhases == 3)
+                else if (numHeats == 3) // Caso 4 o 5 Heats -> 3 Semis
                 {
-                    // 1-3 each to Final A
+                    // 1-3 to Final A
                     foreach (var s in phasesRanked) finalistsA.AddRange(s.Take(3));
-                    // 4-6 each to Final B
+                    // 4-6 to Final B
                     foreach (var s in phasesRanked) finalistsB.AddRange(s.Skip(3).Take(3));
+                    
+                    // Si venimos de 5 Heats, hay Final C
+                    var etapaElimParaC = etapas.FirstOrDefault(e => e.Tipo == SportTrack_v1.Entidades.Enums.TipoEtapaEnum.Eliminatoria);
+                    if (etapaElimParaC != null)
+                    {
+                        var todasFases = (await _faseRepository.GetByEventoPruebaIdAsync(eventoPruebaId)).ToList();
+                        int numElims = todasFases.Count(f => f.EtapaId == etapaElimParaC.Id);
+                        if (numElims == 5)
+                        {
+                            // 7-9 to Final C
+                            foreach (var s in phasesRanked) finalistsC.AddRange(s.Skip(6).Take(3));
+                        }
+                    }
                 }
             }
 
@@ -474,11 +482,23 @@ namespace SportTrack_v1.Controladores.Fase
                 {
                     if (faseFinalB_Existente != null) await _faseRepository.DeleteAsync(faseFinalB_Existente.Id);
                     await _faseRepository.CreateAsync(CrearFaseConResultados(etapaFinal.Id, "Final B", 2, finalistsB, tempNextTime));
+                    tempNextTime = tempNextTime.AddMinutes(10);
                 }
                 else if (faseFinalB_Existente != null)
                 {
-                    // Si ya no debe haber Final B, la eliminamos
                     await _faseRepository.DeleteAsync(faseFinalB_Existente.Id);
+                }
+
+                // Procesar Final C - SOLO SI HAY FINALISTAS C
+                var faseFinalC_Existente = etapaFinal.Fases?.FirstOrDefault(f => f.NombreFase == "Final C");
+                if (finalistsC.Any()) 
+                {
+                    if (faseFinalC_Existente != null) await _faseRepository.DeleteAsync(faseFinalC_Existente.Id);
+                    await _faseRepository.CreateAsync(CrearFaseConResultados(etapaFinal.Id, "Final C", 3, finalistsC, tempNextTime));
+                }
+                else if (faseFinalC_Existente != null)
+                {
+                    await _faseRepository.DeleteAsync(faseFinalC_Existente.Id);
                 }
             }
 
