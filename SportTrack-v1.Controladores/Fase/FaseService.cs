@@ -230,26 +230,23 @@ namespace SportTrack_v1.Controladores.Fase
 
         public async Task<IEnumerable<FaseDto>> PromoverFasesAsync(int eventoPruebaId)
         {
-            // Obtener etapas actuales
-            var etapas = (await _etapaRepository.GetByEventoPruebaIdAsync(eventoPruebaId)).ToList();
-            
-            // SECUENCIA EXPLICITA DE PROMOCION
-            // 1. Verificar Eliminatorias
-            var etapaElim = etapas.FirstOrDefault(e => e.Tipo == SportTrack_v1.Entidades.Enums.TipoEtapaEnum.Eliminatoria);
-            if (etapaElim != null && etapaElim.Fases.All(f => f.Resultados.Any(r => r.TiempoOficial.HasValue)))
-            {
-                // Solo procedemos si la siguiente etapa (Semis o Final) está incompleta o no existe.
-                // En este caso, el motor siempre recalculará desde la etapa más baja que esté completa.
-            }
+            // 1. Obtener todas las fases con sus resultados e inscripciones (usando el repo de fases que es más completo)
+            var todasLasFases = (await _faseRepository.GetByEventoPruebaIdAsync(eventoPruebaId)).ToList();
+            if (!todasLasFases.Any()) return new List<FaseDto>();
 
-            // 1. Encontrar la etapa más alta que tenga AL MENOS UN resultado cargado.
+            // Reconstruir la lista de etapas a partir de las fases para asegurar integridad de datos cargados
+            var etapas = todasLasFases.GroupBy(f => f.EtapaId)
+                                      .Select(g => g.First().Etapa)
+                                      .OrderBy(e => e.Orden)
+                                      .ToList();
+
+            // 2. Encontrar la etapa más alta que tenga resultados (tiempo o posición)
             var etapaCandidata = etapas.OrderByDescending(e => e.Orden)
                                        .Where(e => e.Tipo != SportTrack_v1.Entidades.Enums.TipoEtapaEnum.Final)
                                        .FirstOrDefault(e => e.Fases.Any(f => f.Resultados.Any(r => r.TiempoOficial.HasValue || r.Posicion.HasValue)));
 
             if (etapaCandidata == null)
             {
-                // Si no hay ninguna con resultados, buscamos la de menor orden que tenga fases (probablemente la inicial)
                 etapaCandidata = etapas.OrderBy(e => e.Orden)
                                        .Where(e => e.Tipo != SportTrack_v1.Entidades.Enums.TipoEtapaEnum.Final)
                                        .FirstOrDefault(e => e.Fases.Any());
@@ -257,13 +254,12 @@ namespace SportTrack_v1.Controladores.Fase
 
             if (etapaCandidata == null)
             {
-                throw new InvalidOperationException("No se encontró ninguna etapa con fases generadas para promover.");
+                throw new InvalidOperationException("No se encontró ninguna etapa con fases para promover.");
             }
 
             var etapaActual = etapaCandidata;
 
-            // 2. Verificar si la etapa seleccionada está REALMENTE completa.
-            // Una etapa está completa si TODAS sus fases tienen resultados oficiales (tiempo o posición).
+            // 3. Verificar si está completa
             var fasesIncompletas = etapaActual.Fases
                 .Where(f => !f.Resultados.Any() || !f.Resultados.Any(r => r.TiempoOficial.HasValue || r.Posicion.HasValue))
                 .Select(f => f.NombreFase)
@@ -272,7 +268,7 @@ namespace SportTrack_v1.Controladores.Fase
             if (fasesIncompletas.Any())
             {
                 string listaFases = string.Join(", ", fasesIncompletas);
-                throw new InvalidOperationException($"No se puede promover la etapa '{etapaActual.Nombre}' porque faltan resultados en: {listaFases}. Todas las series deben tener al menos un tiempo oficial o posición cargada.");
+                throw new InvalidOperationException($"No se puede promover la etapa '{etapaActual.Nombre}' porque faltan resultados en: {listaFases}. Asegúrate de cargar y GUARDAR los tiempos de todas las series.");
             }
 
             // 2. Borrar etapas de orden superior (futuras) SOLO SI no tienen resultados ya cargados.
@@ -283,8 +279,10 @@ namespace SportTrack_v1.Controladores.Fase
 
             foreach(var e in etapasAEliminar) await _etapaRepository.DeleteAsync(e.Id); 
             
-            // Re-obtener etapas para tener la lista fresca después del borrado
-            etapas = (await _etapaRepository.GetByEventoPruebaIdAsync(eventoPruebaId)).ToList();
+            // Re-obtener fases y etapas para tener la lista fresca después del borrado
+            todasLasFases = (await _faseRepository.GetByEventoPruebaIdAsync(eventoPruebaId)).ToList();
+            etapas = todasLasFases.GroupBy(f => f.EtapaId).Select(g => g.First().Etapa).OrderBy(e => e.Orden).ToList();
+            etapaActual = etapas.First(e => e.Id == etapaActual.Id); // Recuperar la instancia fresca
 
             // 3. Obtener resultados de la etapa actual
             var resultadosEtapa = etapaActual.Fases.SelectMany(f => f.Resultados)
