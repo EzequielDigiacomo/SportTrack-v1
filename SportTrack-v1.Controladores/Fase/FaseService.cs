@@ -243,13 +243,16 @@ namespace SportTrack_v1.Controladores.Fase
             // 2. Encontrar la etapa más alta que tenga resultados (tiempo o posición)
             var etapaCandidata = etapas.OrderByDescending(e => e.Orden)
                                        .Where(e => e.Tipo != SportTrack_v1.Entidades.Enums.TipoEtapaEnum.Final)
-                                       .FirstOrDefault(e => e.Fases.Any(f => f.Resultados.Any(r => r.TiempoOficial.HasValue || r.Posicion.HasValue)));
+                                       .FirstOrDefault(e => {
+                                           var fasesDeEsaEtapa = todasLasFases.Where(f => f.EtapaId == e.Id);
+                                           return fasesDeEsaEtapa.Any(f => f.Resultados.Any(r => r.TiempoOficial.HasValue || r.Posicion.HasValue));
+                                       });
 
             if (etapaCandidata == null)
             {
                 etapaCandidata = etapas.OrderBy(e => e.Orden)
                                        .Where(e => e.Tipo != SportTrack_v1.Entidades.Enums.TipoEtapaEnum.Final)
-                                       .FirstOrDefault(e => e.Fases.Any());
+                                       .FirstOrDefault();
             }
 
             if (etapaCandidata == null)
@@ -259,8 +262,9 @@ namespace SportTrack_v1.Controladores.Fase
 
             var etapaActual = etapaCandidata;
 
-            // 3. Verificar si está completa
-            var fasesIncompletas = etapaActual.Fases
+            // 3. Verificar si está completa usando la lista plana de fases
+            var fasesDeLaEtapa = todasLasFases.Where(f => f.EtapaId == etapaActual.Id).ToList();
+            var fasesIncompletas = fasesDeLaEtapa
                 .Where(f => !f.Resultados.Any() || !f.Resultados.Any(r => r.TiempoOficial.HasValue || r.Posicion.HasValue))
                 .Select(f => f.NombreFase)
                 .ToList();
@@ -282,17 +286,18 @@ namespace SportTrack_v1.Controladores.Fase
             // Re-obtener fases y etapas para tener la lista fresca después del borrado
             todasLasFases = (await _faseRepository.GetByEventoPruebaIdAsync(eventoPruebaId)).ToList();
             etapas = todasLasFases.GroupBy(f => f.EtapaId).Select(g => g.First().Etapa).OrderBy(e => e.Orden).ToList();
-            etapaActual = etapas.First(e => e.Id == etapaActual.Id); // Recuperar la instancia fresca
+            etapaActual = etapas.First(e => e.Id == etapaActual.Id);
+            fasesDeLaEtapa = todasLasFases.Where(f => f.EtapaId == etapaActual.Id).ToList();
 
             // 3. Obtener resultados de la etapa actual
-            var resultadosEtapa = etapaActual.Fases.SelectMany(f => f.Resultados)
+            var resultadosEtapa = fasesDeLaEtapa.SelectMany(f => f.Resultados)
                                     .Where(r => r.TiempoOficial.HasValue)
                                     .ToList();
 
             if (!resultadosEtapa.Any()) return await GetFasesPorEventoPruebaAsync(eventoPruebaId);
 
             // Determinar horario de inicio de la siguiente etapa (40m después de la última fase de la etapa actual)
-            var lastFaseTime = etapaActual.Fases.Max(f => f.FechaHoraProgramada) ?? DateTime.Now;
+            var lastFaseTime = fasesDeLaEtapa.Max(f => f.FechaHoraProgramada) ?? DateTime.Now;
             DateTime nextTime = lastFaseTime.AddMinutes(40);
 
             // LOGICA DE PROMOSION BASADA EN TIPO DE ETAPA Y NUMERO DE FASES
@@ -300,7 +305,7 @@ namespace SportTrack_v1.Controladores.Fase
             var finalistsB = new List<Entidades.Entidades.Inscripcion>();
             var nextSemis = new List<Entidades.Entidades.Inscripcion>();
 
-            var phasesRanked = etapaActual.Fases
+            var phasesRanked = fasesDeLaEtapa
                                 .Select(f => f.Resultados
                                     .Where(r => r.TiempoOficial.HasValue)
                                     .OrderBy(r => r.TiempoOficial!.Value)
