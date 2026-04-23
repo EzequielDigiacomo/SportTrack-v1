@@ -371,12 +371,13 @@ namespace SportTrack_v1.Controladores.Fase
             else if (etapaActual.Tipo == SportTrack_v1.Entidades.Enums.TipoEtapaEnum.Semifinal)
             {
                 // 1. Recuperar finalistas directos de Eliminatorias para sumarlos a la Final A
-                var etapaElim = etapas.FirstOrDefault(e => e.Tipo == SportTrack_v1.Entidades.Enums.TipoEtapaEnum.Eliminatoria);
-                if (etapaElim != null)
+                var etapaE = etapas.FirstOrDefault(e => e.Tipo == SportTrack_v1.Entidades.Enums.TipoEtapaEnum.Eliminatoria);
+                if (etapaE != null)
                 {
                     // Obtener TODAS las fases de esa etapa de eliminatorias
-                    var fasesElim = (await _faseRepository.GetByEventoPruebaIdAsync(eventoPruebaId))
-                                    .Where(f => f.EtapaId == etapaElim.Id)
+                    var todasFasesPrueba = await _faseRepository.GetByEventoPruebaIdAsync(eventoPruebaId);
+                    var fasesElim = todasFasesPrueba
+                                    .Where(f => f.EtapaId == etapaE.Id)
                                     .OrderBy(f => f.Orden)
                                     .ToList();
 
@@ -410,13 +411,14 @@ namespace SportTrack_v1.Controladores.Fase
                     foreach (var s in phasesRanked) finalistsA.AddRange(s.Take(3));
                     // 4-7 + 1x8th BT to Final B
                     foreach (var s in phasesRanked) finalistsB.AddRange(s.Skip(3).Take(4));
+                    
                     var eighths = phasesRanked
                         .Select(s => s.Count >= 8 ? s[7] : null)
                         .Where(i => i != null)
                         .Select(i => new { Insc = i!, Tiempo = etapaActual.Fases.SelectMany(f => f.Resultados).First(r => r.InscripcionId == i!.Id).TiempoOficial })
                         .OrderBy(x => x.Tiempo)
                         .ToList();
-                    if (eighths.Any()) finalistsB.Add(eighths[0].Insc);
+                    if (eighths.Count > 0) finalistsB.Add(eighths[0].Insc);
                 }
                 else if (numHeats == 3) // Caso 4 o 5 Heats -> 3 Semis
                 {
@@ -426,11 +428,10 @@ namespace SportTrack_v1.Controladores.Fase
                     foreach (var s in phasesRanked) finalistsB.AddRange(s.Skip(3).Take(3));
                     
                     // Si venimos de 5 Heats, hay Final C
-                    var etapaElimParaC = etapas.FirstOrDefault(e => e.Tipo == SportTrack_v1.Entidades.Enums.TipoEtapaEnum.Eliminatoria);
-                    if (etapaElimParaC != null)
+                    if (etapaE != null)
                     {
-                        var todasFases = (await _faseRepository.GetByEventoPruebaIdAsync(eventoPruebaId)).ToList();
-                        int numElims = todasFases.Count(f => f.EtapaId == etapaElimParaC.Id);
+                        var todasFases = await _faseRepository.GetByEventoPruebaIdAsync(eventoPruebaId);
+                        int numElims = todasFases.Count(f => f.EtapaId == etapaE.Id);
                         if (numElims == 5)
                         {
                             // 7-9 to Final C
