@@ -383,7 +383,7 @@ namespace SportTrack_v1.Controladores.Fase
             else if (etapaActual.Tipo == SportTrack_v1.Entidades.Enums.TipoEtapaEnum.Semifinal)
             {
                 // 1. Recuperar finalistas directos de Eliminatorias (si existen)
-                etapaElim = etapas.FirstOrDefault(e => e.Tipo == SportTrack_v1.Entidades.Enums.TipoEtapaEnum.Eliminatoria);
+                var etapaElim = etapas.FirstOrDefault(e => e.Tipo == SportTrack_v1.Entidades.Enums.TipoEtapaEnum.Eliminatoria);
                 if (etapaElim != null)
                 {
                     var elimRanked = etapaElim.Fases
@@ -394,10 +394,10 @@ namespace SportTrack_v1.Controladores.Fase
                             .ToList())
                         .ToList();
                     
-                    if (elimRanked.Count == 2) {
+                    if (elimRanked.Count() == 2) {
                         foreach (var s in elimRanked) finalistsA.AddRange(s.Take(3));
                     }
-                    else if (elimRanked.Count == 3) {
+                    else if (elimRanked.Count() == 3) {
                         foreach (var s in elimRanked) finalistsA.Add(s.First());
                     }
                 }
