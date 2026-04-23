@@ -374,8 +374,12 @@ namespace SportTrack_v1.Controladores.Fase
                 var etapaElim = etapas.FirstOrDefault(e => e.Tipo == SportTrack_v1.Entidades.Enums.TipoEtapaEnum.Eliminatoria);
                 if (etapaElim != null)
                 {
-                    var todasFasesPrueba = (await _faseRepository.GetByEventoPruebaIdAsync(eventoPruebaId)).ToList();
-                    var fasesElim = todasFasesPrueba.Where(f => f.EtapaId == etapaElim.Id).ToList();
+                    // Obtener TODAS las fases de esa etapa de eliminatorias
+                    var fasesElim = (await _faseRepository.GetByEventoPruebaIdAsync(eventoPruebaId))
+                                    .Where(f => f.EtapaId == etapaElim.Id)
+                                    .OrderBy(f => f.Orden)
+                                    .ToList();
+
                     var elimRanked = fasesElim
                         .Select(f => f.Resultados
                             .Where(r => r.TiempoOficial.HasValue)
@@ -385,11 +389,11 @@ namespace SportTrack_v1.Controladores.Fase
                         .ToList();
                     
                     if (elimRanked.Count == 2) {
-                        // Traemos los 1-3 directos
+                        // 1-3 direct to Final A (6 total)
                         foreach (var s in elimRanked) finalistsA.AddRange(s.Take(3));
                     }
                     else if (elimRanked.Count == 3) {
-                        // Traemos los 1st directos
+                        // 1st direct to Final A (3 total)
                         foreach (var s in elimRanked) finalistsA.Add(s.First());
                     }
                 }
