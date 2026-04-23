@@ -242,27 +242,37 @@ namespace SportTrack_v1.Controladores.Fase
                 // En este caso, el motor siempre recalculará desde la etapa más baja que esté completa.
             }
 
-            // Buscamos la etapa que queremos procesar: la etapa más alta que esté completa pero que su promoción no esté terminada 
-            // o simplemente forzamos la promoción de la etapa que estamos viendo.
-            // Para ser robustos, si Semis está completa, promovemos Semis. Si no, si Heats está completa, promovemos Heats.
-            
-            var etapaASimular = etapas.OrderByDescending(e => e.Orden)
-                                      .Where(e => e.Tipo != SportTrack_v1.Entidades.Enums.TipoEtapaEnum.Final)
-                                      .FirstOrDefault(e => e.Fases.All(f => f.Resultados.Any(r => r.TiempoOficial.HasValue)));
+            // 1. Encontrar la etapa más alta que tenga AL MENOS UN resultado cargado.
+            var etapaCandidata = etapas.OrderByDescending(e => e.Orden)
+                                       .Where(e => e.Tipo != SportTrack_v1.Entidades.Enums.TipoEtapaEnum.Final)
+                                       .FirstOrDefault(e => e.Fases.Any(f => f.Resultados.Any(r => r.TiempoOficial.HasValue || r.Posicion.HasValue)));
 
-            if (etapaASimular == null)
+            if (etapaCandidata == null)
             {
-                throw new InvalidOperationException("No se encontró ninguna etapa completa para promover. Asegúrate de que todas las series/fases de la etapa actual tengan al menos un tiempo oficial cargado.");
+                // Si no hay ninguna con resultados, buscamos la de menor orden que tenga fases (probablemente la inicial)
+                etapaCandidata = etapas.OrderBy(e => e.Orden)
+                                       .Where(e => e.Tipo != SportTrack_v1.Entidades.Enums.TipoEtapaEnum.Final)
+                                       .FirstOrDefault(e => e.Fases.Any());
             }
 
-            var etapaActual = etapaASimular;
-
-            // Verificación de integridad: ¿Están todas las fases de la etapa actual ya con resultados?
-            // Si falta alguna fase por cargar, NO promovemos todavía para evitar grillas incompletas.
-            bool etapaCompleta = etapaActual.Fases.All(f => f.Resultados.Any(r => r.TiempoOficial.HasValue));
-            if (!etapaCompleta)
+            if (etapaCandidata == null)
             {
-                return await GetFasesPorEventoPruebaAsync(eventoPruebaId);
+                throw new InvalidOperationException("No se encontró ninguna etapa con fases generadas para promover.");
+            }
+
+            var etapaActual = etapaCandidata;
+
+            // 2. Verificar si la etapa seleccionada está REALMENTE completa.
+            // Una etapa está completa si TODAS sus fases tienen resultados oficiales (tiempo o posición).
+            var fasesIncompletas = etapaActual.Fases
+                .Where(f => !f.Resultados.Any() || !f.Resultados.Any(r => r.TiempoOficial.HasValue || r.Posicion.HasValue))
+                .Select(f => f.NombreFase)
+                .ToList();
+
+            if (fasesIncompletas.Any())
+            {
+                string listaFases = string.Join(", ", fasesIncompletas);
+                throw new InvalidOperationException($"No se puede promover la etapa '{etapaActual.Nombre}' porque faltan resultados en: {listaFases}. Todas las series deben tener al menos un tiempo oficial o posición cargada.");
             }
 
             // 2. Borrar etapas de orden superior (futuras) SOLO SI no tienen resultados ya cargados.
