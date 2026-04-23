@@ -252,7 +252,7 @@ namespace SportTrack_v1.Controladores.Fase
 
             if (etapaASimular == null)
             {
-                return await GetFasesPorEventoPruebaAsync(eventoPruebaId);
+                throw new InvalidOperationException("No se encontró ninguna etapa completa para promover. Asegúrate de que todas las series/fases de la etapa actual tengan al menos un tiempo oficial cargado.");
             }
 
             var etapaActual = etapaASimular;
@@ -355,6 +355,21 @@ namespace SportTrack_v1.Controladores.Fase
                         .OrderBy(x => x.Tiempo)
                         .ToList();
                     nextSemis.AddRange(sixths.Take(2).Select(x => x.Insc));
+                }
+                else if (numPhases >= 6)
+                {
+                    // 1st-4th + Best 5ths to fill SF (Assuming 3 SF of 9 = 27 total)
+                    foreach (var s in phasesRanked) nextSemis.AddRange(s.Take(4));
+                    int currentCount = nextSemis.Count;
+                    int needed = 27 - currentCount;
+
+                    var fifths = phasesRanked
+                        .Select(s => s.Count >= 5 ? s[4] : null)
+                        .Where(i => i != null)
+                        .Select(i => new { Insc = i!, Tiempo = etapaActual.Fases.SelectMany(f => f.Resultados).First(r => r.InscripcionId == i!.Id).TiempoOficial })
+                        .OrderBy(x => x.Tiempo)
+                        .ToList();
+                    nextSemis.AddRange(fifths.Take(needed).Select(x => x.Insc));
                 }
             }
             else if (etapaActual.Tipo == SportTrack_v1.Entidades.Enums.TipoEtapaEnum.Semifinal)
