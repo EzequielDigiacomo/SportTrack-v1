@@ -475,36 +475,31 @@ namespace SportTrack_v1.Controladores.Fase
                 // Procesar Final A
                 if (finalistsA.Any()) 
                 {
-                    var faseFinalA = etapaFinal.Fases?.FirstOrDefault(f => f.NombreFase == "Final A");
-                    if (faseFinalA != null) await _faseRepository.DeleteAsync(faseFinalA.Id); // Limpiar para recrear con los 9 definitivos
+                    // Buscar en TODAS las fases de la prueba para borrar cualquier Final A previa (incompleta)
+                    var faseFinalA = todasLasFases.FirstOrDefault(f => f.EtapaId == etapaFinal.Id && f.NombreFase == "Final A");
+                    if (faseFinalA != null) await _faseRepository.DeleteAsync(faseFinalA.Id);
                     
                     await _faseRepository.CreateAsync(CrearFaseConResultados(etapaFinal.Id, "Final A", 1, finalistsA, tempNextTime));
                     tempNextTime = tempNextTime.AddMinutes(10);
                 }
                 
-                // Procesar Final B - SOLO SI HAY FINALISTAS B
-                var faseFinalB_Existente = etapaFinal.Fases?.FirstOrDefault(f => f.NombreFase == "Final B");
+                // Procesar Final B
                 if (finalistsB.Any()) 
                 {
-                    if (faseFinalB_Existente != null) await _faseRepository.DeleteAsync(faseFinalB_Existente.Id);
+                    var faseFinalB = todasLasFases.FirstOrDefault(f => f.EtapaId == etapaFinal.Id && f.NombreFase == "Final B");
+                    if (faseFinalB != null) await _faseRepository.DeleteAsync(faseFinalB.Id);
+                    
                     await _faseRepository.CreateAsync(CrearFaseConResultados(etapaFinal.Id, "Final B", 2, finalistsB, tempNextTime));
                     tempNextTime = tempNextTime.AddMinutes(10);
                 }
-                else if (faseFinalB_Existente != null)
-                {
-                    await _faseRepository.DeleteAsync(faseFinalB_Existente.Id);
-                }
 
-                // Procesar Final C - SOLO SI HAY FINALISTAS C
-                var faseFinalC_Existente = etapaFinal.Fases?.FirstOrDefault(f => f.NombreFase == "Final C");
+                // Procesar Final C
                 if (finalistsC.Any()) 
                 {
-                    if (faseFinalC_Existente != null) await _faseRepository.DeleteAsync(faseFinalC_Existente.Id);
+                    var faseFinalC = todasLasFases.FirstOrDefault(f => f.EtapaId == etapaFinal.Id && f.NombreFase == "Final C");
+                    if (faseFinalC != null) await _faseRepository.DeleteAsync(faseFinalC.Id);
+                    
                     await _faseRepository.CreateAsync(CrearFaseConResultados(etapaFinal.Id, "Final C", 3, finalistsC, tempNextTime));
-                }
-                else if (faseFinalC_Existente != null)
-                {
-                    await _faseRepository.DeleteAsync(faseFinalC_Existente.Id);
                 }
             }
 
