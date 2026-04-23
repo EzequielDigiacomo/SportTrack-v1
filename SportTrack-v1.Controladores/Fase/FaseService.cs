@@ -378,10 +378,10 @@ namespace SportTrack_v1.Controladores.Fase
                     var todasFasesPrueba = await _faseRepository.GetByEventoPruebaIdAsync(eventoPruebaId);
                     var fasesElim = todasFasesPrueba
                                     .Where(f => f.EtapaId == etapaE.Id)
-                                    .OrderBy(f => f.Orden)
+                                    .OrderBy(f => f.NumeroFase)
                                     .ToList();
 
-                    var elimRanked = fasesElim
+                    List<List<Entidades.Entidades.Inscripcion>> elimRanked = fasesElim
                         .Select(f => f.Resultados
                             .Where(r => r.TiempoOficial.HasValue)
                             .OrderBy(r => r.TiempoOficial!.Value)
@@ -389,11 +389,12 @@ namespace SportTrack_v1.Controladores.Fase
                             .ToList())
                         .ToList();
                     
-                    if (elimRanked.Count == 2) {
+                    int countElim = elimRanked.Count;
+                    if (countElim == 2) {
                         // 1-3 direct to Final A (6 total)
                         foreach (var s in elimRanked) finalistsA.AddRange(s.Take(3));
                     }
-                    else if (elimRanked.Count == 3) {
+                    else if (countElim == 3) {
                         // 1st direct to Final A (3 total)
                         foreach (var s in elimRanked) finalistsA.Add(s.First());
                     }
