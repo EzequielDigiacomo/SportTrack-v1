@@ -10,5 +10,6 @@ namespace SportTrack_v1.Controladores.Auth
         Task<bool> UserExistsAsync(string username);
         Task<System.Collections.Generic.IEnumerable<UsuarioDto>> GetUsuariosAsync();
         Task<bool> UpdatePasswordAsync(int id, string newPassword);
+        Task<UsuarioDto> GetMeAsync(string username);
     }
 }

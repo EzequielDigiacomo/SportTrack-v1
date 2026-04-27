@@ -58,5 +58,12 @@ namespace SportTrack_v1.Api.Controllers
             var fase = await _faseService.FinalizarFaseAsync(id);
             return Ok(fase);
         }
+
+        [HttpPost("{id}/Reiniciar")]
+        public async Task<ActionResult<FaseDto>> Reiniciar(int id)
+        {
+            var fase = await _faseService.ReiniciarFaseAsync(id);
+            return Ok(fase);
+        }
     }
 }

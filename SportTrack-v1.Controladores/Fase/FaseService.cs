@@ -19,6 +19,7 @@ namespace SportTrack_v1.Controladores.Fase
         Task<FaseDto> IniciarFaseAsync(int id);
         Task<FaseDto> FinalizarFaseAsync(int id);
         Task<bool> DeleteFaseAsync(int id);
+        Task<FaseDto> ReiniciarFaseAsync(int id);
     }
 
     public class FaseService : IFaseService
@@ -497,6 +498,35 @@ namespace SportTrack_v1.Controladores.Fase
         {
             await _faseRepository.DeleteAsync(id);
             return true;
+        }
+
+        public async Task<FaseDto> ReiniciarFaseAsync(int id)
+        {
+            var fase = await _faseRepository.GetByIdAsync(id);
+            if (fase == null) throw new KeyNotFoundException("Fase no encontrada");
+
+            // 1. Limpiar tiempos de la fase
+            fase.FechaHoraInicioReal = null;
+            fase.FechaHoraFinReal = null;
+            fase.Estado = "Programada";
+
+            // 2. Limpiar resultados de cada carril pero conservar la inscripción y el carril
+            if (fase.Resultados != null)
+            {
+                foreach (var res in fase.Resultados)
+                {
+                    res.TiempoOficial = null;
+                    res.Posicion = null;
+                    res.Estado = SportTrack_v1.Entidades.Enums.EstadoResultadoEnum.Pendiente;
+                }
+            }
+
+            await _faseRepository.UpdateAsync(fase);
+
+            // 3. Notificar a los clientes SignalR que la carrera se reinició
+            await _hubContext.Clients.Group($"race_{id}").SendAsync("RaceReset", id);
+
+            return _mapper.Map<FaseDto>(fase);
         }
     }
 }

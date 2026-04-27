@@ -96,5 +96,16 @@ namespace SportTrack_v1.Controladores.Auth
             _context.Usuarios.Update(user);
             return await _context.SaveChangesAsync() > 0;
         }
+
+        public async Task<UsuarioDto> GetMeAsync(string username)
+        {
+            var user = await _context.Usuarios
+                .Include(u => u.Club)
+                .FirstOrDefaultAsync(u => u.Username == username.ToLower());
+
+            if (user == null) throw new NotFoundException("Usuario no encontrado");
+
+            return _mapper.Map<UsuarioDto>(user);
+        }
     }
 }

@@ -43,5 +43,16 @@ namespace SportTrack_v1.Api.Controllers.Auth
             await _authService.UpdatePasswordAsync(id, newPassword);
             return Ok(new { message = "Contraseña actualizada con éxito" });
         }
+
+        [HttpGet("me")]
+        [Microsoft.AspNetCore.Authorization.Authorize]
+        public async Task<ActionResult<UsuarioDto>> GetMe()
+        {
+            var username = User.Identity?.Name;
+            if (string.IsNullOrEmpty(username)) return Unauthorized();
+
+            var result = await _authService.GetMeAsync(username);
+            return Ok(result);
+        }
     }
 }
