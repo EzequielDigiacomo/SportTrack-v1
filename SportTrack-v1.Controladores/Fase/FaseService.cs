@@ -27,7 +27,7 @@ namespace SportTrack_v1.Controladores.Fase
         private readonly IInscripcionRepository _inscripcionRepository;
         private readonly IEventoRepository _eventoRepository;
 
-        private readonly Microsoft.AspNetCore.SignalR.IHubContext<SportTrack_v1.Api.Hubs.TimingHub> _hubContext;
+        private readonly Microsoft.AspNetCore.SignalR.IHubContext<SportTrack_v1.Controladores.Hubs.TimingHub> _hubContext;
         private readonly IMapper _mapper;
 
         public FaseService(
@@ -35,7 +35,7 @@ namespace SportTrack_v1.Controladores.Fase
             IEtapaRepository etapaRepository,
             IInscripcionRepository inscripcionRepository, 
             IEventoRepository eventoRepository,
-            Microsoft.AspNetCore.SignalR.IHubContext<SportTrack_v1.Api.Hubs.TimingHub> hubContext,
+            Microsoft.AspNetCore.SignalR.IHubContext<SportTrack_v1.Controladores.Hubs.TimingHub> hubContext,
             IMapper mapper)
         {
             _faseRepository = faseRepository;

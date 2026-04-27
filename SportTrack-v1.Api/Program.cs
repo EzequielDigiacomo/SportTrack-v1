@@ -175,6 +175,6 @@ app.MapControllers();
 
 // Mapeo de los Hubs de SignalR
 app.MapHub<ResultsHub>("/hubs/results");
-app.MapHub<TimingHub>("/hubs/timing");
+app.MapHub<SportTrack_v1.Controladores.Hubs.TimingHub>("/hubs/timing");
 
 app.Run();
