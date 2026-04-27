@@ -3,6 +3,7 @@ using SportTrack_v1.Controladores.Fase.Dtos;
 using SportTrack_v1.Controladores.Inscripcion;
 using SportTrack_v1.Controladores.Evento;
 using SportTrack_v1.Entidades.Entidades;
+using Microsoft.AspNetCore.SignalR;
 using System;
 using System.Collections.Generic;
 using System.Linq;

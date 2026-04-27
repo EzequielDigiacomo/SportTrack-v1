@@ -15,6 +15,7 @@ namespace SportTrack_v1.Controladores.Fase
         Task<IEnumerable<Entidades.Entidades.Fase>> CreateManyAsync(IEnumerable<Entidades.Entidades.Fase> fases);
         Task DeleteByEventoPruebaIdAsync(int eventoPruebaId);
         Task DeleteAsync(int id);
+        Task<Entidades.Entidades.Fase> UpdateAsync(Entidades.Entidades.Fase fase);
     }
 
     public class FaseRepository : IFaseRepository
@@ -78,6 +79,12 @@ namespace SportTrack_v1.Controladores.Fase
                 _context.Fases.Remove(f);
                 await _context.SaveChangesAsync();
             }
+        }
+        public async Task<Entidades.Entidades.Fase> UpdateAsync(Entidades.Entidades.Fase fase)
+        {
+            _context.Fases.Update(fase);
+            await _context.SaveChangesAsync();
+            return fase;
         }
     }
 }
