@@ -20,6 +20,7 @@ namespace SportTrack_v1.Controladores.Fase
         Task<FaseDto> FinalizarFaseAsync(int id);
         Task<bool> DeleteFaseAsync(int id);
         Task<FaseDto> ReiniciarFaseAsync(int id);
+        Task<FaseDto> EnviarARevisionAsync(int id);
     }
 
     public class FaseService : IFaseService
@@ -484,8 +485,21 @@ namespace SportTrack_v1.Controladores.Fase
             var fase = await _faseRepository.GetByIdAsync(id);
             if (fase == null) throw new KeyNotFoundException("Fase no encontrada");
 
-            fase.FechaHoraFinReal = DateTime.UtcNow;
             fase.Estado = "Finalizada";
+            fase.FechaHoraFinReal = DateTime.UtcNow;
+
+            // Al finalizar oficialmente, marcamos todos los resultados como Oficiales
+            if (fase.Resultados != null)
+            {
+                foreach (var res in fase.Resultados)
+                {
+                    if (res.TiempoOficial != null)
+                    {
+                        res.Estado = SportTrack_v1.Entidades.Enums.EstadoResultadoEnum.Oficial;
+                    }
+                }
+            }
+
             await _faseRepository.UpdateAsync(fase);
 
             // Notificar por SignalR
@@ -525,6 +539,34 @@ namespace SportTrack_v1.Controladores.Fase
 
             // 3. Notificar a los clientes SignalR que la carrera se reinició
             await _hubContext.Clients.Group($"race_{id}").SendAsync("RaceReset", id);
+
+            return _mapper.Map<FaseDto>(fase);
+        }
+
+        public async Task<FaseDto> EnviarARevisionAsync(int id)
+        {
+            var fase = await _faseRepository.GetByIdAsync(id);
+            if (fase == null) throw new KeyNotFoundException("Fase no encontrada");
+
+            fase.Estado = "Pendiente de Validación";
+            fase.FechaHoraFinReal = DateTime.Now;
+
+            // Al enviar a revisión, marcamos los resultados como Preliminares
+            if (fase.Resultados != null)
+            {
+                foreach (var res in fase.Resultados)
+                {
+                    if (res.TiempoOficial != null)
+                    {
+                        res.Estado = SportTrack_v1.Entidades.Enums.EstadoResultadoEnum.Preliminar;
+                    }
+                }
+            }
+
+            await _faseRepository.UpdateAsync(fase);
+
+            // Notificar que está en revisión
+            await _hubContext.Clients.Group($"race_{id}").SendAsync("RaceInReview", id);
 
             return _mapper.Map<FaseDto>(fase);
         }
