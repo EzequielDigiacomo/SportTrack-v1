@@ -15,6 +15,8 @@ namespace SportTrack_v1.Controladores.Fase
         Task<IEnumerable<FaseDto>> GetFasesPorEventoPruebaAsync(int eventoPruebaId);
         Task<IEnumerable<FaseDto>> GenerarFasesAutoAsync(int eventoPruebaId);
         Task<IEnumerable<FaseDto>> PromoverFasesAsync(int eventoPruebaId);
+        Task<FaseDto> IniciarFaseAsync(int id);
+        Task<FaseDto> FinalizarFaseAsync(int id);
         Task<bool> DeleteFaseAsync(int id);
     }
 
@@ -25,6 +27,7 @@ namespace SportTrack_v1.Controladores.Fase
         private readonly IInscripcionRepository _inscripcionRepository;
         private readonly IEventoRepository _eventoRepository;
 
+        private readonly Microsoft.AspNetCore.SignalR.IHubContext<SportTrack_v1.Api.Hubs.TimingHub> _hubContext;
         private readonly IMapper _mapper;
 
         public FaseService(
@@ -32,12 +35,14 @@ namespace SportTrack_v1.Controladores.Fase
             IEtapaRepository etapaRepository,
             IInscripcionRepository inscripcionRepository, 
             IEventoRepository eventoRepository,
+            Microsoft.AspNetCore.SignalR.IHubContext<SportTrack_v1.Api.Hubs.TimingHub> hubContext,
             IMapper mapper)
         {
             _faseRepository = faseRepository;
             _etapaRepository = etapaRepository;
             _inscripcionRepository = inscripcionRepository;
             _eventoRepository = eventoRepository;
+            _hubContext = hubContext;
 
             _mapper = mapper;
         }
@@ -457,6 +462,36 @@ namespace SportTrack_v1.Controladores.Fase
 
             return await GetFasesPorEventoPruebaAsync(eventoPruebaId);
         }
+        public async Task<FaseDto> IniciarFaseAsync(int id)
+        {
+            var fase = await _faseRepository.GetByIdAsync(id);
+            if (fase == null) throw new KeyNotFoundException("Fase no encontrada");
+
+            fase.FechaHoraInicioReal = DateTime.UtcNow;
+            fase.Estado = "En Carrera";
+            await _faseRepository.UpdateAsync(fase);
+
+            // Notificar por SignalR
+            await _hubContext.Clients.Group($"race_{id}").SendAsync("RaceStarted", id, fase.FechaHoraInicioReal);
+
+            return _mapper.Map<FaseDto>(fase);
+        }
+
+        public async Task<FaseDto> FinalizarFaseAsync(int id)
+        {
+            var fase = await _faseRepository.GetByIdAsync(id);
+            if (fase == null) throw new KeyNotFoundException("Fase no encontrada");
+
+            fase.FechaHoraFinReal = DateTime.UtcNow;
+            fase.Estado = "Finalizada";
+            await _faseRepository.UpdateAsync(fase);
+
+            // Notificar por SignalR
+            await _hubContext.Clients.Group($"race_{id}").SendAsync("RaceFinished", id);
+
+            return _mapper.Map<FaseDto>(fase);
+        }
+
         public async Task<bool> DeleteFaseAsync(int id)
         {
             await _faseRepository.DeleteAsync(id);

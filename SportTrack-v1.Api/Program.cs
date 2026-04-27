@@ -173,7 +173,8 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-// Mapeo del Hub de SignalR
+// Mapeo de los Hubs de SignalR
 app.MapHub<ResultsHub>("/hubs/results");
+app.MapHub<TimingHub>("/hubs/timing");
 
 app.Run();
