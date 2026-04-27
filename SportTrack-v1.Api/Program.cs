@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using SportTrack.AccessDatos;
+using Microsoft.EntityFrameworkCore;
 using SportTrack_v1.Api.Hubs;
 using SportTrack_v1.Api.Middleware;
 using SportTrack_v1.Api.Services;
@@ -170,6 +171,25 @@ app.UseCors("CorsPolicy");
 
 app.UseAuthentication();
 app.UseAuthorization();
+
+// Aplicar migraciones automáticamente en el inicio
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    try
+    {
+        var context = services.GetRequiredService<SportTrack.AccessDatos.SportTrackDbContext>();
+        if (context.Database.GetPendingMigrations().Any())
+        {
+            context.Database.Migrate();
+            Console.WriteLine("Migraciones aplicadas con éxito.");
+        }
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"Error al aplicar migraciones: {ex.Message}");
+    }
+}
 
 app.MapControllers();
 
