@@ -489,14 +489,19 @@ namespace SportTrack_v1.Controladores.Fase
             fase.FechaHoraFinReal = DateTime.UtcNow;
 
             // Al finalizar oficialmente, marcamos todos los resultados como Oficiales
-            if (fase.Resultados != null)
+            if (fase.Resultados != null && fase.Resultados.Any())
             {
-                foreach (var res in fase.Resultados)
+                // Ordenamos por tiempo para asignar posiciones automáticamente
+                var conTiempo = fase.Resultados
+                                    .Where(r => r.TiempoOficial != null)
+                                    .OrderBy(r => r.TiempoOficial)
+                                    .ToList();
+
+                int pos = 1;
+                foreach (var res in conTiempo)
                 {
-                    if (res.TiempoOficial != null)
-                    {
-                        res.Estado = SportTrack_v1.Entidades.Enums.EstadoResultadoEnum.Oficial;
-                    }
+                    res.Estado = SportTrack_v1.Entidades.Enums.EstadoResultadoEnum.Oficial;
+                    res.Posicion = pos++;
                 }
             }
 
