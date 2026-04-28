@@ -53,9 +53,24 @@ namespace SportTrack_v1.Controladores.Mappings
 
             // Mapeos de Evento
             CreateMap<Entidades.Entidades.Evento, EventoDto>()
-                .ForMember(dest => dest.Estado, opt => opt.MapFrom(src => src.Estado.ToString()));
-            CreateMap<EventoCreateDto, Entidades.Entidades.Evento>();
-            CreateMap<EventoUpdateDto, Entidades.Entidades.Evento>();
+                .ForMember(dest => dest.Estado, opt => opt.MapFrom(src => src.Estado.ToString()))
+                .ForMember(dest => dest.HoraInicioEvento, opt => opt.MapFrom(src => src.HoraInicioEvento.ToString(@"hh\:mm")))
+                .ForMember(dest => dest.HoraInicioReceso, opt => opt.MapFrom(src => src.HoraInicioReceso.ToString(@"hh\:mm")))
+                .ForMember(dest => dest.HoraFinReceso, opt => opt.MapFrom(src => src.HoraFinReceso.ToString(@"hh\:mm")))
+                .ForMember(dest => dest.PerfilTiempo, opt => opt.MapFrom(src => src.PerfilTiempo.ToString()));
+
+            CreateMap<EventoCreateDto, Entidades.Entidades.Evento>()
+                .ForMember(dest => dest.HoraInicioEvento, opt => opt.MapFrom(src => TimeSpan.Parse(src.HoraInicioEvento)))
+                .ForMember(dest => dest.HoraInicioReceso, opt => opt.MapFrom(src => TimeSpan.Parse(src.HoraInicioReceso)))
+                .ForMember(dest => dest.HoraFinReceso, opt => opt.MapFrom(src => TimeSpan.Parse(src.HoraFinReceso)))
+                .ForMember(dest => dest.PerfilTiempo, opt => opt.MapFrom(src => Enum.Parse<PerfilTiempoEnum>(src.PerfilTiempo)));
+
+            CreateMap<EventoUpdateDto, Entidades.Entidades.Evento>()
+                .ForMember(dest => dest.HoraInicioEvento, opt => opt.MapFrom(src => string.IsNullOrEmpty(src.HoraInicioEvento) ? default : TimeSpan.Parse(src.HoraInicioEvento)))
+                .ForMember(dest => dest.HoraInicioReceso, opt => opt.MapFrom(src => string.IsNullOrEmpty(src.HoraInicioReceso) ? default : TimeSpan.Parse(src.HoraInicioReceso)))
+                .ForMember(dest => dest.HoraFinReceso, opt => opt.MapFrom(src => string.IsNullOrEmpty(src.HoraFinReceso) ? default : TimeSpan.Parse(src.HoraFinReceso)))
+                .ForMember(dest => dest.PerfilTiempo, opt => opt.MapFrom(src => string.IsNullOrEmpty(src.PerfilTiempo) ? default : Enum.Parse<PerfilTiempoEnum>(src.PerfilTiempo)))
+                .ForAllMembers(opts => opts.Condition((src, dest, srcMember) => srcMember != null));
 
             // Mapeos de Fase y Resultados
             CreateMap<Entidades.Entidades.Fase, SportTrack_v1.Controladores.Fase.Dtos.FaseDto>()

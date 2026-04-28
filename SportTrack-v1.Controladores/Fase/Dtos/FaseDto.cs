@@ -34,4 +34,10 @@ namespace SportTrack_v1.Controladores.Fase.Dtos
         public int? Posicion { get; set; }
         public string Estado { get; set; } = string.Empty;
     }
+
+    public class FaseBatchUpdateDto
+    {
+        public int Id { get; set; }
+        public DateTime FechaHoraProgramada { get; set; }
+    }
 }

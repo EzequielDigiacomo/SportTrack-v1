@@ -21,6 +21,8 @@ namespace SportTrack_v1.Controladores.Fase
         Task<bool> DeleteFaseAsync(int id);
         Task<FaseDto> ReiniciarFaseAsync(int id);
         Task<FaseDto> EnviarARevisionAsync(int id);
+        Task<IEnumerable<FaseDto>> GetFasesPorEventoAsync(int eventoId);
+        Task BatchUpdateFasesAsync(List<FaseBatchUpdateDto> dto);
     }
 
     public class FaseService : IFaseService
@@ -574,6 +576,25 @@ namespace SportTrack_v1.Controladores.Fase
             await _hubContext.Clients.Group($"race_{id}").SendAsync("RaceInReview", id);
 
             return _mapper.Map<FaseDto>(fase);
+        }
+
+        public async Task<IEnumerable<FaseDto>> GetFasesPorEventoAsync(int eventoId)
+        {
+            var fases = await _faseRepository.GetByEventoIdAsync(eventoId);
+            return _mapper.Map<IEnumerable<FaseDto>>(fases);
+        }
+
+        public async Task BatchUpdateFasesAsync(List<FaseBatchUpdateDto> dto)
+        {
+            foreach (var item in dto)
+            {
+                var fase = await _faseRepository.GetByIdAsync(item.Id);
+                if (fase != null)
+                {
+                    fase.FechaHoraProgramada = DateTime.SpecifyKind(item.FechaHoraProgramada, DateTimeKind.Utc);
+                    await _faseRepository.UpdateAsync(fase);
+                }
+            }
         }
     }
 }

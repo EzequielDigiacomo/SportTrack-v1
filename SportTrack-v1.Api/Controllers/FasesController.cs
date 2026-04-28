@@ -24,6 +24,20 @@ namespace SportTrack_v1.Api.Controllers
             return Ok(fases);
         }
 
+        [HttpGet("all-by-evento/{eventoId}")]
+        public async Task<ActionResult<IEnumerable<FaseDto>>> GetFasesPorEvento(int eventoId)
+        {
+            var fases = await _faseService.GetFasesPorEventoAsync(eventoId);
+            return Ok(fases);
+        }
+
+        [HttpPost("BatchUpdate")]
+        public async Task<ActionResult> BatchUpdate([FromBody] List<FaseBatchUpdateDto> dto)
+        {
+            await _faseService.BatchUpdateFasesAsync(dto);
+            return Ok();
+        }
+
         [HttpPost("Generar/{eventoPruebaId}")]
         public async Task<ActionResult<IEnumerable<FaseDto>>> GenerarFases(int eventoPruebaId)
         {

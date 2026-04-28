@@ -16,6 +16,7 @@ namespace SportTrack_v1.Controladores.Fase
         Task DeleteByEventoPruebaIdAsync(int eventoPruebaId);
         Task DeleteAsync(int id);
         Task<Entidades.Entidades.Fase> UpdateAsync(Entidades.Entidades.Fase fase);
+        Task<IEnumerable<Entidades.Entidades.Fase>> GetByEventoIdAsync(int eventoId);
     }
 
     public class FaseRepository : IFaseRepository
@@ -85,6 +86,18 @@ namespace SportTrack_v1.Controladores.Fase
             _context.Fases.Update(fase);
             await _context.SaveChangesAsync();
             return fase;
+        }
+
+        public async Task<IEnumerable<Entidades.Entidades.Fase>> GetByEventoIdAsync(int eventoId)
+        {
+            return await _context.Fases
+                .Include(f => f.Etapa)
+                    .ThenInclude(e => e.EventoPrueba)
+                .Include(f => f.Resultados)
+                    .ThenInclude(r => r.Inscripcion)
+                .Where(f => f.Etapa.EventoPrueba.EventoId == eventoId)
+                .OrderBy(f => f.FechaHoraProgramada)
+                .ToListAsync();
         }
     }
 }

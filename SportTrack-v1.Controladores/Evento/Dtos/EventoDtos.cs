@@ -26,6 +26,12 @@ namespace SportTrack_v1.Controladores.Evento.Dtos
         public bool PermitirMasterBajarASenior { get; set; }
         public bool PermitirCompletarK4 { get; set; }
         public bool LimitacionBotesAB { get; set; }
+        public string HoraInicioEvento { get; set; } = "08:00";
+        public int CarrilesDisponibles { get; set; }
+        public string PerfilTiempo { get; set; } = "Estandar";
+        public string HoraInicioReceso { get; set; } = "13:00";
+        public string HoraFinReceso { get; set; } = "14:00";
+        public bool PermitirCombinadas { get; set; }
     }
 
     public class EventoCreateDto
@@ -42,6 +48,12 @@ namespace SportTrack_v1.Controladores.Evento.Dtos
         public bool LimitacionBotesAB { get; set; } = false;
         public int? ClubId { get; set; }
         public bool InscripcionesHabilitadas { get; set; } = true;
+        public string HoraInicioEvento { get; set; } = "08:00";
+        public int CarrilesDisponibles { get; set; } = 9;
+        public string PerfilTiempo { get; set; } = "Estandar";
+        public string HoraInicioReceso { get; set; } = "13:00";
+        public string HoraFinReceso { get; set; } = "14:00";
+        public bool PermitirCombinadas { get; set; } = false;
     }
 
     public class EventoUpdateDto
@@ -58,6 +70,12 @@ namespace SportTrack_v1.Controladores.Evento.Dtos
         public bool? PermitirCompletarK4 { get; set; }
         public bool? LimitacionBotesAB { get; set; }
         public bool? InscripcionesHabilitadas { get; set; }
+        public string? HoraInicioEvento { get; set; }
+        public int? CarrilesDisponibles { get; set; }
+        public string? PerfilTiempo { get; set; }
+        public string? HoraInicioReceso { get; set; }
+        public string? HoraFinReceso { get; set; }
+        public bool? PermitirCombinadas { get; set; }
     }
 
     public class EventoPruebaDto

@@ -30,6 +30,14 @@ namespace SportTrack_v1.Entidades.Entidades
         public bool PermitirMasterBajarASenior { get; set; } = false;
         public bool PermitirCompletarK4 { get; set; } = false;
         public bool LimitacionBotesAB { get; set; } = false;
+        
+        // Configuración de Cronograma Inteligente
+        public TimeSpan HoraInicioEvento { get; set; } = new TimeSpan(8, 0, 0); // 08:00 default
+        public int CarrilesDisponibles { get; set; } = 9;
+        public PerfilTiempoEnum PerfilTiempo { get; set; } = PerfilTiempoEnum.Estandar;
+        public TimeSpan HoraInicioReceso { get; set; } = new TimeSpan(13, 0, 0); // 13:00 default
+        public TimeSpan HoraFinReceso { get; set; } = new TimeSpan(14, 0, 0); // 14:00 default
+        public bool PermitirCombinadas { get; set; } = false;
 
         // Navigation property
         public ICollection<EventoPrueba> EventoPruebas { get; set; } = new List<EventoPrueba>();
