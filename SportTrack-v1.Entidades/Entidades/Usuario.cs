@@ -8,7 +8,7 @@ namespace SportTrack_v1.Entidades.Entidades
         public string Username { get; set; } = string.Empty;
         public string PasswordHash { get; set; } = string.Empty;
         public string Email { get; set; } = string.Empty;
-        public string Rol { get; set; } = "Club"; // "Admin" o "Club"
+        public string Rol { get; set; } = "Club"; // "Admin", "Club", "Largador", "Cronometrista"
         
         public int? ClubId { get; set; }
         
