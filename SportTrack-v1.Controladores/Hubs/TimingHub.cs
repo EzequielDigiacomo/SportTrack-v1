@@ -31,5 +31,15 @@ namespace SportTrack_v1.Controladores.Hubs
         {
             await Clients.Group($"race_{faseId}").SendAsync("RaceFinished", faseId);
         }
+
+        public async Task SendTime(string faseId, string resultadoId, string timeStr, long ms)
+        {
+            await Clients.Group($"race_{faseId}").SendAsync("TimeReceived", resultadoId, timeStr, ms);
+        }
+
+        public async Task UpdateResultStatus(string faseId, string resultadoId, string status)
+        {
+            await Clients.Group($"race_{faseId}").SendAsync("ResultStatusUpdated", resultadoId, status);
+        }
     }
 }

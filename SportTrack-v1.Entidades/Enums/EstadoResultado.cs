@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
@@ -18,10 +18,16 @@ namespace SportTrack_v1.Entidades.Enums
         [Display(Name = "Oficial")]
         Oficial = 3,
 
-        [Display(Name = "Descalificado")]
+        [Display(Name = "DSQ")]
         Descalificado = 4,
 
         [Display(Name = "Revisado")]
-        Revisado = 5
+        Revisado = 5,
+
+        [Display(Name = "DNS")]
+        DNS = 6,
+
+        [Display(Name = "DNF")]
+        DNF = 7
     }
 }
