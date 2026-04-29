@@ -8,6 +8,7 @@ using SportTrack_v1.Controladores.Auth.Dtos;
 using SportTrack_v1.Controladores.Club.Dtos;
 using SportTrack_v1.Controladores.Participante.Dtos;
 using SportTrack_v1.Entidades.Entidades;
+using SportTrack_v1.Entidades.Enums;
 
 namespace SportTrack_v1.Controladores.Mappings
 {
