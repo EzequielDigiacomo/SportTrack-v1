@@ -105,6 +105,8 @@ namespace SportTrack_v1.Controladores.Fase
                             .ThenInclude(p => p.Distancia)
                 .Include(f => f.Resultados)
                     .ThenInclude(r => r.Inscripcion)
+                        .ThenInclude(i => i.Participante)
+                            .ThenInclude(p => p.Club)
                 .Where(f => f.Etapa.EventoPrueba.EventoId == eventoId)
                 .OrderBy(f => f.FechaHoraProgramada)
                 .ToListAsync();
