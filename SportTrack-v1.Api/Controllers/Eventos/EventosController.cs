@@ -14,10 +14,12 @@ namespace SportTrack_v1.Api.Controllers.Eventos
     public class EventosController : ControllerBase
     {
         private readonly IEventoService _eventoService;
+        private readonly SportTrack_v1.Controladores.Fase.IFaseService _faseService;
 
-        public EventosController(IEventoService eventoService)
+        public EventosController(IEventoService eventoService, SportTrack_v1.Controladores.Fase.IFaseService faseService)
         {
             _eventoService = eventoService;
+            _faseService = faseService;
         }
 
         [HttpGet]
@@ -33,6 +35,13 @@ namespace SportTrack_v1.Api.Controllers.Eventos
             }
 
             var result = await _eventoService.GetAllEventosAsync(clubId);
+            return Ok(result);
+        }
+
+        [HttpGet("{id}/fases")]
+        public async Task<ActionResult<IEnumerable<SportTrack_v1.Controladores.Fase.Dtos.FaseDto>>> GetFases(int id)
+        {
+            var result = await _faseService.GetFasesPorEventoAsync(id);
             return Ok(result);
         }
 
