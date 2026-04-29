@@ -38,6 +38,7 @@ namespace SportTrack_v1.Entidades.Entidades
         public TimeSpan HoraInicioReceso { get; set; } = new TimeSpan(13, 0, 0); // 13:00 default
         public TimeSpan HoraFinReceso { get; set; } = new TimeSpan(14, 0, 0); // 14:00 default
         public bool PermitirCombinadas { get; set; } = false;
+        public string TimeZoneId { get; set; } = "America/Argentina/Buenos_Aires"; // Default IANA timezone
 
         // Navigation property
         public ICollection<EventoPrueba> EventoPruebas { get; set; } = new List<EventoPrueba>();

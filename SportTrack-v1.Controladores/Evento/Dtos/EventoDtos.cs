@@ -32,6 +32,7 @@ namespace SportTrack_v1.Controladores.Evento.Dtos
         public string HoraInicioReceso { get; set; } = "13:00";
         public string HoraFinReceso { get; set; } = "14:00";
         public bool PermitirCombinadas { get; set; }
+        public string TimeZoneId { get; set; } = "America/Argentina/Buenos_Aires";
     }
 
     public class EventoCreateDto
@@ -54,6 +55,7 @@ namespace SportTrack_v1.Controladores.Evento.Dtos
         public string HoraInicioReceso { get; set; } = "13:00";
         public string HoraFinReceso { get; set; } = "14:00";
         public bool PermitirCombinadas { get; set; } = false;
+        public string TimeZoneId { get; set; } = "America/Argentina/Buenos_Aires";
     }
 
     public class EventoUpdateDto
@@ -76,6 +78,7 @@ namespace SportTrack_v1.Controladores.Evento.Dtos
         public string? HoraInicioReceso { get; set; }
         public string? HoraFinReceso { get; set; }
         public bool? PermitirCombinadas { get; set; }
+        public string? TimeZoneId { get; set; }
     }
 
     public class EventoPruebaDto
