@@ -23,6 +23,7 @@ namespace SportTrack_v1.Controladores.Fase.Dtos
         public int Id { get; set; }
         public int FaseId { get; set; }
         public int InscripcionId { get; set; }
+        public int? ParticipanteId { get; set; }
         public string? NumeroCompetidor { get; set; }
         public string? ParticipanteNombre { get; set; }
         public string? ClubNombre { get; set; }
@@ -30,6 +31,8 @@ namespace SportTrack_v1.Controladores.Fase.Dtos
         
         public int? Carril { get; set; }
         public bool EsCabezaDeSerie { get; set; }
+
+        public List<SportTrack_v1.Controladores.Inscripcion.Dtos.InscripcionTripulanteDto> Tripulantes { get; set; } = new();
 
         public TimeSpan? TiempoOficial { get; set; }
         public int? Posicion { get; set; }

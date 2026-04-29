@@ -55,34 +55,7 @@ namespace SportTrack_v1.Controladores.Fase
         public async Task<IEnumerable<FaseDto>> GetFasesPorEventoPruebaAsync(int eventoPruebaId)
         {
             var fases = await _faseRepository.GetByEventoPruebaIdAsync(eventoPruebaId);
-            if (fases == null) return new List<FaseDto>();
-
-            // Lógica para ocultar la Final si las etapas previas no han terminado
-            var listFases = fases.ToList();
-            if (!listFases.Any()) return new List<FaseDto>();
-
-            var etapas = listFases.GroupBy(f => f.EtapaId)
-                                  .Select(g => {
-                                      var firstFase = g.FirstOrDefault();
-                                      return new { 
-                                          EtapaId = g.Key, 
-                                          Tipo = firstFase?.Etapa?.Tipo, 
-                                          Orden = firstFase?.Etapa?.Orden ?? 0,
-                                          Completa = g.All(f => f.Resultados != null && f.Resultados.Any(r => r.TiempoOficial.HasValue))
-                                      };
-                                  })
-                                  .OrderBy(e => e.Orden)
-                                  .ToList();
-
-            var fasesFiltradas = listFases.Where(f => {
-                if (f.Etapa == null || f.Etapa.Tipo != SportTrack_v1.Entidades.Enums.TipoEtapaEnum.Final) return true;
-                
-                // Si es Final, solo mostrar si todas las etapas de orden inferior están COMPLETAS
-                var etapasPrevias = etapas.Where(e => e.Orden < f.Etapa.Orden);
-                return etapasPrevias.All(e => e.Completa);
-            });
-
-            return _mapper.Map<IEnumerable<FaseDto>>(fasesFiltradas);
+            return _mapper.Map<IEnumerable<FaseDto>>(fases);
         }
 
         public async Task<IEnumerable<FaseDto>> GenerarFasesAutoAsync(int eventoPruebaId)
@@ -164,19 +137,90 @@ namespace SportTrack_v1.Controladores.Fase
                     if (targetBucket != null) targetBucket.Add(r);
                 }
 
-                // Crear las fases
+                // Crear las fases de Eliminatoria
                 for (int i = 0; i < numSeries; i++)
                 {
                     var faseSerie = CrearFaseConResultados(etapaElim.Id, $"Serie {i + 1}", i + 1, seriesBuckets[i], nextTime);
                     await _faseRepository.CreateAsync(faseSerie);
                     nextTime = nextTime.AddMinutes(10);
                 }
+ 
+                // 3. PRE-GENERAR SEMIS Y FINALES (Vacías) para que aparezcan en el cronograma desde el inicio
+                await PreGenerarSiguientesEtapasAsync(eventoPruebaId, inscriptosCount, nextTime);
             }
 
 
             return await GetFasesPorEventoPruebaAsync(eventoPruebaId);
         }
-
+ 
+        private async Task PreGenerarSiguientesEtapasAsync(int eventoPruebaId, int inscriptosCount, DateTime nextTime)
+        {
+            int numSeries = (int)Math.Ceiling(inscriptosCount / 9.0);
+            if (numSeries <= 1) return; 
+ 
+            // Etapa 2: Semifinales
+            var etapaSemi = new Etapa { 
+                EventoPruebaId = eventoPruebaId, 
+                Nombre = "Semifinales", 
+                Tipo = SportTrack_v1.Entidades.Enums.TipoEtapaEnum.Semifinal, 
+                Orden = 2 
+            };
+            await _etapaRepository.CreateAsync(etapaSemi);
+ 
+            // Etapa 3: Finales
+            var etapaFinal = new Etapa { 
+                EventoPruebaId = eventoPruebaId, 
+                Nombre = "Finales", 
+                Tipo = SportTrack_v1.Entidades.Enums.TipoEtapaEnum.Final, 
+                Orden = 3 
+            };
+            await _etapaRepository.CreateAsync(etapaFinal);
+ 
+            // Determinar número de Semis según reglas
+            int numSemis = 0;
+            if (numSeries == 2) numSemis = 1;
+            else if (numSeries == 3) numSemis = 2;
+            else if (numSeries == 4) numSemis = 3;
+            else if (numSeries >= 5) numSemis = 3;
+ 
+            for (int i = 0; i < numSemis; i++)
+            {
+                var faseSemi = new Entidades.Entidades.Fase
+                {
+                    EtapaId = etapaSemi.Id,
+                    NombreFase = $"Semifinal {i + 1}",
+                    NumeroFase = i + 1,
+                    FechaHoraProgramada = nextTime.AddMinutes(40), // Placeholder simple
+                    Estado = "Programada"
+                };
+                await _faseRepository.CreateAsync(faseSemi);
+            }
+ 
+            // Final A
+            var faseFinalA = new Entidades.Entidades.Fase
+            {
+                EtapaId = etapaFinal.Id,
+                NombreFase = "Final A",
+                NumeroFase = 1,
+                FechaHoraProgramada = nextTime.AddMinutes(80),
+                Estado = "Programada"
+            };
+            await _faseRepository.CreateAsync(faseFinalA);
+ 
+            if (numSeries >= 3)
+            {
+                var faseFinalB = new Entidades.Entidades.Fase
+                {
+                    EtapaId = etapaFinal.Id,
+                    NombreFase = "Final B",
+                    NumeroFase = 2,
+                    FechaHoraProgramada = nextTime.AddMinutes(90),
+                    Estado = "Programada"
+                };
+                await _faseRepository.CreateAsync(faseFinalB);
+            }
+        }
+ 
         private Entidades.Entidades.Fase CrearFaseConResultados(int etapaId, string nombreFase, int numeroFase, List<Entidades.Entidades.Inscripcion> inscripcionesBase, DateTime? fechaHora = null)
         {
             var fase = new Entidades.Entidades.Fase
@@ -591,7 +635,7 @@ namespace SportTrack_v1.Controladores.Fase
                 var fase = await _faseRepository.GetByIdAsync(item.Id);
                 if (fase != null)
                 {
-                    fase.FechaHoraProgramada = DateTime.SpecifyKind(item.FechaHoraProgramada, DateTimeKind.Utc);
+                    fase.FechaHoraProgramada = DateTime.SpecifyKind(item.FechaHoraProgramada, DateTimeKind.Unspecified);
                     await _faseRepository.UpdateAsync(fase);
                 }
             }
