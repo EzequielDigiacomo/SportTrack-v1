@@ -6,6 +6,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using SportTrack_v1.Controladores.Fase;
+using SportTrack_v1.Controladores.Fase.Dtos;
 
 namespace SportTrack_v1.Api.Controllers.Eventos
 {
@@ -14,9 +16,9 @@ namespace SportTrack_v1.Api.Controllers.Eventos
     public class EventosController : ControllerBase
     {
         private readonly IEventoService _eventoService;
-        private readonly SportTrack_v1.Controladores.Fase.IFaseService _faseService;
+        private readonly IFaseService _faseService;
 
-        public EventosController(IEventoService eventoService, SportTrack_v1.Controladores.Fase.IFaseService faseService)
+        public EventosController(IEventoService eventoService, IFaseService faseService)
         {
             _eventoService = eventoService;
             _faseService = faseService;
@@ -39,7 +41,7 @@ namespace SportTrack_v1.Api.Controllers.Eventos
         }
 
         [HttpGet("{id}/fases")]
-        public async Task<ActionResult<IEnumerable<SportTrack_v1.Controladores.Fase.Dtos.FaseDto>>> GetFases(int id)
+        public async Task<ActionResult<IEnumerable<FaseDto>>> GetFases(int id)
         {
             var result = await _faseService.GetFasesPorEventoAsync(id);
             return Ok(result);
