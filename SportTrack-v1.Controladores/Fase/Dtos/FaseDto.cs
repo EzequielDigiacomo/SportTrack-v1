@@ -14,6 +14,7 @@ namespace SportTrack_v1.Controladores.Fase.Dtos
         public int EtapaOrden { get; set; }
         public DateTime? FechaHoraProgramada { get; set; }
         public string Estado { get; set; } = string.Empty;
+        public SportTrack_v1.Controladores.Evento.Dtos.EventoPruebaDto? Prueba { get; set; }
         public List<ResultadoFaseDto> Resultados { get; set; } = new List<ResultadoFaseDto>();
     }
 

@@ -78,7 +78,8 @@ namespace SportTrack_v1.Controladores.Mappings
                 .ForMember(dest => dest.Estado, opt => opt.MapFrom(src => src.Estado.ToString()))
                 .ForMember(dest => dest.EtapaNombre, opt => opt.MapFrom(src => src.Etapa != null ? src.Etapa.Nombre : string.Empty))
                 .ForMember(dest => dest.EtapaOrden, opt => opt.MapFrom(src => src.Etapa != null ? src.Etapa.Orden : 0))
-                .ForMember(dest => dest.EventoPruebaId, opt => opt.MapFrom(src => src.Etapa != null ? src.Etapa.EventoPruebaId : 0));
+                .ForMember(dest => dest.EventoPruebaId, opt => opt.MapFrom(src => src.Etapa != null ? src.Etapa.EventoPruebaId : 0))
+                .ForMember(dest => dest.Prueba, opt => opt.MapFrom(src => src.Etapa != null ? src.Etapa.EventoPrueba : null));
             CreateMap<Entidades.Entidades.Resultado, SportTrack_v1.Controladores.Fase.Dtos.ResultadoFaseDto>()
                 .ForMember(dest => dest.Estado, opt => opt.MapFrom(src => src.Estado.ToString()))
                 .ForMember(dest => dest.ParticipanteNombre, opt => opt.MapFrom(src => src.Inscripcion != null && src.Inscripcion.Participante != null ? $"{src.Inscripcion.Participante.Nombre} {src.Inscripcion.Participante.Apellido}" : string.Empty))
