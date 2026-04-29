@@ -68,36 +68,55 @@ namespace SportTrack_v1.Controladores.Fase
             }
 
             // 1. Limpieza total de etapas y fases previas para esta prueba
+            // 1. LIMPIEZA TOTAL
             await _etapaRepository.DeleteByEventoPruebaIdAsync(eventoPruebaId);
+            
+            var inscriptos = (await _inscripcionRepository.GetByEventoPruebaIdAsync(eventoPruebaId)).ToList();
+            int inscriptosCount = inscriptos.Count;
 
-            // 2. Obtener inscripciones y datos base de la prueba para horarios
-            var inscripciones = await _inscripcionRepository.GetByEventoPruebaIdAsync(eventoPruebaId);
-            var ep = await _eventoRepository.GetEventoPruebaByIdAsync(eventoPruebaId);
-            if (!inscripciones.Any() || ep == null)
-                return new List<FaseDto>();
+            if (inscriptosCount == 0) return new List<FaseDto>();
 
-            var inscripcionesList = inscripciones.ToList();
-            int inscriptosCount = inscripcionesList.Count;
-            DateTime nextTime = ep.FechaHora;
+            int numSeries = (int)Math.Ceiling(inscriptosCount / 9.0);
+            
+            var ep = await _context.EventosPruebas.Include(x => x.Evento).FirstOrDefaultAsync(x => x.Id == eventoPruebaId);
+            DateTime nextTime = ep?.Evento?.FechaInicio.Date.AddHours(8) ?? DateTime.Now;
 
-            // Determinar estructura inicial
-            if (inscriptosCount <= 9)
+            var todasLasFases = await _faseRepository.GetByEventoIdAsync(ep?.EventoId ?? 0);
+            if (todasLasFases.Any())
             {
-                // Unica etapa: Final
+                nextTime = todasLasFases.Max(f => f.FechaHoraProgramada) ?? nextTime;
+                nextTime = nextTime.AddMinutes(10);
+            }
+
+            if (numSeries <= 1)
+            {
                 var etapaFinal = new Etapa { 
                     EventoPruebaId = eventoPruebaId, 
                     Nombre = "Finales", 
                     Tipo = SportTrack_v1.Entidades.Enums.TipoEtapaEnum.Final, 
-                    Orden = 1 
+                    Orden = 3
                 };
                 await _etapaRepository.CreateAsync(etapaFinal);
 
-                var faseFinal = CrearFaseConResultados(etapaFinal.Id, "Final A", 1, inscripcionesList, nextTime);
+                var faseFinal = new Entidades.Entidades.Fase
+                {
+                    EtapaId = etapaFinal.Id,
+                    NombreFase = "Final A",
+                    NumeroFase = 1,
+                    Estado = "Programada",
+                    FechaHoraProgramada = nextTime
+                };
+
+                int carril = 1;
+                foreach (var ins in inscriptos.OrderByDescending(x => x.EsCabezaDeSerie).ThenBy(x => x.Id))
+                {
+                    faseFinal.Resultados.Add(new Entidades.Entidades.Resultado { InscripcionId = ins.Id, Carril = carril++ });
+                }
+
                 await _faseRepository.CreateAsync(faseFinal);
             }
             else
             {
-                // Etapa 1: Eliminatorias
                 var etapaElim = new Etapa { 
                     EventoPruebaId = eventoPruebaId, 
                     Nombre = "Eliminatorias", 
@@ -106,68 +125,76 @@ namespace SportTrack_v1.Controladores.Fase
                 };
                 await _etapaRepository.CreateAsync(etapaElim);
 
-                int numSeries = (int)Math.Ceiling(inscriptosCount / 9.0);
-                var rng = new Random();
+                var series = new List<List<Entidades.Entidades.Inscripcion>>();
+                for (int i = 0; i < numSeries; i++) series.Add(new List<Entidades.Entidades.Inscripcion>());
 
-                // Separar cabezas de serie del resto
-                var cabezas = inscripcionesList.Where(i => i.EsCabezaDeSerie).OrderBy(x => rng.Next()).ToList();
-                var regulares = inscripcionesList.Where(i => !i.EsCabezaDeSerie).OrderBy(x => rng.Next()).ToList();
-
-                // Preparar cubetas para cada serie
-                var seriesBuckets = new List<List<Entidades.Entidades.Inscripcion>>();
-                for (int i = 0; i < numSeries; i++) seriesBuckets.Add(new List<Entidades.Entidades.Inscripcion>());
-
-                // Distribuir cabezas (Round Robin)
-                int currentBucket = 0;
-                foreach (var c in cabezas)
+                var queue = inscriptos.OrderByDescending(x => x.EsCabezaDeSerie).ThenBy(x => Guid.NewGuid()).ToList();
+                int idx = 0;
+                foreach (var ins in queue)
                 {
-                    seriesBuckets[currentBucket % numSeries].Add(c);
-                    currentBucket++;
+                    series[idx % numSeries].Add(ins);
+                    idx++;
                 }
 
-                // Distribuir el resto
-                foreach (var r in regulares)
-                {
-                    // Buscar el bucket con menos gente que no esté lleno (max 9)
-                    var targetBucket = seriesBuckets
-                                        .Where(b => b.Count < 9)
-                                        .OrderBy(b => b.Count)
-                                        .FirstOrDefault();
-                    
-                    if (targetBucket != null) targetBucket.Add(r);
-                }
-
-                // Crear las fases de Eliminatoria
                 for (int i = 0; i < numSeries; i++)
                 {
-                    var faseSerie = CrearFaseConResultados(etapaElim.Id, $"Serie {i + 1}", i + 1, seriesBuckets[i], nextTime);
-                    await _faseRepository.CreateAsync(faseSerie);
+                    var fase = new Entidades.Entidades.Fase
+                    {
+                        EtapaId = etapaElim.Id,
+                        NombreFase = $"Serie {i + 1}",
+                        NumeroFase = i + 1,
+                        Estado = "Programada",
+                        FechaHoraProgramada = nextTime
+                    };
+
+                    int carril = 1;
+                    foreach (var ins in series[i])
+                    {
+                        fase.Resultados.Add(new Entidades.Entidades.Resultado { InscripcionId = ins.Id, Carril = carril++ });
+                    }
+
+                    await _faseRepository.CreateAsync(fase);
                     nextTime = nextTime.AddMinutes(10);
                 }
- 
-                // 3. PRE-GENERAR SEMIS Y FINALES (Vacías) para que aparezcan en el cronograma desde el inicio
-                await PreGenerarSiguientesEtapasAsync(eventoPruebaId, inscriptosCount, nextTime);
-            }
 
+                await PreGenerarSiguientesEtapasAsync(eventoPruebaId, inscriptosCount, numSeries, nextTime);
+            }
 
             return await GetFasesPorEventoPruebaAsync(eventoPruebaId);
         }
- 
-        private async Task PreGenerarSiguientesEtapasAsync(int eventoPruebaId, int inscriptosCount, DateTime nextTime)
+
+        private async Task PreGenerarSiguientesEtapasAsync(int eventoPruebaId, int inscriptosCount, int numSeries, DateTime nextTime)
         {
-            int numSeries = (int)Math.Ceiling(inscriptosCount / 9.0);
-            if (numSeries <= 1) return; 
- 
-            // Etapa 2: Semifinales
-            var etapaSemi = new Etapa { 
-                EventoPruebaId = eventoPruebaId, 
-                Nombre = "Semifinales", 
-                Tipo = SportTrack_v1.Entidades.Enums.TipoEtapaEnum.Semifinal, 
-                Orden = 2 
-            };
-            await _etapaRepository.CreateAsync(etapaSemi);
- 
-            // Etapa 3: Finales
+            int numSemis = 0;
+            if (numSeries == 2) numSemis = 1;
+            else if (numSeries == 3) numSemis = 2;
+            else if (numSeries >= 4) numSemis = 3;
+
+            if (numSemis > 0)
+            {
+                var etapaSemi = new Etapa { 
+                    EventoPruebaId = eventoPruebaId, 
+                    Nombre = "Semifinales", 
+                    Tipo = SportTrack_v1.Entidades.Enums.TipoEtapaEnum.Semifinal, 
+                    Orden = 2 
+                };
+                await _etapaRepository.CreateAsync(etapaSemi);
+
+                for (int i = 0; i < numSemis; i++)
+                {
+                    var faseSemi = new Entidades.Entidades.Fase
+                    {
+                        EtapaId = etapaSemi.Id,
+                        NombreFase = numSemis > 1 ? $"Semifinal {i + 1}" : "Semifinal",
+                        NumeroFase = i + 1,
+                        Estado = "Programada",
+                        FechaHoraProgramada = nextTime.AddMinutes(40)
+                    };
+                    await _faseRepository.CreateAsync(faseSemi);
+                    nextTime = nextTime.AddMinutes(10);
+                }
+            }
+
             var etapaFinal = new Etapa { 
                 EventoPruebaId = eventoPruebaId, 
                 Nombre = "Finales", 
@@ -175,38 +202,17 @@ namespace SportTrack_v1.Controladores.Fase
                 Orden = 3 
             };
             await _etapaRepository.CreateAsync(etapaFinal);
- 
-            // Determinar número de Semis según reglas
-            int numSemis = 0;
-            if (numSeries == 2) numSemis = 1;
-            else if (numSeries == 3) numSemis = 2;
-            else if (numSeries == 4) numSemis = 3;
-            else if (numSeries >= 5) numSemis = 3;
- 
-            for (int i = 0; i < numSemis; i++)
-            {
-                var faseSemi = new Entidades.Entidades.Fase
-                {
-                    EtapaId = etapaSemi.Id,
-                    NombreFase = $"Semifinal {i + 1}",
-                    NumeroFase = i + 1,
-                    FechaHoraProgramada = nextTime.AddMinutes(40), // Placeholder simple
-                    Estado = "Programada"
-                };
-                await _faseRepository.CreateAsync(faseSemi);
-            }
- 
-            // Final A
+
             var faseFinalA = new Entidades.Entidades.Fase
             {
                 EtapaId = etapaFinal.Id,
                 NombreFase = "Final A",
                 NumeroFase = 1,
-                FechaHoraProgramada = nextTime.AddMinutes(80),
-                Estado = "Programada"
+                Estado = "Programada",
+                FechaHoraProgramada = nextTime.AddMinutes(80)
             };
             await _faseRepository.CreateAsync(faseFinalA);
- 
+
             if (numSeries >= 3)
             {
                 var faseFinalB = new Entidades.Entidades.Fase
@@ -214,8 +220,8 @@ namespace SportTrack_v1.Controladores.Fase
                     EtapaId = etapaFinal.Id,
                     NombreFase = "Final B",
                     NumeroFase = 2,
-                    FechaHoraProgramada = nextTime.AddMinutes(90),
-                    Estado = "Programada"
+                    Estado = "Programada",
+                    FechaHoraProgramada = nextTime.AddMinutes(90)
                 };
                 await _faseRepository.CreateAsync(faseFinalB);
             }
