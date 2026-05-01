@@ -31,9 +31,10 @@ builder.Services.AddSignalR();
 
 // Configuración de CORS
 var originsConfig = builder.Configuration["AllowedOrigins"];
-var allowedOrigins = !string.IsNullOrEmpty(originsConfig) 
+var configOrigins = !string.IsNullOrEmpty(originsConfig) 
     ? originsConfig.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(o => o.Trim()).ToArray() 
-    : new[] { "http://localhost:3000", "http://localhost:5173" };
+    : Array.Empty<string>();
+var allowedOrigins = configOrigins.Concat(new[] { "http://localhost:3000", "http://localhost:5173", "https://sporttrack-fec.vercel.app" }).Distinct().ToArray();
 
 Console.WriteLine($"Configurando CORS para orígenes: {string.Join(", ", allowedOrigins)}");
 
