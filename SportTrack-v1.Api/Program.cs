@@ -31,14 +31,16 @@ builder.Services.AddDbContext<SportTrackDbContext>(options =>
 builder.Services.AddSignalR();
 
 // Configuración de CORS
-var allowedOrigins = builder.Configuration.GetSection("AllowedOrigins").Get<string[]>() ?? new[] { "http://localhost:3000", "http://localhost:5173", "https://sporttrack-fec.vercel.app" };
+var allowedOrigins = builder.Configuration.GetSection("AllowedOrigins").Get<string[]>() ?? Array.Empty<string>();
+var allOrigins = allowedOrigins.Concat(new[] { "http://localhost:3000", "http://localhost:5173", "https://sporttrack-fec.vercel.app" }).Distinct().ToArray();
+
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("CorsPolicy", policy =>
     {
         policy.AllowAnyHeader()
               .AllowAnyMethod()
-              .WithOrigins(allowedOrigins)
+              .WithOrigins(allOrigins)
               .AllowCredentials();
     });
 });
