@@ -31,7 +31,7 @@ builder.Services.AddDbContext<SportTrackDbContext>(options =>
 builder.Services.AddSignalR();
 
 // Configuración de CORS
-var allowedOrigins = builder.Configuration.GetSection("AllowedOrigins").Get<string[]>() ?? new[] { "http://localhost:3000", "http://localhost:5173" };
+var allowedOrigins = builder.Configuration.GetSection("AllowedOrigins").Get<string[]>() ?? new[] { "http://localhost:3000", "http://localhost:5173", "https://sporttrack-fec.vercel.app" };
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("CorsPolicy", policy =>
