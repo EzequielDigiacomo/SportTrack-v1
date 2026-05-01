@@ -81,7 +81,7 @@ namespace SportTrack_v1.Controladores.Fase
             
             // ANCLAJE AL PROGRAMA: Usamos la hora original de la prueba como punto de partida, 
             // no la hora de la última regata generada. Esto evita el "desorden" al generar heats fuera de orden.
-            DateTime nextTime = ep?.FechaHora ?? ep?.Evento?.FechaInicio.Date.AddHours(8) ?? DateTime.Now;
+            DateTime nextTime = ep?.FechaHora ?? ep?.Evento?.Fecha.Date.AddHours(8) ?? DateTime.Now;
             nextTime = DateTime.SpecifyKind(nextTime, DateTimeKind.Unspecified);
 
             if (numSeries <= 1)
