@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -12,5 +12,6 @@ namespace SportTrack_v1.Controladores.Distancia.Dtos
         public int DistanciaRegata { get; set; }
         public int Metros { get; set; }
         public string Descripcion { get; set; } = string.Empty;
+        public int GapSugerido { get; set; }
     }
 }

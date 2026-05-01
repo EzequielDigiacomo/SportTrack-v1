@@ -1,4 +1,4 @@
-﻿using SportTrack_v1.Entidades.Enums;
+using SportTrack_v1.Entidades.Enums;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -12,5 +12,6 @@ namespace SportTrack_v1.Controladores.Distancia.Dtos
     {
         [Required]
         public DistanciaRegataEnum DistanciaRegata { get; set; }
+        public int GapSugerido { get; set; }
     }
 }

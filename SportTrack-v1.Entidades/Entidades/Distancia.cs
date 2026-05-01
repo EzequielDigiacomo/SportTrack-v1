@@ -1,4 +1,4 @@
-﻿using SportTrack_v1.Entidades.Enums;
+using SportTrack_v1.Entidades.Enums;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,6 +11,7 @@ namespace SportTrack_v1.Entidades.Entidades
     {
         public int Id { get; set; }
         public DistanciaRegataEnum DistanciaRegata { get; set; } // Usando el enum
+        public int GapSugerido { get; set; } = 10; // Valor por defecto en minutos
 
         // Propiedad calculada para los metros
         public int Metros => (int)DistanciaRegata;

@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using SportTrack.AccessDatos;
@@ -11,9 +12,11 @@ using SportTrack.AccessDatos;
 namespace SportTrack_v1.AccesoDatos.Migrations
 {
     [DbContext(typeof(SportTrackDbContext))]
-    partial class SportTrackDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260501144214_AddGapSugeridoToDistancia")]
+    partial class AddGapSugeridoToDistancia
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -278,31 +281,31 @@ namespace SportTrack_v1.AccesoDatos.Migrations
                         {
                             Id = 1,
                             DistanciaRegata = 1,
-                            GapSugerido = 5
+                            GapSugerido = 10
                         },
                         new
                         {
                             Id = 2,
                             DistanciaRegata = 2,
-                            GapSugerido = 5
+                            GapSugerido = 10
                         },
                         new
                         {
                             Id = 3,
                             DistanciaRegata = 3,
-                            GapSugerido = 5
+                            GapSugerido = 10
                         },
                         new
                         {
                             Id = 4,
                             DistanciaRegata = 4,
-                            GapSugerido = 5
+                            GapSugerido = 10
                         },
                         new
                         {
                             Id = 5,
                             DistanciaRegata = 5,
-                            GapSugerido = 7
+                            GapSugerido = 10
                         },
                         new
                         {
@@ -326,49 +329,49 @@ namespace SportTrack_v1.AccesoDatos.Migrations
                         {
                             Id = 9,
                             DistanciaRegata = 9,
-                            GapSugerido = 15
+                            GapSugerido = 10
                         },
                         new
                         {
                             Id = 10,
                             DistanciaRegata = 10,
-                            GapSugerido = 15
+                            GapSugerido = 10
                         },
                         new
                         {
                             Id = 11,
                             DistanciaRegata = 11,
-                            GapSugerido = 20
+                            GapSugerido = 10
                         },
                         new
                         {
                             Id = 12,
                             DistanciaRegata = 12,
-                            GapSugerido = 20
+                            GapSugerido = 10
                         },
                         new
                         {
                             Id = 13,
                             DistanciaRegata = 13,
-                            GapSugerido = 25
+                            GapSugerido = 10
                         },
                         new
                         {
                             Id = 14,
                             DistanciaRegata = 14,
-                            GapSugerido = 25
+                            GapSugerido = 10
                         },
                         new
                         {
                             Id = 15,
                             DistanciaRegata = 15,
-                            GapSugerido = 30
+                            GapSugerido = 10
                         },
                         new
                         {
                             Id = 16,
                             DistanciaRegata = 16,
-                            GapSugerido = 40
+                            GapSugerido = 10
                         });
                 });
 

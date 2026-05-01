@@ -664,22 +664,22 @@ namespace SportTrack.AccessDatos
             );
 
             modelBuilder.Entity<Distancia>().HasData(
-                new Distancia { Id = 1, DistanciaRegata = DistanciaRegataEnum.Metros200 },
-                new Distancia { Id = 2, DistanciaRegata = DistanciaRegataEnum.Metros350 },
-                new Distancia { Id = 3, DistanciaRegata = DistanciaRegataEnum.Metros400 },
-                new Distancia { Id = 4, DistanciaRegata = DistanciaRegataEnum.Metros450 },
-                new Distancia { Id = 5, DistanciaRegata = DistanciaRegataEnum.Metros500 },
-                new Distancia { Id = 6, DistanciaRegata = DistanciaRegataEnum.Metros1000 },
-                new Distancia { Id = 7, DistanciaRegata = DistanciaRegataEnum.Metros1500 },
-                new Distancia { Id = 8, DistanciaRegata = DistanciaRegataEnum.Metros2000 },
-                new Distancia { Id = 9, DistanciaRegata = DistanciaRegataEnum.Metros3000 },
-                new Distancia { Id = 10, DistanciaRegata = DistanciaRegataEnum.Metros5000 },
-                new Distancia { Id = 11, DistanciaRegata = DistanciaRegataEnum.Metros10000 },
-                new Distancia { Id = 12, DistanciaRegata = DistanciaRegataEnum.Metros12000 },
-                new Distancia { Id = 13, DistanciaRegata = DistanciaRegataEnum.Metros15000 },
-                new Distancia { Id = 14, DistanciaRegata = DistanciaRegataEnum.Metros18000 },
-                new Distancia { Id = 15, DistanciaRegata = DistanciaRegataEnum.Metros22000 },
-                new Distancia { Id = 16, DistanciaRegata = DistanciaRegataEnum.Metros30000 }
+                new Distancia { Id = 1, DistanciaRegata = DistanciaRegataEnum.Metros200, GapSugerido = 5 },
+                new Distancia { Id = 2, DistanciaRegata = DistanciaRegataEnum.Metros350, GapSugerido = 5 },
+                new Distancia { Id = 3, DistanciaRegata = DistanciaRegataEnum.Metros400, GapSugerido = 5 },
+                new Distancia { Id = 4, DistanciaRegata = DistanciaRegataEnum.Metros450, GapSugerido = 5 },
+                new Distancia { Id = 5, DistanciaRegata = DistanciaRegataEnum.Metros500, GapSugerido = 7 },
+                new Distancia { Id = 6, DistanciaRegata = DistanciaRegataEnum.Metros1000, GapSugerido = 10 },
+                new Distancia { Id = 7, DistanciaRegata = DistanciaRegataEnum.Metros1500, GapSugerido = 10 },
+                new Distancia { Id = 8, DistanciaRegata = DistanciaRegataEnum.Metros2000, GapSugerido = 10 },
+                new Distancia { Id = 9, DistanciaRegata = DistanciaRegataEnum.Metros3000, GapSugerido = 15 },
+                new Distancia { Id = 10, DistanciaRegata = DistanciaRegataEnum.Metros5000, GapSugerido = 15 },
+                new Distancia { Id = 11, DistanciaRegata = DistanciaRegataEnum.Metros10000, GapSugerido = 20 },
+                new Distancia { Id = 12, DistanciaRegata = DistanciaRegataEnum.Metros12000, GapSugerido = 20 },
+                new Distancia { Id = 13, DistanciaRegata = DistanciaRegataEnum.Metros15000, GapSugerido = 25 },
+                new Distancia { Id = 14, DistanciaRegata = DistanciaRegataEnum.Metros18000, GapSugerido = 25 },
+                new Distancia { Id = 15, DistanciaRegata = DistanciaRegataEnum.Metros22000, GapSugerido = 30 },
+                new Distancia { Id = 16, DistanciaRegata = DistanciaRegataEnum.Metros30000, GapSugerido = 40 }
             );
 
             // Usuario inicial administrador
