@@ -67,7 +67,6 @@ namespace SportTrack_v1.Controladores.Fase
                 throw new InvalidOperationException("No se puede volver a sortear una regata que ya tiene resultados oficiales cargados.");
             }
 
-            // 1. Limpieza total de etapas y fases previas para esta prueba
             // 1. LIMPIEZA TOTAL
             await _etapaRepository.DeleteByEventoPruebaIdAsync(eventoPruebaId);
             
@@ -79,14 +78,11 @@ namespace SportTrack_v1.Controladores.Fase
             int numSeries = (int)Math.Ceiling(inscriptosCount / 9.0);
             
             var ep = await _context.EventosPruebas.Include(x => x.Evento).FirstOrDefaultAsync(x => x.Id == eventoPruebaId);
-            DateTime nextTime = ep?.Evento?.FechaInicio.Date.AddHours(8) ?? DateTime.Now;
-
-            var todasLasFases = await _faseRepository.GetByEventoIdAsync(ep?.EventoId ?? 0);
-            if (todasLasFases.Any())
-            {
-                nextTime = todasLasFases.Max(f => f.FechaHoraProgramada) ?? nextTime;
-                nextTime = nextTime.AddMinutes(10);
-            }
+            
+            // ANCLAJE AL PROGRAMA: Usamos la hora original de la prueba como punto de partida, 
+            // no la hora de la última regata generada. Esto evita el "desorden" al generar heats fuera de orden.
+            DateTime nextTime = ep?.FechaHora ?? ep?.Evento?.FechaInicio.Date.AddHours(8) ?? DateTime.Now;
+            nextTime = DateTime.SpecifyKind(nextTime, DateTimeKind.Unspecified);
 
             if (numSeries <= 1)
             {

@@ -32,6 +32,9 @@ namespace SportTrack_v1.Controladores.Fase
         {
             return await _context.Fases
                 .Include(f => f.Etapa)
+                    .ThenInclude(e => e.EventoPrueba)
+                        .ThenInclude(ep => ep.Inscripciones)
+                .Include(f => f.Etapa)
                 .Include(f => f.Resultados)
                     .ThenInclude(r => r.Inscripcion)
                         .ThenInclude(i => i.Participante)
@@ -49,6 +52,9 @@ namespace SportTrack_v1.Controladores.Fase
         public async Task<Entidades.Entidades.Fase?> GetByIdAsync(int id)
         {
             return await _context.Fases
+                .Include(f => f.Etapa)
+                    .ThenInclude(e => e.EventoPrueba)
+                        .ThenInclude(ep => ep.Inscripciones)
                 .Include(f => f.Etapa)
                 .Include(f => f.Resultados)
                     .ThenInclude(r => r.Inscripcion)
@@ -95,6 +101,9 @@ namespace SportTrack_v1.Controladores.Fase
         public async Task<IEnumerable<Entidades.Entidades.Fase>> GetByEventoIdAsync(int eventoId)
         {
             return await _context.Fases
+                .Include(f => f.Etapa)
+                    .ThenInclude(e => e.EventoPrueba)
+                        .ThenInclude(ep => ep.Inscripciones)
                 .Include(f => f.Etapa)
                     .ThenInclude(e => e.EventoPrueba)
                         .ThenInclude(ep => ep.Prueba)

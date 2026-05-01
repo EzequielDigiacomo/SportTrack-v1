@@ -37,6 +37,8 @@ namespace SportTrack_v1.Entidades.Entidades
         public PerfilTiempoEnum PerfilTiempo { get; set; } = PerfilTiempoEnum.Estandar;
         public TimeSpan HoraInicioReceso { get; set; } = new TimeSpan(13, 0, 0); // 13:00 default
         public TimeSpan HoraFinReceso { get; set; } = new TimeSpan(14, 0, 0); // 14:00 default
+        public bool SinReceso { get; set; } = false;
+        public int GapEntrePruebas { get; set; } = 10;
         public bool PermitirCombinadas { get; set; } = false;
         public string TimeZoneId { get; set; } = "America/Argentina/Buenos_Aires"; // Default IANA timezone
 

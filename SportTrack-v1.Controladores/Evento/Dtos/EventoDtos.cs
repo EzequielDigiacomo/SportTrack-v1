@@ -31,6 +31,8 @@ namespace SportTrack_v1.Controladores.Evento.Dtos
         public string PerfilTiempo { get; set; } = "Estandar";
         public string HoraInicioReceso { get; set; } = "13:00";
         public string HoraFinReceso { get; set; } = "14:00";
+        public bool SinReceso { get; set; }
+        public int GapEntrePruebas { get; set; } = 10;
         public bool PermitirCombinadas { get; set; }
         public string TimeZoneId { get; set; } = "America/Argentina/Buenos_Aires";
     }
@@ -54,6 +56,8 @@ namespace SportTrack_v1.Controladores.Evento.Dtos
         public string PerfilTiempo { get; set; } = "Estandar";
         public string HoraInicioReceso { get; set; } = "13:00";
         public string HoraFinReceso { get; set; } = "14:00";
+        public bool SinReceso { get; set; }
+        public int GapEntrePruebas { get; set; } = 10;
         public bool PermitirCombinadas { get; set; } = false;
         public string TimeZoneId { get; set; } = "America/Argentina/Buenos_Aires";
     }
@@ -77,6 +81,8 @@ namespace SportTrack_v1.Controladores.Evento.Dtos
         public string? PerfilTiempo { get; set; }
         public string? HoraInicioReceso { get; set; }
         public string? HoraFinReceso { get; set; }
+        public bool? SinReceso { get; set; }
+        public int? GapEntrePruebas { get; set; }
         public bool? PermitirCombinadas { get; set; }
         public string? TimeZoneId { get; set; }
     }
