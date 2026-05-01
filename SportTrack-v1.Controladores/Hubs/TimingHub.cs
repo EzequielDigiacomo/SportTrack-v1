@@ -1,11 +1,19 @@
 using Microsoft.AspNetCore.SignalR;
 using System.Threading.Tasks;
 using System;
+using SportTrack_v1.Controladores.Fase;
 
 namespace SportTrack_v1.Controladores.Hubs
 {
     public class TimingHub : Hub
     {
+        private readonly IFaseService _faseService;
+
+        public TimingHub(IFaseService faseService)
+        {
+            _faseService = faseService;
+        }
+
         public async Task JoinRaceGroup(string faseId)
         {
             await Groups.AddToGroupAsync(Context.ConnectionId, $"race_{faseId}");
@@ -16,10 +24,24 @@ namespace SportTrack_v1.Controladores.Hubs
             await Groups.RemoveFromGroupAsync(Context.ConnectionId, $"race_{faseId}");
         }
 
-        // Métodos para que el servidor notifique a los clientes
-        public async Task StartRace(int faseId, DateTime serverTime)
+        // Acciones críticas vía WebSocket para mínima latencia
+        public async Task RequestStartRace(int faseId)
         {
-            await Clients.Group($"race_{faseId}").SendAsync("RaceStarted", faseId, serverTime);
+            // Ejecutamos la lógica de inicio en el servicio (DB update, etc)
+            var fase = await _faseService.IniciarFaseAsync(faseId);
+            // El servicio ya emite "RaceStarted" con el serverTime exacto
+        }
+
+        public async Task RequestResetRace(int faseId)
+        {
+            await _faseService.ReiniciarFaseAsync(faseId);
+            // El servicio emite "RaceReset"
+        }
+
+        // Notificaciones y Sincronización
+        public async Task GetServerTime()
+        {
+            await Clients.Caller.SendAsync("ReceiveServerTime", DateTime.UtcNow);
         }
 
         public async Task RecordLap(int faseId, int resultadoId, string time)
