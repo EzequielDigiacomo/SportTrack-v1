@@ -77,7 +77,7 @@ namespace SportTrack_v1.Controladores.Fase
 
             int numSeries = (int)Math.Ceiling(inscriptosCount / 9.0);
             
-            var ep = await _context.EventosPruebas.Include(x => x.Evento).FirstOrDefaultAsync(x => x.Id == eventoPruebaId);
+            var ep = await _eventoRepository.GetEventoPruebaByIdAsync(eventoPruebaId);
             
             // ANCLAJE AL PROGRAMA: Usamos la hora original de la prueba como punto de partida, 
             // no la hora de la última regata generada. Esto evita el "desorden" al generar heats fuera de orden.

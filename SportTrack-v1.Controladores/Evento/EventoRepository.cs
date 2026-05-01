@@ -97,7 +97,9 @@ namespace SportTrack_v1.Controladores.Evento
 
         public async Task<EventoPrueba?> GetEventoPruebaByIdAsync(int id)
         {
-            return await _context.EventoPruebas.FindAsync(id);
+            return await _context.EventoPruebas
+                .Include(ep => ep.Evento)
+                .FirstOrDefaultAsync(ep => ep.Id == id);
         }
 
         public async Task<EventoPrueba> AssignPruebaAsync(EventoPrueba eventoPrueba)
