@@ -50,6 +50,14 @@ namespace SportTrack_v1.Controladores.Auth
                 throw new UnauthorizedException("Contraseña incorrecta. Verificá mayúsculas/minúsculas.");
             }
 
+            // Verificar que la cuenta esté habilitada
+            if (!user.Activo)
+            {
+                Console.WriteLine($"CUENTA DESHABILITADA: {cleanUsername}");
+                await _auditService.RegistrarAccionAsync("LOGIN_BLOCKED", $"Acceso bloqueado: cuenta '{cleanUsername}' está deshabilitada.", cleanUsername, "Auth");
+                throw new UnauthorizedException("Tu cuenta está temporalmente deshabilitada. Contactá al administrador.");
+            }
+
             Console.WriteLine($"LOGIN EXITOSO: {cleanUsername}");
 
             var response = _mapper.Map<AuthResponseDto>(user);
@@ -106,6 +114,24 @@ namespace SportTrack_v1.Controladores.Auth
             user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(newPassword);
             _context.Usuarios.Update(user);
             return await _context.SaveChangesAsync() > 0;
+        }
+
+        public async Task<bool> ToggleActivoAsync(int id)
+        {
+            var user = await _context.Usuarios.FindAsync(id);
+            if (user == null)
+                throw new NotFoundException($"Usuario con ID {id} no encontrado");
+
+            user.Activo = !user.Activo;
+            _context.Usuarios.Update(user);
+            var result = await _context.SaveChangesAsync() > 0;
+
+            var accion = user.Activo ? "USUARIO_HABILITADO" : "USUARIO_DESHABILITADO";
+            await _auditService.RegistrarAccionAsync(accion,
+                $"Cuenta '{user.Username}' (Rol: {user.Rol}) {(user.Activo ? "habilitada" : "deshabilitada")} por administrador.",
+                null, "Auth");
+
+            return result;
         }
     }
 }

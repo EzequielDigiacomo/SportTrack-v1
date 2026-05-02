@@ -8,7 +8,7 @@ namespace SportTrack_v1.Entidades.Entidades
         public string Username { get; set; } = string.Empty;
         public string PasswordHash { get; set; } = string.Empty;
         public string Email { get; set; } = string.Empty;
-        public string Rol { get; set; } = "Club"; // "Admin" o "Club"
+        public string Rol { get; set; } = "Club";
         
         public int? ClubId { get; set; }
         
@@ -17,5 +17,11 @@ namespace SportTrack_v1.Entidades.Entidades
         
         public DateTime FechaCreacion { get; set; } = DateTime.UtcNow;
         public bool Activo { get; set; } = true;
+
+        // Datos personales — para identificación y auditoría de jueces
+        public string? Nombre { get; set; }
+        public string? Apellido { get; set; }
+        public string? Dni { get; set; }
+        public string? Telefono { get; set; }
     }
 }
