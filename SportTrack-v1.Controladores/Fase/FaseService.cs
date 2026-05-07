@@ -574,6 +574,9 @@ namespace SportTrack_v1.Controladores.Fase
 
             // Notificar por SignalR
             await _hubContext.Clients.Group($"race_{id}").SendAsync("RaceStarted", id, fase.FechaHoraInicioReal);
+            
+            // Notificación Global (para usuarios fuera de la regata específica, como el Cronometrista en su Dashboard)
+            await _hubContext.Clients.All.SendAsync("GlobalRaceStarted", id, fase.FechaHoraInicioReal);
 
             return _mapper.Map<FaseDto>(fase);
         }
