@@ -689,6 +689,7 @@ namespace SportTrack_v1.Controladores.Fase
             }
 
             await _faseRepository.UpdateAsync(fase);
+            Console.WriteLine($"[SignalR-Debug] Emitting GlobalRaceInReview for Fase {fase.Id}: {fase.NombreFase}");
 
             // Notificar que está en revisión (Local a la carrera y Global para el Juez)
             await _hubContext.Clients.Group($"race_{id}").SendAsync("RaceInReview", id);
