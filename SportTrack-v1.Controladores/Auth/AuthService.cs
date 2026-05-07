@@ -144,6 +144,5 @@ namespace SportTrack_v1.Controladores.Auth
 
             return result;
         }
-        }
     }
 }

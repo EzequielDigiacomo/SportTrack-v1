@@ -90,6 +90,5 @@ namespace SportTrack_v1.Api.Controllers.Auth
             var result = await _authService.GetMeAsync(username);
             return Ok(result);
         }
-        }
     }
 }
