@@ -80,10 +80,28 @@ namespace SportTrack_v1.Controladores.Fase
             
             var ep = await _eventoRepository.GetEventoPruebaByIdAsync(eventoPruebaId);
             
-            // ANCLAJE AL PROGRAMA: Usamos la hora original de la prueba como punto de partida, 
-            // no la hora de la última regata generada. Esto evita el "desorden" al generar heats fuera de orden.
-            DateTime nextTime = ep?.FechaHora ?? ep?.Evento?.Fecha.Date.AddHours(8) ?? DateTime.Now;
-            nextTime = DateTime.SpecifyKind(nextTime, DateTimeKind.Unspecified);
+            // ANCLAJE AL PROGRAMA: Usamos la hora programada del evento o de la prueba.
+            DateTime nextTime;
+            if (ep?.FechaHora != null)
+            {
+                nextTime = ep.FechaHora;
+            }
+            else
+            {
+                var baseDate = ep?.Evento?.Fecha.Date ?? DateTime.Now.Date;
+                var horaBase = ep?.Evento?.HoraInicioEvento ?? new TimeSpan(8, 0, 0);
+                try
+                {
+                    var tzId = ep?.Evento?.TimeZoneId ?? "America/Argentina/Buenos_Aires";
+                    var tz = TimeZoneInfo.FindSystemTimeZoneById(tzId);
+                    var localDateTime = DateTime.SpecifyKind(baseDate.Add(horaBase), DateTimeKind.Unspecified);
+                    nextTime = TimeZoneInfo.ConvertTimeToUtc(localDateTime, tz);
+                }
+                catch
+                {
+                    nextTime = DateTime.SpecifyKind(baseDate.Add(horaBase), DateTimeKind.Utc);
+                }
+            }
 
             if (numSeries <= 1)
             {
@@ -705,8 +723,27 @@ namespace SportTrack_v1.Controladores.Fase
             await _etapaRepository.DeleteByEventoPruebaIdAsync(eventoPruebaId);
 
             var ep = await _eventoRepository.GetEventoPruebaByIdAsync(eventoPruebaId);
-            DateTime nextTime = ep?.FechaHora ?? ep?.Evento?.Fecha.Date.AddHours(8) ?? DateTime.Now;
-            nextTime = DateTime.SpecifyKind(nextTime, DateTimeKind.Unspecified);
+            DateTime nextTime;
+            if (ep?.FechaHora != null)
+            {
+                nextTime = ep.FechaHora;
+            }
+            else
+            {
+                var baseDate = ep?.Evento?.Fecha.Date ?? DateTime.Now.Date;
+                var horaBase = ep?.Evento?.HoraInicioEvento ?? new TimeSpan(8, 0, 0);
+                try
+                {
+                    var tzId = ep?.Evento?.TimeZoneId ?? "America/Argentina/Buenos_Aires";
+                    var tz = TimeZoneInfo.FindSystemTimeZoneById(tzId);
+                    var localDateTime = DateTime.SpecifyKind(baseDate.Add(horaBase), DateTimeKind.Unspecified);
+                    nextTime = TimeZoneInfo.ConvertTimeToUtc(localDateTime, tz);
+                }
+                catch
+                {
+                    nextTime = DateTime.SpecifyKind(baseDate.Add(horaBase), DateTimeKind.Utc);
+                }
+            }
 
             // Determinar cuántas series hay
             var numSeries = placements.Max(p => p.Serie);
