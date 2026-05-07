@@ -45,6 +45,13 @@ namespace SportTrack_v1.Api.Controllers
             return Ok(fases);
         }
 
+        [HttpPost("GenerarManual/{eventoPruebaId}")]
+        public async Task<ActionResult<IEnumerable<FaseDto>>> GenerarFasesManual(int eventoPruebaId, [FromBody] List<ManualPlacementDto> placements)
+        {
+            var fases = await _faseService.GenerarFasesManualAsync(eventoPruebaId, placements);
+            return Ok(fases);
+        }
+
         [HttpPost("Promover/{eventoPruebaId}")]
         public async Task<ActionResult<IEnumerable<FaseDto>>> Promover(int eventoPruebaId)
         {

@@ -23,6 +23,7 @@ namespace SportTrack_v1.Controladores.Fase
         Task<FaseDto> EnviarARevisionAsync(int id);
         Task<IEnumerable<FaseDto>> GetFasesPorEventoAsync(int eventoId);
         Task BatchUpdateFasesAsync(List<FaseBatchUpdateDto> dto);
+        Task<IEnumerable<FaseDto>> GenerarFasesManualAsync(int eventoPruebaId, List<ManualPlacementDto> placements);
     }
 
     public class FaseService : IFaseService
@@ -690,6 +691,70 @@ namespace SportTrack_v1.Controladores.Fase
                     await _faseRepository.UpdateAsync(fase);
                 }
             }
+        }
+
+        public async Task<IEnumerable<FaseDto>> GenerarFasesManualAsync(int eventoPruebaId, List<ManualPlacementDto> placements)
+        {
+            if (placements == null || !placements.Any())
+                throw new ArgumentException("Debe proporcionar al menos una ubicación para generar las fases.");
+
+            // 1. LIMPIEZA TOTAL
+            await _etapaRepository.DeleteByEventoPruebaIdAsync(eventoPruebaId);
+
+            var ep = await _eventoRepository.GetEventoPruebaByIdAsync(eventoPruebaId);
+            DateTime nextTime = ep?.FechaHora ?? ep?.Evento?.Fecha.Date.AddHours(8) ?? DateTime.Now;
+            nextTime = DateTime.SpecifyKind(nextTime, DateTimeKind.Unspecified);
+
+            // Determinar cuántas series hay
+            var numSeries = placements.Max(p => p.Serie);
+
+            // Crear Etapa de Eliminatorias (o Finales si es solo 1 serie)
+            var etapaElim = new Etapa
+            {
+                EventoPruebaId = eventoPruebaId,
+                Nombre = numSeries <= 1 ? "Finales" : "Eliminatorias",
+                Tipo = numSeries <= 1 ? SportTrack_v1.Entidades.Enums.TipoEtapaEnum.Final : SportTrack_v1.Entidades.Enums.TipoEtapaEnum.Eliminatoria,
+                Orden = numSeries <= 1 ? 3 : 1
+            };
+            await _etapaRepository.CreateAsync(etapaElim);
+
+            // Agrupar placements por serie
+            var agrupadoPorSerie = placements.GroupBy(p => p.Serie).OrderBy(g => g.Key);
+
+            foreach (var grupo in agrupadoPorSerie)
+            {
+                var nroSerie = grupo.Key;
+                var fase = new Entidades.Entidades.Fase
+                {
+                    EtapaId = etapaElim.Id,
+                    NombreFase = numSeries <= 1 ? "Final A" : $"Serie {nroSerie}",
+                    NumeroFase = nroSerie,
+                    Estado = "Programada",
+                    FechaHoraProgramada = nextTime
+                };
+
+                foreach (var p in grupo)
+                {
+                    fase.Resultados.Add(new Entidades.Entidades.Resultado
+                    {
+                        InscripcionId = p.InscripcionId,
+                        Carril = p.Carril,
+                        Estado = SportTrack_v1.Entidades.Enums.EstadoResultadoEnum.Pendiente
+                    });
+                }
+
+                await _faseRepository.CreateAsync(fase);
+                nextTime = nextTime.AddMinutes(10);
+            }
+
+            // Si hay más de una serie, pre-generamos las siguientes etapas vacías (SF/Finales) como en el modo auto
+            if (numSeries > 1)
+            {
+                var inscriptosCount = placements.Count;
+                await PreGenerarSiguientesEtapasAsync(eventoPruebaId, inscriptosCount, numSeries, nextTime);
+            }
+
+            return await GetFasesPorEventoPruebaAsync(eventoPruebaId);
         }
     }
 }
