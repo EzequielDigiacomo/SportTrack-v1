@@ -626,8 +626,9 @@ namespace SportTrack_v1.Controladores.Fase
 
             await _faseRepository.UpdateAsync(fase);
 
-            // Notificar por SignalR
+            // Notificar por SignalR (Local y Global)
             await _hubContext.Clients.Group($"race_{id}").SendAsync("RaceFinished", id);
+            await _hubContext.Clients.All.SendAsync("GlobalRaceOfficialized", id);
 
             return _mapper.Map<FaseDto>(fase);
         }
@@ -689,8 +690,9 @@ namespace SportTrack_v1.Controladores.Fase
 
             await _faseRepository.UpdateAsync(fase);
 
-            // Notificar que está en revisión
+            // Notificar que está en revisión (Local a la carrera y Global para el Juez)
             await _hubContext.Clients.Group($"race_{id}").SendAsync("RaceInReview", id);
+            await _hubContext.Clients.All.SendAsync("GlobalRaceInReview", new { id = fase.Id, nombre = fase.NombreFase });
 
             return _mapper.Map<FaseDto>(fase);
         }
