@@ -594,7 +594,7 @@ namespace SportTrack_v1.Controladores.Fase
             await _hubContext.Clients.Group($"race_{id}").SendAsync("RaceStarted", id, fase.FechaHoraInicioReal);
             
             // Notificación Global (para usuarios fuera de la regata específica, como el Cronometrista en su Dashboard)
-            await _hubContext.Clients.All.SendAsync("GlobalRaceStarted", id, fase.FechaHoraInicioReal);
+            await _hubContext.Clients.All.SendAsync("globalRaceStarted", id, fase.FechaHoraInicioReal);
 
             return _mapper.Map<FaseDto>(fase);
         }
@@ -628,7 +628,7 @@ namespace SportTrack_v1.Controladores.Fase
 
             // Notificar por SignalR (Local y Global)
             await _hubContext.Clients.Group($"race_{id}").SendAsync("RaceFinished", id);
-            await _hubContext.Clients.All.SendAsync("GlobalRaceOfficialized", id);
+            await _hubContext.Clients.All.SendAsync("globalRaceOfficialized", id);
 
             return _mapper.Map<FaseDto>(fase);
         }
@@ -693,7 +693,7 @@ namespace SportTrack_v1.Controladores.Fase
 
             // Notificar que está en revisión (Local a la carrera y Global para el Juez)
             await _hubContext.Clients.Group($"race_{id}").SendAsync("RaceInReview", id);
-            await _hubContext.Clients.All.SendAsync("GlobalRaceInReview", new { id = fase.Id, nombre = fase.NombreFase });
+            await _hubContext.Clients.All.SendAsync("globalRaceInReview", new { id = fase.Id, nombre = fase.NombreFase });
 
             return _mapper.Map<FaseDto>(fase);
         }
