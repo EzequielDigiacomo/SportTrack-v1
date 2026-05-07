@@ -660,7 +660,8 @@ namespace SportTrack.AccessDatos
                 new Categoria { Id = 7, Nombre = "Senior", EdadMin = 18, EdadMax = 35 },
                 new Categoria { Id = 8, Nombre = "Master A", EdadMin = 40, EdadMax = 49 },
                 new Categoria { Id = 9, Nombre = "Master B", EdadMin = 50, EdadMax = 59 },
-                new Categoria { Id = 10, Nombre = "Master C", EdadMin = 60, EdadMax = 80 }
+                new Categoria { Id = 10, Nombre = "Master C", EdadMin = 60, EdadMax = 80 },
+                new Categoria { Id = 11, Nombre = "Control", EdadMin = 0, EdadMax = 99 }
             );
 
             modelBuilder.Entity<Distancia>().HasData(
