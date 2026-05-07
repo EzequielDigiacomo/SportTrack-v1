@@ -73,7 +73,7 @@ namespace SportTrack_v1.Controladores.Evento
         public async Task<IEnumerable<Entidades.Entidades.Evento>> GetProximosAsync()
         {
             return await _context.Eventos
-                .Where(e => e.Fecha >= DateTime.UtcNow)
+                .Where(e => e.Fecha >= DateTime.UtcNow.Date)
                 .OrderBy(e => e.Fecha)
                 .AsNoTracking()
                 .ToListAsync();
