@@ -25,21 +25,40 @@ namespace SportTrack_v1.Controladores.Auth
 
         public async Task<AuthResponseDto> LoginAsync(LoginDto loginDto)
         {
+            var cleanUsername = loginDto.Username.Trim().ToLower();
+            var cleanPassword = loginDto.Password.Trim();
+
+            Console.WriteLine($"--- INTENTO DE LOGIN: {cleanUsername} ---");
+
             var user = await _context.Usuarios
                 .Include(u => u.Club)
-                .FirstOrDefaultAsync(u => u.Username == loginDto.Username.ToLower());
+                .FirstOrDefaultAsync(u => u.Username == cleanUsername);
 
             if (user == null) 
             {
-                await _auditService.RegistrarAccionAsync("LOGIN_FAILED", $"Intento fallido: Usuario '{loginDto.Username}' no encontrado.", loginDto.Username, "Auth");
-                throw new UnauthorizedException("Usuario inválido");
+                Console.WriteLine($"USUARIO NO ENCONTRADO: {cleanUsername}");
+                await _auditService.RegistrarAccionAsync("LOGIN_FAILED", $"Intento fallido: Usuario '{cleanUsername}' no encontrado.", cleanUsername, "Auth");
+                throw new UnauthorizedException("Usuario no encontrado en la base de datos");
             }
 
-            if (!BCrypt.Net.BCrypt.Verify(loginDto.Password, user.PasswordHash))
+            Console.WriteLine($"USUARIO ENCONTRADO. Verificando hash para: {cleanUsername}");
+
+            if (!BCrypt.Net.BCrypt.Verify(cleanPassword, user.PasswordHash))
             {
-                await _auditService.RegistrarAccionAsync("LOGIN_FAILED", $"Intento fallido: Contraseña incorrecta para usuario '{loginDto.Username}'.", loginDto.Username, "Auth");
-                throw new UnauthorizedException("Contraseña incorrecta");
+                Console.WriteLine($"CONTRASEÑA INCORRECTA para: {cleanUsername}");
+                await _auditService.RegistrarAccionAsync("LOGIN_FAILED", $"Intento fallido: Contraseña incorrecta para usuario '{cleanUsername}'.", cleanUsername, "Auth");
+                throw new UnauthorizedException("Contraseña incorrecta. Verificá mayúsculas/minúsculas.");
             }
+
+            // Verificar que la cuenta esté habilitada
+            if (!user.Activo)
+            {
+                Console.WriteLine($"CUENTA DESHABILITADA: {cleanUsername}");
+                await _auditService.RegistrarAccionAsync("LOGIN_BLOCKED", $"Acceso bloqueado: cuenta '{cleanUsername}' está deshabilitada.", cleanUsername, "Auth");
+                throw new UnauthorizedException("Tu cuenta está temporalmente deshabilitada. Contactá al administrador.");
+            }
+
+            Console.WriteLine($"LOGIN EXITOSO: {cleanUsername}");
 
             var response = _mapper.Map<AuthResponseDto>(user);
             response.Token = _tokenService.CreateToken(user);
@@ -106,6 +125,25 @@ namespace SportTrack_v1.Controladores.Auth
             if (user == null) throw new NotFoundException("Usuario no encontrado");
 
             return _mapper.Map<UsuarioDto>(user);
+        }
+
+        public async Task<bool> ToggleActivoAsync(int id)
+        {
+            var user = await _context.Usuarios.FindAsync(id);
+            if (user == null)
+                throw new NotFoundException($"Usuario con ID {id} no encontrado");
+
+            user.Activo = !user.Activo;
+            _context.Usuarios.Update(user);
+            var result = await _context.SaveChangesAsync() > 0;
+
+            var accion = user.Activo ? "USUARIO_HABILITADO" : "USUARIO_DESHABILITADO";
+            await _auditService.RegistrarAccionAsync(accion,
+                $"Cuenta '{user.Username}' (Rol: {user.Rol}) {(user.Activo ? "habilitada" : "deshabilitada")} por administrador.",
+                null, "Auth");
+
+            return result;
+        }
         }
     }
 }

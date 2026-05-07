@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using SportTrack.AccessDatos;
@@ -11,9 +12,11 @@ using SportTrack.AccessDatos;
 namespace SportTrack_v1.AccesoDatos.Migrations
 {
     [DbContext(typeof(SportTrackDbContext))]
-    partial class SportTrackDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260502232533_AddDatosPersonalesUsuario")]
+    partial class AddDatosPersonalesUsuario
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -262,9 +265,6 @@ namespace SportTrack_v1.AccesoDatos.Migrations
                     b.Property<int>("DistanciaRegata")
                         .HasColumnType("integer");
 
-                    b.Property<int>("GapSugerido")
-                        .HasColumnType("integer");
-
                     b.HasKey("Id");
 
                     b.HasIndex("DistanciaRegata")
@@ -277,98 +277,82 @@ namespace SportTrack_v1.AccesoDatos.Migrations
                         new
                         {
                             Id = 1,
-                            DistanciaRegata = 1,
-                            GapSugerido = 5
+                            DistanciaRegata = 1
                         },
                         new
                         {
                             Id = 2,
-                            DistanciaRegata = 2,
-                            GapSugerido = 5
+                            DistanciaRegata = 2
                         },
                         new
                         {
                             Id = 3,
-                            DistanciaRegata = 3,
-                            GapSugerido = 5
+                            DistanciaRegata = 3
                         },
                         new
                         {
                             Id = 4,
-                            DistanciaRegata = 4,
-                            GapSugerido = 5
+                            DistanciaRegata = 4
                         },
                         new
                         {
                             Id = 5,
-                            DistanciaRegata = 5,
-                            GapSugerido = 7
+                            DistanciaRegata = 5
                         },
                         new
                         {
                             Id = 6,
-                            DistanciaRegata = 6,
-                            GapSugerido = 10
+                            DistanciaRegata = 6
                         },
                         new
                         {
                             Id = 7,
-                            DistanciaRegata = 7,
-                            GapSugerido = 10
+                            DistanciaRegata = 7
                         },
                         new
                         {
                             Id = 8,
-                            DistanciaRegata = 8,
-                            GapSugerido = 10
+                            DistanciaRegata = 8
                         },
                         new
                         {
                             Id = 9,
-                            DistanciaRegata = 9,
-                            GapSugerido = 15
+                            DistanciaRegata = 9
                         },
                         new
                         {
                             Id = 10,
-                            DistanciaRegata = 10,
-                            GapSugerido = 15
+                            DistanciaRegata = 10
                         },
                         new
                         {
                             Id = 11,
-                            DistanciaRegata = 11,
-                            GapSugerido = 20
+                            DistanciaRegata = 11
                         },
                         new
                         {
                             Id = 12,
-                            DistanciaRegata = 12,
-                            GapSugerido = 20
+                            DistanciaRegata = 12
                         },
                         new
                         {
                             Id = 13,
-                            DistanciaRegata = 13,
-                            GapSugerido = 25
+                            DistanciaRegata = 13
                         },
                         new
                         {
                             Id = 14,
-                            DistanciaRegata = 14,
-                            GapSugerido = 25
+                            DistanciaRegata = 14
                         },
                         new
                         {
                             Id = 15,
-                            DistanciaRegata = 15,
-                            GapSugerido = 30
+                            DistanciaRegata = 15
                         },
                         new
                         {
                             Id = 16,
-                            DistanciaRegata = 16,
-                            GapSugerido = 40
+                            DistanciaRegata = 16
                         });
                 });
 
@@ -409,9 +393,6 @@ namespace SportTrack_v1.AccesoDatos.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("CarrilesDisponibles")
-                        .HasColumnType("integer");
-
                     b.Property<int?>("ClubId")
                         .HasColumnType("integer");
 
@@ -436,18 +417,6 @@ namespace SportTrack_v1.AccesoDatos.Migrations
                     b.Property<DateTime?>("FechaFinInscripciones")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<int>("GapEntrePruebas")
-                        .HasColumnType("integer");
-
-                    b.Property<TimeSpan>("HoraFinReceso")
-                        .HasColumnType("interval");
-
-                    b.Property<TimeSpan>("HoraInicioEvento")
-                        .HasColumnType("interval");
-
-                    b.Property<TimeSpan>("HoraInicioReceso")
-                        .HasColumnType("interval");
-
                     b.Property<bool>("InscripcionesHabilitadas")
                         .HasColumnType("boolean");
 
@@ -458,12 +427,6 @@ namespace SportTrack_v1.AccesoDatos.Migrations
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
-
-                    b.Property<int>("PerfilTiempo")
-                        .HasColumnType("integer");
-
-                    b.Property<bool>("PermitirCombinadas")
-                        .HasColumnType("boolean");
 
                     b.Property<bool>("PermitirCompletarK4")
                         .HasColumnType("boolean");
@@ -476,13 +439,6 @@ namespace SportTrack_v1.AccesoDatos.Migrations
 
                     b.Property<bool>("RestringirSoloCategoriaPropia")
                         .HasColumnType("boolean");
-
-                    b.Property<bool>("SinReceso")
-                        .HasColumnType("boolean");
-
-                    b.Property<string>("TimeZoneId")
-                        .IsRequired()
-                        .HasColumnType("text");
 
                     b.Property<string>("Ubicacion")
                         .HasMaxLength(200)
@@ -569,12 +525,6 @@ namespace SportTrack_v1.AccesoDatos.Migrations
 
                     b.Property<int>("EtapaId")
                         .HasColumnType("integer");
-
-                    b.Property<DateTime?>("FechaHoraFinReal")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<DateTime?>("FechaHoraInicioReal")
-                        .HasColumnType("timestamp with time zone");
 
                     b.Property<DateTime?>("FechaHoraProgramada")
                         .HasColumnType("timestamp with time zone");

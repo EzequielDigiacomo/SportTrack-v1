@@ -17,7 +17,9 @@ namespace SportTrack_v1.Controladores.Mappings
         public MappingProfile()
         {
             // Mapeos de Club
-            CreateMap<Entidades.Entidades.Club, ClubDto>().ReverseMap();
+            CreateMap<Entidades.Entidades.Club, ClubDto>()
+                .ForMember(dest => dest.CantidadAtletas, opt => opt.MapFrom(src => src.Participantes != null ? src.Participantes.Count : 0))
+                .ReverseMap();
             CreateMap<ClubCreateDto, Entidades.Entidades.Club>();
             CreateMap<ClubUpdateDto, Entidades.Entidades.Club>();
 
@@ -55,6 +57,7 @@ namespace SportTrack_v1.Controladores.Mappings
             // Mapeos de Evento
             CreateMap<Entidades.Entidades.Evento, EventoDto>()
                 .ForMember(dest => dest.Estado, opt => opt.MapFrom(src => src.Estado.ToString()))
+                .ForMember(dest => dest.ClubNombre, opt => opt.MapFrom(src => src.Club != null ? src.Club.Nombre : "Federación"))
                 .ForMember(dest => dest.HoraInicioEvento, opt => opt.MapFrom(src => src.HoraInicioEvento.ToString(@"hh\:mm")))
                 .ForMember(dest => dest.HoraInicioReceso, opt => opt.MapFrom(src => src.HoraInicioReceso.ToString(@"hh\:mm")))
                 .ForMember(dest => dest.HoraFinReceso, opt => opt.MapFrom(src => src.HoraFinReceso.ToString(@"hh\:mm")))

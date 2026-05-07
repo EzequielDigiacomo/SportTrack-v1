@@ -2,7 +2,9 @@ using AutoMapper;
 using SportTrack_v1.Controladores.Inscripcion.Dtos;
 using SportTrack_v1.Controladores.Inscripcion;
 using SportTrack_v1.Entidades.Entidades;
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using SportTrack_v1.Controladores.Exceptions;
 
@@ -89,6 +91,21 @@ namespace SportTrack_v1.Controladores.Inscripcion
         {
             var inscripcion = await _inscripcionRepository.GetByIdAsync(id);
             if (inscripcion == null) throw new NotFoundException($"Inscripción {id} no encontrada");
+
+            // Si se intenta activar (pasar de false a true)
+            if (!inscripcion.EsCabezaDeSerie)
+            {
+                var inscripcionesEnPrueba = await _inscripcionRepository.GetByEventoPruebaIdAsync(inscripcion.EventoPruebaId);
+                var totalInscritos = inscripcionesEnPrueba.Count();
+                var actualSeeds = inscripcionesEnPrueba.Count(i => i.EsCabezaDeSerie);
+
+                var maxSeedsAllowed = (int)Math.Ceiling(totalInscritos / 9.0);
+
+                if (actualSeeds >= maxSeedsAllowed)
+                {
+                    throw new BadRequestException($"Límite de cabezas de serie alcanzado. Máximo permitido: {maxSeedsAllowed} para {totalInscritos} atletas.");
+                }
+            }
 
             inscripcion.EsCabezaDeSerie = !inscripcion.EsCabezaDeSerie;
             await _inscripcionRepository.UpdateAsync(inscripcion);

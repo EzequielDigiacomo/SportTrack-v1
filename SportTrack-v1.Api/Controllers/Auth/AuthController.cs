@@ -1,6 +1,9 @@
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using SportTrack_v1.Controladores.Auth;
 using SportTrack_v1.Controladores.Auth.Dtos;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace SportTrack_v1.Api.Controllers.Auth
@@ -20,7 +23,32 @@ namespace SportTrack_v1.Api.Controllers.Auth
         public async Task<ActionResult<AuthResponseDto>> Login(LoginDto loginDto)
         {
             var result = await _authService.LoginAsync(loginDto);
+            
+            // Configurar la Cookie HttpOnly
+            var cookieOptions = new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = true, // En producción debería ser true
+                SameSite = SameSiteMode.None, // Necesario para Cross-Site si el front/back están en distintos dominios
+                Expires = DateTime.UtcNow.AddHours(5)
+            };
+
+            Response.Cookies.Append("X-Access-Token", result.Token, cookieOptions);
+
+            // Devolvemos el resultado pero ya no es estrictamente necesario que el front guarde el token en localStorage
             return Ok(result);
+        }
+
+        [HttpPost("logout")]
+        public IActionResult Logout()
+        {
+            Response.Cookies.Delete("X-Access-Token", new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = true,
+                SameSite = SameSiteMode.None
+            });
+            return Ok(new { message = "Sesión cerrada correctamente" });
         }
 
         [HttpPost("register")]
@@ -44,8 +72,16 @@ namespace SportTrack_v1.Api.Controllers.Auth
             return Ok(new { message = "Contraseña actualizada con éxito" });
         }
 
+        [HttpPatch("usuarios/{id}/toggle-activo")]
+        [Authorize(Roles = "Admin")]
+        public async Task<ActionResult> ToggleActivo(int id)
+        {
+            await _authService.ToggleActivoAsync(id);
+            return Ok(new { message = "Estado de cuenta actualizado correctamente" });
+        }
+
         [HttpGet("me")]
-        [Microsoft.AspNetCore.Authorization.Authorize]
+        [Authorize]
         public async Task<ActionResult<UsuarioDto>> GetMe()
         {
             var username = User.Identity?.Name;
@@ -53,6 +89,7 @@ namespace SportTrack_v1.Api.Controllers.Auth
 
             var result = await _authService.GetMeAsync(username);
             return Ok(result);
+        }
         }
     }
 }

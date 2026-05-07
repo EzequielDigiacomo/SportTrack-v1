@@ -31,8 +31,13 @@ builder.Services.AddDbContext<SportTrackDbContext>(options =>
 builder.Services.AddSignalR();
 
 // Configuración de CORS
-var allowedOrigins = builder.Configuration.GetSection("AllowedOrigins").Get<string[]>() ?? Array.Empty<string>();
-var allOrigins = allowedOrigins.Concat(new[] { "http://localhost:3000", "http://localhost:5173", "https://sporttrack-fec.vercel.app" }).Distinct().ToArray();
+var originsConfig = builder.Configuration["AllowedOrigins"];
+var configOrigins = !string.IsNullOrEmpty(originsConfig) 
+    ? originsConfig.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(o => o.Trim()).ToArray() 
+    : Array.Empty<string>();
+var allowedOrigins = configOrigins.Concat(new[] { "http://localhost:3000", "http://localhost:5173", "https://sporttrack-fec.vercel.app" }).Distinct().ToArray();
+
+Console.WriteLine($"Configurando CORS para orígenes: {string.Join(", ", allowedOrigins)}");
 
 builder.Services.AddCors(options =>
 {
@@ -40,7 +45,7 @@ builder.Services.AddCors(options =>
     {
         policy.AllowAnyHeader()
               .AllowAnyMethod()
-              .WithOrigins(allOrigins)
+              .WithOrigins(allowedOrigins)
               .AllowCredentials();
     });
 });
@@ -64,9 +69,17 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         {
             OnMessageReceived = context =>
             {
+                // 1. Intentar desde Query String (SignalR)
                 var accessToken = context.Request.Query["access_token"];
+                
+                // 2. Intentar desde Cookies (HttpOnly)
+                if (string.IsNullOrEmpty(accessToken))
+                {
+                    accessToken = context.Request.Cookies["X-Access-Token"];
+                }
+
                 var path = context.HttpContext.Request.Path;
-                if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/hubs"))
+                if (!string.IsNullOrEmpty(accessToken))
                 {
                     context.Token = accessToken;
                 }
@@ -156,6 +169,26 @@ builder.Services.AddSwaggerGen(c =>
 
 var app = builder.Build();
 
+// Ejecutar migraciones automáticamente al iniciar (útil para el despliegue inicial en Render)
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    try
+    {
+        var context = services.GetRequiredService<SportTrackDbContext>();
+        if (context.Database.GetPendingMigrations().Any())
+        {
+            Console.WriteLine("Aplicando migraciones pendientes...");
+            context.Database.Migrate();
+            Console.WriteLine("Migraciones aplicadas con éxito.");
+        }
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"Error al aplicar migraciones: {ex.Message}");
+    }
+}
+
 // Pipeline de la aplicación
 app.UseMiddleware<ExceptionMiddleware>();
 
@@ -198,5 +231,28 @@ app.MapControllers();
 // Mapeo de los Hubs de SignalR
 app.MapHub<ResultsHub>("/hubs/results");
 app.MapHub<SportTrack_v1.Controladores.Hubs.TimingHub>("/hubs/timing");
+
+// Endpoint de diagnóstico para CORS
+app.MapGet("/api/debug-cors", () => new { 
+    AllowedOrigins = allowedOrigins, 
+    Environment = app.Environment.EnvironmentName,
+    ServerTime = DateTime.UtcNow
+});
+
+// Endpoint TEMPORAL para resetear contraseña (ELIMINAR DESPUÉS DEL PRIMER LOGIN)
+app.MapGet("/api/reset-admin/{newPassword}", async (string newPassword, SportTrackDbContext db) => {
+    var user = await db.Usuarios.FirstOrDefaultAsync(u => u.Username == "admin");
+    if (user == null) return Results.NotFound("Usuario admin no encontrado");
+    
+    var hash = BCrypt.Net.BCrypt.HashPassword(newPassword, 12);
+    user.PasswordHash = hash;
+    await db.SaveChangesAsync();
+    
+    return Results.Ok(new { 
+        Message = $"Contraseña del usuario 'admin' actualizada exitosamente.",
+        NewPassword = newPassword,
+        HashGenerated = hash
+    });
+});
 
 app.Run();

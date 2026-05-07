@@ -17,5 +17,11 @@ namespace SportTrack_v1.Entidades.Entidades
         
         public DateTime FechaCreacion { get; set; } = DateTime.UtcNow;
         public bool Activo { get; set; } = true;
+
+        // Datos personales — para identificación y auditoría de jueces
+        public string? Nombre { get; set; }
+        public string? Apellido { get; set; }
+        public string? Dni { get; set; }
+        public string? Telefono { get; set; }
     }
 }
