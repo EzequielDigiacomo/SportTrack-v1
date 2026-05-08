@@ -88,7 +88,7 @@ namespace SportTrack_v1.Controladores.Fase
             }
             else
             {
-                var baseDate = ep?.Evento?.Fecha.Date ?? DateTime.Now.Date;
+                var baseDate = ep?.Evento?.Fecha.Date ?? DateTime.UtcNow.Date;
                 var horaBase = ep?.Evento?.HoraInicioEvento ?? new TimeSpan(8, 0, 0);
                 try
                 {
@@ -372,7 +372,7 @@ namespace SportTrack_v1.Controladores.Fase
             if (!resultadosEtapa.Any()) return await GetFasesPorEventoPruebaAsync(eventoPruebaId);
 
             // Determinar horario de inicio de la siguiente etapa (40m después de la última fase de la etapa actual)
-            var lastFaseTime = fasesDeLaEtapa.Max(f => f.FechaHoraProgramada) ?? DateTime.Now;
+            var lastFaseTime = fasesDeLaEtapa.Max(f => f.FechaHoraProgramada) ?? DateTime.UtcNow;
             DateTime nextTime = lastFaseTime.AddMinutes(40);
 
             var finalistsA = new List<Entidades.Entidades.Inscripcion>();
@@ -674,7 +674,7 @@ namespace SportTrack_v1.Controladores.Fase
             if (fase == null) throw new KeyNotFoundException("Fase no encontrada");
 
             fase.Estado = "Pendiente de Validación";
-            fase.FechaHoraFinReal = DateTime.Now;
+            fase.FechaHoraFinReal = DateTime.UtcNow;
 
             // Al enviar a revisión, marcamos los resultados como Preliminares
             if (fase.Resultados != null)
@@ -711,7 +711,9 @@ namespace SportTrack_v1.Controladores.Fase
                 var fase = await _faseRepository.GetByIdAsync(item.Id);
                 if (fase != null)
                 {
-                    fase.FechaHoraProgramada = DateTime.SpecifyKind(item.FechaHoraProgramada, DateTimeKind.Unspecified);
+                    fase.FechaHoraProgramada = item.FechaHoraProgramada.Kind == DateTimeKind.Utc 
+                        ? item.FechaHoraProgramada 
+                        : DateTime.SpecifyKind(item.FechaHoraProgramada, DateTimeKind.Utc);
                     await _faseRepository.UpdateAsync(fase);
                 }
             }
@@ -733,7 +735,7 @@ namespace SportTrack_v1.Controladores.Fase
             }
             else
             {
-                var baseDate = ep?.Evento?.Fecha.Date ?? DateTime.Now.Date;
+                var baseDate = ep?.Evento?.Fecha.Date ?? DateTime.UtcNow.Date;
                 var horaBase = ep?.Evento?.HoraInicioEvento ?? new TimeSpan(8, 0, 0);
                 try
                 {
