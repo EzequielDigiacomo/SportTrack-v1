@@ -16,7 +16,7 @@ namespace SportTrack_v1.Controladores.Fase
         Task<IEnumerable<FaseDto>> GetFasesPorEventoPruebaAsync(int eventoPruebaId);
         Task<IEnumerable<FaseDto>> GenerarFasesAutoAsync(int eventoPruebaId);
         Task<IEnumerable<FaseDto>> PromoverFasesAsync(int eventoPruebaId);
-        Task<FaseDto> IniciarFaseAsync(int id);
+        Task<FaseDto> IniciarFaseAsync(int id, DateTime? manualStartTime = null);
         Task<FaseDto> FinalizarFaseAsync(int id);
         Task<bool> DeleteFaseAsync(int id);
         Task<FaseDto> ReiniciarFaseAsync(int id);
@@ -581,12 +581,14 @@ namespace SportTrack_v1.Controladores.Fase
 
             return await GetFasesPorEventoPruebaAsync(eventoPruebaId);
         }
-        public async Task<FaseDto> IniciarFaseAsync(int id)
+        public async Task<FaseDto> IniciarFaseAsync(int id, DateTime? manualStartTime = null)
         {
             var fase = await _faseRepository.GetByIdAsync(id);
             if (fase == null) throw new KeyNotFoundException("Fase no encontrada");
 
-            fase.FechaHoraInicioReal = DateTime.UtcNow;
+            // Si el cliente nos manda su hora sincronizada (para evitar latencia de red), la usamos.
+            // Si no, usamos la hora actual del servidor.
+            fase.FechaHoraInicioReal = manualStartTime ?? DateTime.UtcNow;
             fase.Estado = "En Carrera";
             await _faseRepository.UpdateAsync(fase);
 
