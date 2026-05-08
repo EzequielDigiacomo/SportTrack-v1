@@ -36,6 +36,9 @@ namespace SportTrack_v1.Controladores.Evento.Dtos
         public int GapEntrePruebas { get; set; } = 10;
         public bool PermitirCombinadas { get; set; }
         public string TimeZoneId { get; set; } = "America/Argentina/Buenos_Aires";
+        public string? CategoriasHabilitadas { get; set; }
+        public string? BotesHabilitados { get; set; }
+        public string? DistanciasHabilitadas { get; set; }
     }
 
     public class EventoCreateDto
@@ -61,6 +64,9 @@ namespace SportTrack_v1.Controladores.Evento.Dtos
         public int GapEntrePruebas { get; set; } = 10;
         public bool PermitirCombinadas { get; set; } = false;
         public string TimeZoneId { get; set; } = "America/Argentina/Buenos_Aires";
+        public string? CategoriasHabilitadas { get; set; }
+        public string? BotesHabilitados { get; set; }
+        public string? DistanciasHabilitadas { get; set; }
     }
 
     public class EventoUpdateDto
@@ -87,6 +93,9 @@ namespace SportTrack_v1.Controladores.Evento.Dtos
         public int? GapEntrePruebas { get; set; }
         public bool? PermitirCombinadas { get; set; }
         public string? TimeZoneId { get; set; }
+        public string? CategoriasHabilitadas { get; set; }
+        public string? BotesHabilitados { get; set; }
+        public string? DistanciasHabilitadas { get; set; }
     }
 
     public class EventoPruebaDto

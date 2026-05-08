@@ -41,6 +41,11 @@ namespace SportTrack_v1.Entidades.Entidades
         public int GapEntrePruebas { get; set; } = 10;
         public bool PermitirCombinadas { get; set; } = false;
         public string TimeZoneId { get; set; } = "America/Argentina/Buenos_Aires"; // Default IANA timezone
+        
+        // Habilitaciones de Configuración
+        public string? CategoriasHabilitadas { get; set; } // IDs separadas por coma
+        public string? BotesHabilitados { get; set; } // IDs separadas por coma
+        public string? DistanciasHabilitadas { get; set; } // IDs separadas por coma
 
         // Navigation property
         public ICollection<EventoPrueba> EventoPruebas { get; set; } = new List<EventoPrueba>();
