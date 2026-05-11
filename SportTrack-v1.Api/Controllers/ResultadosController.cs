@@ -48,6 +48,9 @@ namespace SportTrack_v1.Api.Controllers
                     if (!string.IsNullOrEmpty(item.Estado))
                         original.Estado = (SportTrack_v1.Entidades.Enums.EstadoResultadoEnum)Enum.Parse(typeof(SportTrack_v1.Entidades.Enums.EstadoResultadoEnum), item.Estado);
                     
+                    original.FechaActualizacion = DateTime.UtcNow;
+                    original.UsuarioActualizacion = HttpContext.User.Identity?.Name ?? "Sistema";
+
                     aActualizar.Add(original);
                 }
             }

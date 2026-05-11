@@ -61,7 +61,8 @@ namespace SportTrack_v1.Controladores.Hubs
 
         public async Task UpdateResultStatus(string faseId, string resultadoId, string status)
         {
-            await Clients.Group($"race_{faseId}").SendAsync("ResultStatusUpdated", resultadoId, status);
+            await _faseService.UpdateResultadoStatusAsync(int.Parse(resultadoId), status);
+            // El servicio ya emite "GlobalResultStatusUpdated"
         }
     }
 }

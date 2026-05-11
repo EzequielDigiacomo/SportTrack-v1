@@ -24,6 +24,8 @@ namespace SportTrack_v1.Controladores.Fase
         Task<IEnumerable<FaseDto>> GetFasesPorEventoAsync(int eventoId);
         Task BatchUpdateFasesAsync(List<FaseBatchUpdateDto> dto);
         Task<IEnumerable<FaseDto>> GenerarFasesManualAsync(int eventoPruebaId, List<ManualPlacementDto> placements);
+        Task UpdateResultadoStatusAsync(int resultadoId, string status);
+        Task UpdateFaseDetailsAsync(int id, string? viento, string? agua, string? observaciones);
     }
 
     public class FaseService : IFaseService
@@ -90,17 +92,7 @@ namespace SportTrack_v1.Controladores.Fase
             {
                 var baseDate = ep?.Evento?.Fecha.Date ?? DateTime.UtcNow.Date;
                 var horaBase = ep?.Evento?.HoraInicioEvento ?? new TimeSpan(8, 0, 0);
-                try
-                {
-                    var tzId = ep?.Evento?.TimeZoneId ?? "America/Argentina/Buenos_Aires";
-                    var tz = TimeZoneInfo.FindSystemTimeZoneById(tzId);
-                    var localDateTime = DateTime.SpecifyKind(baseDate.Add(horaBase), DateTimeKind.Unspecified);
-                    nextTime = TimeZoneInfo.ConvertTimeToUtc(localDateTime, tz);
-                }
-                catch
-                {
-                    nextTime = DateTime.SpecifyKind(baseDate.Add(horaBase), DateTimeKind.Utc);
-                }
+                nextTime = GetUtcTime(baseDate.Add(horaBase), ep?.Evento?.TimeZoneId ?? "America/Argentina/Buenos_Aires");
             }
 
             if (numSeries <= 1)
@@ -122,10 +114,11 @@ namespace SportTrack_v1.Controladores.Fase
                     FechaHoraProgramada = nextTime
                 };
 
-                int carril = 1;
+                var priorityLanes = new int[] { 5, 4, 6, 3, 7, 2, 8, 1, 9 };
+                int laneIdx = 0;
                 foreach (var ins in inscriptos.OrderByDescending(x => x.EsCabezaDeSerie).ThenBy(x => x.Id))
                 {
-                    faseFinal.Resultados.Add(new Entidades.Entidades.Resultado { InscripcionId = ins.Id, Carril = carril++ });
+                    faseFinal.Resultados.Add(new Entidades.Entidades.Resultado { InscripcionId = ins.Id, Carril = priorityLanes[laneIdx++] });
                 }
 
                 await _faseRepository.CreateAsync(faseFinal);
@@ -162,10 +155,11 @@ namespace SportTrack_v1.Controladores.Fase
                         FechaHoraProgramada = nextTime
                     };
 
-                    int carril = 1;
+                    var priorityLanes = new int[] { 5, 4, 6, 3, 7, 2, 8, 1, 9 };
+                    int laneIdx = 0;
                     foreach (var ins in series[i])
                     {
-                        fase.Resultados.Add(new Entidades.Entidades.Resultado { InscripcionId = ins.Id, Carril = carril++ });
+                        fase.Resultados.Add(new Entidades.Entidades.Resultado { InscripcionId = ins.Id, Carril = priorityLanes[laneIdx++] });
                     }
 
                     await _faseRepository.CreateAsync(fase);
@@ -713,11 +707,35 @@ namespace SportTrack_v1.Controladores.Fase
                 var fase = await _faseRepository.GetByIdAsync(item.Id);
                 if (fase != null)
                 {
+                    // Si el Kind es Utc, lo dejamos como está. 
+                    // Si es Unspecified (viene del string sin Z), lo tratamos como UTC para no romper la lógica de la BD,
+                    // pero lo ideal es que el frontend mande el ISO con Z (como acabamos de corregir).
                     fase.FechaHoraProgramada = item.FechaHoraProgramada.Kind == DateTimeKind.Utc 
                         ? item.FechaHoraProgramada 
                         : DateTime.SpecifyKind(item.FechaHoraProgramada, DateTimeKind.Utc);
                     await _faseRepository.UpdateAsync(fase);
                 }
+            }
+        }
+
+        private DateTime GetUtcTime(DateTime localDateTime, string timeZoneId)
+        {
+            try
+            {
+                // Intentar búsqueda estándar
+                var tz = TimeZoneInfo.FindSystemTimeZoneById(timeZoneId);
+                var unspecified = DateTime.SpecifyKind(localDateTime, DateTimeKind.Unspecified);
+                return TimeZoneInfo.ConvertTimeToUtc(unspecified, tz);
+            }
+            catch
+            {
+                // Fallback robusto para Argentina (UTC-3) si el servidor no reconoce el TimeZoneId
+                if (timeZoneId.Contains("Argentina") || timeZoneId.Contains("Buenos_Aires"))
+                {
+                    return DateTime.SpecifyKind(localDateTime.AddHours(3), DateTimeKind.Utc);
+                }
+                // Si todo falla, asumimos que ya es UTC para evitar desvíos indeterminados
+                return DateTime.SpecifyKind(localDateTime, DateTimeKind.Utc);
             }
         }
 
@@ -802,6 +820,45 @@ namespace SportTrack_v1.Controladores.Fase
             }
 
             return await GetFasesPorEventoPruebaAsync(eventoPruebaId);
+        }
+
+        public async Task UpdateResultadoStatusAsync(int resultadoId, string status)
+        {
+            var res = await _faseRepository.GetResultadoByIdAsync(resultadoId);
+            if (res == null) return;
+
+            // Mapeo de strings (DNS, DNF, DSQ) al enum
+            if (Enum.TryParse<SportTrack_v1.Entidades.Enums.EstadoResultadoEnum>(status, true, out var result))
+            {
+                res.Estado = result;
+            }
+            else if (status.ToUpper() == "PENDIENTE")
+            {
+                res.Estado = SportTrack_v1.Entidades.Enums.EstadoResultadoEnum.Pendiente;
+            }
+            else if (status.ToUpper() == "DSQ")
+            {
+                res.Estado = SportTrack_v1.Entidades.Enums.EstadoResultadoEnum.Descalificado;
+            }
+
+            await _faseRepository.UpdateResultadoAsync(res);
+            
+            // Notificar Globalmente
+            await _hubContext.Clients.All.SendAsync("GlobalResultStatusUpdated", resultadoId, status);
+        }
+        public async Task UpdateFaseDetailsAsync(int id, string? viento, string? agua, string? observaciones)
+        {
+            var fase = await _faseRepository.GetByIdAsync(id);
+            if (fase == null) throw new KeyNotFoundException("Fase no encontrada");
+
+            fase.Viento = viento;
+            fase.Agua = agua;
+            fase.Observaciones = observaciones;
+
+            await _faseRepository.UpdateAsync(fase);
+            
+            // Notificar por SignalR para que otros jueces vean las notas climáticas
+            await _hubContext.Clients.All.SendAsync("GlobalFaseDetailsUpdated", id, viento, agua, observaciones);
         }
     }
 }
