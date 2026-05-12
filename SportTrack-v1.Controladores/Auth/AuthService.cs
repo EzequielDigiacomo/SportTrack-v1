@@ -58,6 +58,14 @@ namespace SportTrack_v1.Controladores.Auth
                 throw new UnauthorizedException("Tu cuenta está temporalmente deshabilitada. Contactá al administrador.");
             }
 
+            // Verificar si la federación (Club) está activa (SaaS Enforcement)
+            if (user.Rol != "SuperAdmin" && user.Club != null && !user.Club.Activo)
+            {
+                Console.WriteLine($"FEDERACIÓN SUSPENDIDA: {user.Club.Nombre} para usuario {cleanUsername}");
+                await _auditService.RegistrarAccionAsync("LOGIN_BLOCKED", $"Acceso bloqueado: la federación '{user.Club.Nombre}' está suspendida.", cleanUsername, "Auth");
+                throw new UnauthorizedException("El acceso de tu federación ha sido suspendido temporalmente por el administrador del sistema.");
+            }
+
             Console.WriteLine($"LOGIN EXITOSO: {cleanUsername}");
 
             var response = _mapper.Map<AuthResponseDto>(user);

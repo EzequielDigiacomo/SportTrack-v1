@@ -11,6 +11,7 @@ namespace SportTrack_v1.Controladores.Club.Dtos
         public string? Telefono { get; set; }
         public string? Direccion { get; set; }
         public string? Ubicacion { get; set; }
+        public bool Activo { get; set; }
         public int CantidadAtletas { get; set; }
     }
 
@@ -28,6 +29,7 @@ namespace SportTrack_v1.Controladores.Club.Dtos
         public string? Telefono { get; set; }
         public string? Direccion { get; set; }
         public string? Ubicacion { get; set; }
+        public bool Activo { get; set; } = true;
     }
 
     public class ClubUpdateDto : ClubCreateDto { }
