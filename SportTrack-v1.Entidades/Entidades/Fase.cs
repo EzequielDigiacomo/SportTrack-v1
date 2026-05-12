@@ -15,10 +15,6 @@ namespace SportTrack_v1.Entidades.Entidades
         public DateTime? FechaHoraInicioReal { get; set; }
         public DateTime? FechaHoraFinReal { get; set; }
 
-        // Condiciones climáticas
-        public string? Viento { get; set; }
-        public string? Agua { get; set; }
-        public string? Observaciones { get; set; }
 
         // Navigation properties
         public Etapa Etapa { get; set; } = null!;

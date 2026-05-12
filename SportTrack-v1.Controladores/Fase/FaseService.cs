@@ -25,7 +25,6 @@ namespace SportTrack_v1.Controladores.Fase
         Task BatchUpdateFasesAsync(List<FaseBatchUpdateDto> dto);
         Task<IEnumerable<FaseDto>> GenerarFasesManualAsync(int eventoPruebaId, List<ManualPlacementDto> placements);
         Task UpdateResultadoStatusAsync(int resultadoId, string status);
-        Task UpdateFaseDetailsAsync(int id, string? viento, string? agua, string? observaciones);
     }
 
     public class FaseService : IFaseService
@@ -846,19 +845,6 @@ namespace SportTrack_v1.Controladores.Fase
             // Notificar Globalmente
             await _hubContext.Clients.All.SendAsync("GlobalResultStatusUpdated", resultadoId, status);
         }
-        public async Task UpdateFaseDetailsAsync(int id, string? viento, string? agua, string? observaciones)
-        {
-            var fase = await _faseRepository.GetByIdAsync(id);
-            if (fase == null) throw new KeyNotFoundException("Fase no encontrada");
 
-            fase.Viento = viento;
-            fase.Agua = agua;
-            fase.Observaciones = observaciones;
-
-            await _faseRepository.UpdateAsync(fase);
-            
-            // Notificar por SignalR para que otros jueces vean las notas climáticas
-            await _hubContext.Clients.All.SendAsync("GlobalFaseDetailsUpdated", id, viento, agua, observaciones);
-        }
     }
 }
