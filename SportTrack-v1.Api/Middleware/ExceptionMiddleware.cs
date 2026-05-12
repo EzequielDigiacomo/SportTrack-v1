@@ -22,7 +22,7 @@ namespace SportTrack_v1.Api.Middleware
             _env = env;
         }
 
-        public async Task InvokeAsync(HttpContext context)
+        public async Task InvokeAsync(HttpContext context, SportTrack_v1.Controladores.Audit.IAuditService auditService)
         {
             try
             {
@@ -31,6 +31,8 @@ namespace SportTrack_v1.Api.Middleware
             catch (Exception ex)
             {
                 _logger.LogError(ex, ex.Message);
+                await auditService.RegistrarErrorAsync(ex, context.Request.Path);
+                
                 context.Response.ContentType = "application/json";
                 
                 context.Response.StatusCode = ex switch

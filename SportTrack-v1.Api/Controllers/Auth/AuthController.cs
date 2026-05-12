@@ -73,7 +73,7 @@ namespace SportTrack_v1.Api.Controllers.Auth
         }
 
         [HttpPatch("usuarios/{id}/toggle-activo")]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin,SuperAdmin")]
         public async Task<ActionResult> ToggleActivo(int id)
         {
             await _authService.ToggleActivoAsync(id);

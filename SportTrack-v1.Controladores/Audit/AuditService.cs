@@ -17,7 +17,7 @@ namespace SportTrack_v1.Controladores.Audit
             _httpContextAccessor = httpContextAccessor;
         }
 
-        public async Task RegistrarAccionAsync(string accion, string detalle, string usuario = "System", string modulo = "General")
+        public async Task RegistrarAccionAsync(string accion, string detalle, string usuario = null, string modulo = "General")
         {
             try
             {
@@ -43,10 +43,21 @@ namespace SportTrack_v1.Controladores.Audit
             }
             catch (Exception ex)
             {
-                // Silenciamos errores de auditoria para no bloquear el flujo principal, 
-                // pero podriamos loguearlos en un file system si fuera critico.
                 Console.WriteLine($"Error en Auditoria: {ex.Message}");
             }
+        }
+
+        public async Task RegistrarErrorAsync(Exception ex, string modulo = "System")
+        {
+            var detalle = new
+            {
+                Error = ex.Message,
+                StackTrace = ex.StackTrace,
+                InnerError = ex.InnerException?.Message,
+                Source = ex.Source
+            };
+
+            await RegistrarAccionAsync("ERROR_FATAL", System.Text.Json.JsonSerializer.Serialize(detalle), "System", modulo);
         }
     }
 }

@@ -239,7 +239,6 @@ app.MapGet("/api/debug-cors", () => new {
     ServerTime = DateTime.UtcNow
 });
 
-// Endpoint TEMPORAL para resetear contraseña (ELIMINAR DESPUÉS DEL PRIMER LOGIN)
 app.MapGet("/api/reset-admin/{newPassword}", async (string newPassword, SportTrackDbContext db) => {
     var user = await db.Usuarios.FirstOrDefaultAsync(u => u.Username == "admin");
     if (user == null) return Results.NotFound("Usuario admin no encontrado");
@@ -252,6 +251,31 @@ app.MapGet("/api/reset-admin/{newPassword}", async (string newPassword, SportTra
         Message = $"Contraseña del usuario 'admin' actualizada exitosamente.",
         NewPassword = newPassword,
         HashGenerated = hash
+    });
+});
+
+// Endpoint para crear el usuario de SOPORTE TÉCNICO (SuperAdmin)
+app.MapGet("/api/setup-support/{password}", async (string password, SportTrackDbContext db) => {
+    var existing = await db.Usuarios.FirstOrDefaultAsync(u => u.Username == "soporte_tecnico");
+    if (existing != null) return Results.Conflict("El usuario de soporte ya existe.");
+    
+    var user = new SportTrack_v1.Entidades.Entidades.Usuario {
+        Username = "soporte_tecnico",
+        PasswordHash = BCrypt.Net.BCrypt.HashPassword(password, 12),
+        Email = "soporte@sporttrack.com",
+        Rol = "SuperAdmin",
+        Activo = true,
+        Nombre = "Soporte",
+        Apellido = "Técnico"
+    };
+    
+    db.Usuarios.Add(user);
+    await db.SaveChangesAsync();
+    
+    return Results.Ok(new { 
+        Message = "Usuario de Soporte Técnico (SuperAdmin) creado con éxito.",
+        Username = "soporte_tecnico",
+        Rol = "SuperAdmin"
     });
 });
 
