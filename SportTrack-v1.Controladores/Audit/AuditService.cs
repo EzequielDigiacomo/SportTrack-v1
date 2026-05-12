@@ -35,7 +35,8 @@ namespace SportTrack_v1.Controladores.Audit
                     Usuario = usuario ?? currentUserName,
                     Modulo = modulo,
                     Fecha = DateTime.UtcNow,
-                    IP = _httpContextAccessor.HttpContext?.Connection?.RemoteIpAddress?.ToString() ?? "0.0.0.0"
+                    IP = _httpContextAccessor.HttpContext?.Connection?.RemoteIpAddress?.ToString() ?? "0.0.0.0",
+                    UserAgent = _httpContextAccessor.HttpContext?.Request?.Headers["User-Agent"].ToString() ?? string.Empty
                 };
 
                 _context.Auditoria.Add(audit);

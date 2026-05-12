@@ -24,5 +24,7 @@ namespace SportTrack_v1.Entidades.Entidades
         public string IP { get; set; } = string.Empty; // Direccion IP desde donde se realizo la accion.
 
         public string Modulo { get; set; } = string.Empty; // Auth, Atletas, Eventos, etc.
+        
+        public string UserAgent { get; set; } = string.Empty; // Navegador/Dispositivo del usuario.
     }
 }
