@@ -12,17 +12,12 @@ class Program
             conn.Open();
             Console.WriteLine("Conexión exitosa.");
 
-            Console.WriteLine("Agregando columna Activo a catalogos.Clubes...");
-            using (var cmd = new NpgsqlCommand("ALTER TABLE catalogos.\"Clubes\" ADD COLUMN IF NOT EXISTS \"Activo\" boolean NOT NULL DEFAULT true;", conn))
+            using var cmd = new NpgsqlCommand("SELECT \"Id\", \"Nombre\", \"Activo\" FROM catalogos.\"Clubes\";", conn);
+            using var reader = cmd.ExecuteReader();
+            Console.WriteLine("Clubes en Render:");
+            while (reader.Read())
             {
-                cmd.ExecuteNonQuery();
-            }
-            
-            Console.WriteLine("Verificando columnas en catalogos.Clubes:");
-            using (var cmd = new NpgsqlCommand("SELECT column_name FROM information_schema.columns WHERE table_schema = 'catalogos' AND table_name = 'Clubes';", conn))
-            using (var reader = cmd.ExecuteReader())
-            {
-                while (reader.Read()) Console.WriteLine("- " + reader.GetString(0));
+                Console.WriteLine($"- ID: {reader.GetInt32(0)}, Nombre: {reader.GetString(1)}, Activo: {reader.GetBoolean(2)}");
             }
         }
         catch (Exception ex)

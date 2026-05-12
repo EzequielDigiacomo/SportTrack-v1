@@ -74,8 +74,8 @@ namespace SportTrack_v1.Controladores.SaaS
             // Calculamos torneos activos por club
             // Un torneo activo es un Evento en estado Programada o EnCurso
             var eventosPorClub = await _context.Eventos
-                .Where(e => e.Estado == Entidades.Enums.EstadoEventoEnum.Programada || e.Estado == Entidades.Enums.EstadoEventoEnum.EnCurso)
-                .GroupBy(e => e.ClubId)
+                .Where(e => (e.Estado == Entidades.Enums.EstadoEventoEnum.Programada || e.Estado == Entidades.Enums.EstadoEventoEnum.EnCurso) && e.ClubId.HasValue)
+                .GroupBy(e => e.ClubId.Value)
                 .Select(g => new { ClubId = g.Key, Count = g.Count() })
                 .ToDictionaryAsync(g => g.ClubId, g => g.Count);
 
