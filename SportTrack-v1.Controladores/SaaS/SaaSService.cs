@@ -71,13 +71,18 @@ namespace SportTrack_v1.Controladores.SaaS
                 .Include(c => c.Participantes)
                 .ToListAsync();
 
-            // Calculamos torneos activos por club
-            // Un torneo activo es un Evento en estado Programada o EnCurso
-            var eventosPorClub = await _context.Eventos
+            // Buscamos los torneos activos (Programada o EnCurso) agrupados por club
+            var eventosActivos = await _context.Eventos
                 .Where(e => (e.Estado == Entidades.Enums.EstadoEventoEnum.Programada || e.Estado == Entidades.Enums.EstadoEventoEnum.EnCurso) && e.ClubId.HasValue)
+                .Select(e => new { e.ClubId, e.Id, e.Nombre, e.Fecha, Estado = e.Estado.ToString() })
+                .ToListAsync();
+
+            var torneosPorClub = eventosActivos
                 .GroupBy(e => e.ClubId.Value)
-                .Select(g => new { ClubId = g.Key, Count = g.Count() })
-                .ToDictionaryAsync(g => g.ClubId, g => g.Count);
+                .ToDictionary(
+                    g => g.Key, 
+                    g => g.Select(e => new TorneoSaaSDetailDto { Id = e.Id, Nombre = e.Nombre, Fecha = e.Fecha, Estado = e.Estado }).ToList()
+                );
 
             return clubes.Select(c => 
             {
@@ -86,11 +91,12 @@ namespace SportTrack_v1.Controladores.SaaS
                 var maxTorneos = planActivo?.MaxTorneosActivos ?? 1;
 
                 var atletasRegistrados = c.Participantes.Count;
-                var torneosActivos = eventosPorClub.ContainsKey(c.Id) ? eventosPorClub[c.Id] : 0;
+                var torneosDetalle = torneosPorClub.ContainsKey(c.Id) ? torneosPorClub[c.Id] : new List<TorneoSaaSDetailDto>();
+                var torneosActivosCount = torneosDetalle.Count;
 
                 var alDia = true;
                 if (maxAtletas != -1 && atletasRegistrados > maxAtletas) alDia = false;
-                if (maxTorneos != -1 && torneosActivos > maxTorneos) alDia = false;
+                if (maxTorneos != -1 && torneosActivosCount > maxTorneos) alDia = false;
 
                 return new ClubSaaSStatusDto
                 {
@@ -101,7 +107,8 @@ namespace SportTrack_v1.Controladores.SaaS
                     MaxAtletas = maxAtletas,
                     AtletasRegistrados = atletasRegistrados,
                     MaxTorneos = maxTorneos,
-                    TorneosActivos = torneosActivos,
+                    TorneosActivosCount = torneosActivosCount,
+                    TorneosActivos = torneosDetalle,
                     PlanAlDia = alDia,
                     Activo = c.Activo
                 };
