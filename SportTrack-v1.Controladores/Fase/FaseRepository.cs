@@ -17,8 +17,8 @@ namespace SportTrack_v1.Controladores.Fase
         Task DeleteAsync(int id);
         Task<Entidades.Entidades.Fase> UpdateAsync(Entidades.Entidades.Fase fase);
         Task<IEnumerable<Entidades.Entidades.Fase>> GetByEventoIdAsync(int eventoId);
-        Task<Resultado?> GetResultadoByIdAsync(int id);
-        Task UpdateResultadoAsync(Resultado resultado);
+        Task<SportTrack_v1.Entidades.Entidades.Resultado?> GetResultadoByIdAsync(int id);
+        Task UpdateResultadoAsync(SportTrack_v1.Entidades.Entidades.Resultado resultado);
     }
 
     public class FaseRepository : IFaseRepository
@@ -133,12 +133,12 @@ namespace SportTrack_v1.Controladores.Fase
                 .ToListAsync();
         }
 
-        public async Task<Resultado?> GetResultadoByIdAsync(int id)
+        public async Task<SportTrack_v1.Entidades.Entidades.Resultado?> GetResultadoByIdAsync(int id)
         {
             return await _context.Resultados.FirstOrDefaultAsync(r => r.Id == id);
         }
 
-        public async Task UpdateResultadoAsync(Resultado resultado)
+        public async Task UpdateResultadoAsync(SportTrack_v1.Entidades.Entidades.Resultado resultado)
         {
             _context.Resultados.Update(resultado);
             await _context.SaveChangesAsync();

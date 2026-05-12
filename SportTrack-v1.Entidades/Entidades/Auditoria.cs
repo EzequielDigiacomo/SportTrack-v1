@@ -14,15 +14,15 @@ namespace SportTrack_v1.Entidades.Entidades
 
         [Required]
         [MaxLength(100)]
-        public string Accion { get; set; } // LOGIN, LOGOUT, CREATE_ATHLETE, DELETE_ATHLETE, etc.
+        public string Accion { get; set; } = string.Empty; // LOGIN, LOGOUT, CREATE_ATHLETE, DELETE_ATHLETE, etc.
 
-        public string Detalle { get; set; } // Informacion extra en JSON o texto plano.
+        public string Detalle { get; set; } = string.Empty; // Informacion extra en JSON o texto plano.
 
-        public string Usuario { get; set; } // Nombre del usuario que realizo la accion.
+        public string Usuario { get; set; } = string.Empty; // Nombre del usuario que realizo la accion.
 
         [MaxLength(50)]
-        public string IP { get; set; } // Direccion IP desde donde se realizo la accion.
+        public string IP { get; set; } = string.Empty; // Direccion IP desde donde se realizo la accion.
 
-        public string Modulo { get; set; } // Auth, Atletas, Eventos, etc.
+        public string Modulo { get; set; } = string.Empty; // Auth, Atletas, Eventos, etc.
     }
 }
