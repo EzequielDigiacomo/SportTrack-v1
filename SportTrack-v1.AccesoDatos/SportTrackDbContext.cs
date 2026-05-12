@@ -20,6 +20,7 @@ namespace SportTrack.AccessDatos
         public DbSet<Distancia> Distancias { get; set; }
         public DbSet<Club> Clubes { get; set; }
         public DbSet<Usuario> Usuarios { get; set; }
+        public DbSet<PlanSaaS> PlanesSaaS { get; set; }
 
         // Tablas Principales
         public DbSet<Evento> Eventos { get; set; }
@@ -153,6 +154,21 @@ namespace SportTrack.AccessDatos
                 entity.HasKey(e => e.Id);
                 entity.Property(e => e.Nombre).IsRequired().HasMaxLength(100);
                 entity.HasIndex(e => e.Nombre).IsUnique().HasDatabaseName("IX_Clubes_Nombre");
+
+                entity.HasOne(e => e.PlanSaaS)
+                    .WithMany(p => p.Clubes)
+                    .HasForeignKey(e => e.PlanSaaSId)
+                    .OnDelete(DeleteBehavior.SetNull);
+            });
+
+            // Tabla: PlanSaaS
+            modelBuilder.Entity<PlanSaaS>(entity =>
+            {
+                entity.ToTable("PlanesSaaS", "catalogos");
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Nombre).IsRequired().HasMaxLength(50);
+                entity.Property(e => e.Precio).HasPrecision(18, 2);
+                entity.HasIndex(e => e.Nombre).IsUnique().HasDatabaseName("IX_PlanesSaaS_Nombre");
             });
 
             // Tabla: Usuario
@@ -681,6 +697,13 @@ namespace SportTrack.AccessDatos
                 new Distancia { Id = 14, DistanciaRegata = DistanciaRegataEnum.Metros18000, GapSugerido = 25 },
                 new Distancia { Id = 15, DistanciaRegata = DistanciaRegataEnum.Metros22000, GapSugerido = 30 },
                 new Distancia { Id = 16, DistanciaRegata = DistanciaRegataEnum.Metros30000, GapSugerido = 40 }
+            );
+
+            // Planes SaaS
+            modelBuilder.Entity<PlanSaaS>().HasData(
+                new PlanSaaS { Id = 1, Nombre = "Básico", Precio = 0, MaxAtletas = 500, MaxTorneosActivos = 1, ResultadosTiempoReal = false, ExportacionExcel = false, SoportePrioritario = false },
+                new PlanSaaS { Id = 2, Nombre = "Estándar", Precio = 50, MaxAtletas = 2000, MaxTorneosActivos = 5, ResultadosTiempoReal = true, ExportacionExcel = true, SoportePrioritario = false },
+                new PlanSaaS { Id = 3, Nombre = "Premium", Precio = 120, MaxAtletas = -1, MaxTorneosActivos = -1, ResultadosTiempoReal = true, ExportacionExcel = true, SoportePrioritario = true }
             );
 
             // Usuario inicial administrador

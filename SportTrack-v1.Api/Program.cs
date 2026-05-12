@@ -120,6 +120,8 @@ builder.Services.AddScoped<IClubRepository, ClubRepository>();
 // Auth
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<ITokenService, TokenService>();
+// SaaS
+builder.Services.AddScoped<SportTrack_v1.Controladores.SaaS.ISaaSService, SportTrack_v1.Controladores.SaaS.SaaSService>();
 
 // Auditoria
 builder.Services.AddHttpContextAccessor();

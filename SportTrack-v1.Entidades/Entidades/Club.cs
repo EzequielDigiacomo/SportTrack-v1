@@ -13,6 +13,10 @@ namespace SportTrack_v1.Entidades.Entidades
         public string? Direccion { get; set; }
         public string? Ubicacion { get; set; }
         
+        // SaaS Plan
+        public int? PlanSaaSId { get; set; }
+        public PlanSaaS? PlanSaaS { get; set; }
+
         // Navigation properties
         public ICollection<Participante> Participantes { get; set; } = new List<Participante>();
         public ICollection<Usuario> Usuarios { get; set; } = new List<Usuario>();
