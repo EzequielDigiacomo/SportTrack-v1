@@ -31,5 +31,13 @@ namespace SportTrack_v1.Api.Controllers
             await _saasService.AsignarPlanAClubAsync(clubId, planId);
             return Ok(new { message = "Plan asignado correctamente" });
         }
+
+        [HttpGet("clubes-status")]
+        [Authorize(Roles = "SuperAdmin,Admin,soporte_tecnico")]
+        public async Task<IActionResult> GetClubesStatus()
+        {
+            var clubesStatus = await _saasService.GetClubesStatusAsync();
+            return Ok(clubesStatus);
+        }
     }
 }
