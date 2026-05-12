@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using SportTrack.AccessDatos;
 using SportTrack_v1.Controladores.SaaS.Dtos;
 using SportTrack_v1.Entidades.Entidades;
+using SportTrack_v1.Entidades.Enums;
 
 namespace SportTrack_v1.Controladores.SaaS
 {
@@ -185,9 +186,9 @@ namespace SportTrack_v1.Controladores.SaaS
                 .Where(c => c.ParentClubId == null)
                 .ToListAsync();
 
-            var totalAtletas = await _context.Atletas.CountAsync();
+            var totalAtletas = await _context.Participantes.CountAsync();
             var totalClubes = await _context.Clubes.CountAsync();
-            var torneosActivos = await _context.Eventos.CountAsync(e => e.Activo);
+            var torneosActivos = await _context.Eventos.CountAsync(e => e.Estado != EstadoEventoEnum.Finalizada);
 
             // Mock de crecimiento mensual (podríamos calcularlo por FechaAlta si existiera)
             var crecimiento = new List<MonthlyGrowthDto>
