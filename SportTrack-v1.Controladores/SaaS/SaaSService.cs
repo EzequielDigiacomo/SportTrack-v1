@@ -178,5 +178,39 @@ namespace SportTrack_v1.Controladores.SaaS
                 throw new Exception("Error al crear la federación y su administrador: " + ex.Message);
             }
         }
+
+        public async Task<GlobalMetricsDto> GetGlobalMetricsAsync()
+        {
+            var federaciones = await _context.Clubes
+                .Where(c => c.ParentClubId == null)
+                .ToListAsync();
+
+            var totalAtletas = await _context.Atletas.CountAsync();
+            var totalClubes = await _context.Clubes.CountAsync();
+            var torneosActivos = await _context.Eventos.CountAsync(e => e.Activo);
+
+            // Mock de crecimiento mensual (podríamos calcularlo por FechaAlta si existiera)
+            var crecimiento = new List<MonthlyGrowthDto>
+            {
+                new MonthlyGrowthDto { Mes = "Ene", Cantidad = 5 },
+                new MonthlyGrowthDto { Mes = "Feb", Cantidad = 8 },
+                new MonthlyGrowthDto { Mes = "Mar", Cantidad = 12 },
+                new MonthlyGrowthDto { Mes = "Abr", Cantidad = 18 },
+                new MonthlyGrowthDto { Mes = "May", Cantidad = 25 }
+            };
+
+            return new GlobalMetricsDto
+            {
+                TotalFederaciones = federaciones.Count,
+                TotalClubesAfiliados = totalClubes - federaciones.Count,
+                TotalAtletasGlobales = totalAtletas,
+                TorneosActivosGlobales = torneosActivos,
+                CrecimientoMensual = crecimiento,
+                TopFederaciones = federaciones.Take(5).Select(f => new FederacionMetricDto { 
+                    Nombre = f.Nombre,
+                    ClubesCount = _context.Clubes.Count(c => c.ParentClubId == f.Id)
+                }).ToList()
+            };
+        }
     }
 }

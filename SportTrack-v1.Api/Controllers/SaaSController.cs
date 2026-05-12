@@ -55,5 +55,13 @@ namespace SportTrack_v1.Api.Controllers
             var id = await _saasService.CreateFederacionWithAdminAsync(dto);
             return Ok(new { id, message = "Federación y administrador creados correctamente" });
         }
+
+        [HttpGet("global-metrics")]
+        [Authorize(Roles = "SuperAdmin,soporte_tecnico")]
+        public async Task<IActionResult> GetGlobalMetrics()
+        {
+            var metrics = await _saasService.GetGlobalMetricsAsync();
+            return Ok(metrics);
+        }
     }
 }
