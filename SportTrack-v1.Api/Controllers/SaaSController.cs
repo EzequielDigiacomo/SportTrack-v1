@@ -39,5 +39,13 @@ namespace SportTrack_v1.Api.Controllers
             var clubesStatus = await _saasService.GetClubesStatusAsync();
             return Ok(clubesStatus);
         }
+
+        [HttpPatch("clubes/{id}/toggle-activo")]
+        [Authorize(Roles = "SuperAdmin,Admin,soporte_tecnico")]
+        public async Task<IActionResult> ToggleActivo(int id)
+        {
+            await _saasService.ToggleClubActivoAsync(id);
+            return Ok(new { message = "Estado de federación actualizado correctamente" });
+        }
     }
 }

@@ -11,5 +11,6 @@ namespace SportTrack_v1.Controladores.SaaS.Dtos
         public int MaxTorneos { get; set; }
         public int TorneosActivos { get; set; }
         public bool PlanAlDia { get; set; } // Representa si están dentro de los límites
+        public bool Activo { get; set; }
     }
 }

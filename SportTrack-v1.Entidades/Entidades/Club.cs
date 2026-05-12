@@ -12,6 +12,7 @@ namespace SportTrack_v1.Entidades.Entidades
         public string? Telefono { get; set; }
         public string? Direccion { get; set; }
         public string? Ubicacion { get; set; }
+        public bool Activo { get; set; } = true;
         
         // SaaS Plan
         public int? PlanSaaSId { get; set; }

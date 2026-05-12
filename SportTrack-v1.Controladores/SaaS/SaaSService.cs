@@ -102,9 +102,20 @@ namespace SportTrack_v1.Controladores.SaaS
                     AtletasRegistrados = atletasRegistrados,
                     MaxTorneos = maxTorneos,
                     TorneosActivos = torneosActivos,
-                    PlanAlDia = alDia
+                    PlanAlDia = alDia,
+                    Activo = c.Activo
                 };
             });
+        }
+
+        public async Task ToggleClubActivoAsync(int clubId)
+        {
+            var club = await _context.Clubes.FindAsync(clubId);
+            if (club != null)
+            {
+                club.Activo = !club.Activo;
+                await _context.SaveChangesAsync();
+            }
         }
     }
 }
