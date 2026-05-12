@@ -11,5 +11,6 @@ namespace SportTrack_v1.Controladores.SaaS
         Task AsignarPlanAClubAsync(int clubId, int planId);
         Task<IEnumerable<ClubSaaSStatusDto>> GetClubesStatusAsync();
         Task ToggleClubActivoAsync(int clubId);
+        Task<int> CreateFederacionWithAdminAsync(SaaSCreateFederacionDto dto);
     }
 }

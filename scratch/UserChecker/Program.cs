@@ -1,7 +1,7 @@
 using System;
 using Npgsql;
 
-namespace UserChecker
+namespace UserLinker
 {
     class Program
     {
@@ -15,18 +15,16 @@ namespace UserChecker
                 conn.Open();
                 Console.WriteLine("Conectado a Render...");
 
-                using (var cmd = new NpgsqlCommand("SELECT \"Id\", \"Username\", \"Rol\", \"ClubId\", \"Activo\" FROM seguridad.\"Usuarios\";", conn))
+                // Vinculamos a los administradores sueltos a la Federación 1 (ID 1)
+                string sql = "UPDATE seguridad.\"Usuarios\" SET \"ClubId\" = 1 WHERE \"Username\" IN ('admin', 'ezequiel_admin') AND \"ClubId\" IS NULL;";
+                
+                using (var cmd = new NpgsqlCommand(sql, conn))
                 {
-                    using (var reader = cmd.ExecuteReader())
-                    {
-                        Console.WriteLine("ID | Username | Rol | ClubId | Activo");
-                        Console.WriteLine("-------------------------------------");
-                        while (reader.Read())
-                        {
-                            Console.WriteLine($"{reader["Id"]} | {reader["Username"]} | {reader["Rol"]} | {reader["ClubId"] ?? "NULL"} | {reader["Activo"]}");
-                        }
-                    }
+                    int rows = cmd.ExecuteNonQuery();
+                    Console.WriteLine($"Se vincularon {rows} administradores a la Federación 1.");
                 }
+
+                Console.WriteLine("Vinculación de usuarios completada.");
             }
             catch (Exception ex)
             {

@@ -47,5 +47,13 @@ namespace SportTrack_v1.Api.Controllers
             await _saasService.ToggleClubActivoAsync(id);
             return Ok(new { message = "Estado de federación actualizado correctamente" });
         }
+
+        [HttpPost("create-federacion")]
+        [Authorize(Roles = "SuperAdmin")]
+        public async Task<IActionResult> CreateFederacion([FromBody] SportTrack_v1.Controladores.SaaS.Dtos.SaaSCreateFederacionDto dto)
+        {
+            var id = await _saasService.CreateFederacionWithAdminAsync(dto);
+            return Ok(new { id, message = "Federación y administrador creados correctamente" });
+        }
     }
 }

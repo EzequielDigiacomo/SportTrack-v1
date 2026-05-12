@@ -136,5 +136,47 @@ namespace SportTrack_v1.Controladores.SaaS
                 await _context.SaveChangesAsync();
             }
         }
+
+        public async Task<int> CreateFederacionWithAdminAsync(SaaSCreateFederacionDto dto)
+        {
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            try 
+            {
+                var club = new Entidades.Entidades.Club
+                {
+                    Nombre = dto.Nombre,
+                    Sigla = dto.Sigla,
+                    Email = dto.Email,
+                    Telefono = dto.Telefono,
+                    Direccion = dto.Direccion,
+                    Activo = true,
+                    PlanSaaSId = 1, 
+                    ParentClubId = null 
+                };
+                
+                _context.Clubes.Add(club);
+                await _context.SaveChangesAsync();
+
+                var user = new Entidades.Entidades.Usuario
+                {
+                    Username = dto.AdminUsername.Trim().ToLower(),
+                    PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.AdminPassword),
+                    Rol = "Admin",
+                    ClubId = club.Id,
+                    Activo = true
+                };
+
+                _context.Usuarios.Add(user);
+                await _context.SaveChangesAsync();
+
+                await transaction.CommitAsync();
+                return club.Id;
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                throw new Exception("Error al crear la federación y su administrador: " + ex.Message);
+            }
+        }
     }
 }
