@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore.Migrations;
+using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
@@ -10,26 +10,22 @@ namespace SportTrack_v1.AccesoDatos.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AddColumn<string>(
-                name: "BotesHabilitados",
-                schema: "regatas",
-                table: "Eventos",
-                type: "text",
-                nullable: true);
+            migrationBuilder.Sql(@"
+                DO $$ 
+                BEGIN 
+                    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'regatas' AND table_name = 'Eventos' AND column_name = 'BotesHabilitados') THEN
+                        ALTER TABLE regatas.""Eventos"" ADD COLUMN ""BotesHabilitados"" text;
+                    END IF;
+                    
+                    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'regatas' AND table_name = 'Eventos' AND column_name = 'CategoriasHabilitadas') THEN
+                        ALTER TABLE regatas.""Eventos"" ADD COLUMN ""CategoriasHabilitadas"" text;
+                    END IF;
 
-            migrationBuilder.AddColumn<string>(
-                name: "CategoriasHabilitadas",
-                schema: "regatas",
-                table: "Eventos",
-                type: "text",
-                nullable: true);
-
-            migrationBuilder.AddColumn<string>(
-                name: "DistanciasHabilitadas",
-                schema: "regatas",
-                table: "Eventos",
-                type: "text",
-                nullable: true);
+                    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'regatas' AND table_name = 'Eventos' AND column_name = 'DistanciasHabilitadas') THEN
+                        ALTER TABLE regatas.""Eventos"" ADD COLUMN ""DistanciasHabilitadas"" text;
+                    END IF;
+                END $$;
+            ");
 
             migrationBuilder.UpdateData(
                 schema: "catalogos",
