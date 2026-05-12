@@ -188,7 +188,7 @@ namespace SportTrack_v1.Controladores.SaaS
 
             var totalAtletas = await _context.Participantes.CountAsync();
             var totalClubes = await _context.Clubes.CountAsync();
-            var torneosActivos = await _context.Eventos.CountAsync(e => e.Estado != EstadoEventoEnum.Finalizada);
+            var torneosActivos = await _context.Eventos.CountAsync(e => e.Estado != EstadoEventoEnum.Finalizado);
 
             // Mock de crecimiento mensual (podríamos calcularlo por FechaAlta si existiera)
             var crecimiento = new List<MonthlyGrowthDto>
