@@ -12,6 +12,7 @@ namespace SportTrack_v1.Controladores.SaaS.Dtos
         
         public int MaxAtletas { get; set; }
         public int AtletasRegistrados { get; set; }
+        public int UsuariosCount { get; set; }
         
         public int MaxTorneos { get; set; }
         public int TorneosActivosCount { get; set; }

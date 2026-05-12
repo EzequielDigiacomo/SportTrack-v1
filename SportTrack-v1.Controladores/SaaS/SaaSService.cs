@@ -69,6 +69,7 @@ namespace SportTrack_v1.Controladores.SaaS
             var clubes = await _context.Clubes
                 .Include(c => c.PlanSaaS)
                 .Include(c => c.Participantes)
+                .Include(c => c.Usuarios)
                 .ToListAsync();
 
             // Buscamos los torneos activos (Programada o EnCurso) agrupados por club
@@ -106,6 +107,7 @@ namespace SportTrack_v1.Controladores.SaaS
                     PlanNombre = planActivo?.Nombre ?? "Desconocido",
                     MaxAtletas = maxAtletas,
                     AtletasRegistrados = atletasRegistrados,
+                    UsuariosCount = c.Usuarios.Count,
                     MaxTorneos = maxTorneos,
                     TorneosActivosCount = torneosActivosCount,
                     TorneosActivos = torneosDetalle,
