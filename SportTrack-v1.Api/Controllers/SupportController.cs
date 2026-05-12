@@ -27,7 +27,7 @@ namespace SportTrack_v1.Api.Controllers
             var userRole = User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value;
             var userName = User.Identity?.Name;
 
-            if (userRole != "SuperAdmin" && userName != "soporte_tecnico")
+            if (userRole != "SuperAdmin" && userName != "soporte_tecnico" && userName != "admin")
             {
                 return Forbid("No tienes permisos para acceder a los registros de soporte.");
             }
@@ -45,6 +45,41 @@ namespace SportTrack_v1.Api.Controllers
                 .ToListAsync();
 
             return Ok(logs);
+        }
+
+        [HttpPost("frontend-error")]
+        [AllowAnonymous] // Permitir reportes incluso si no hay sesión (ej: falla el login)
+        public async Task<IActionResult> PostFrontendError([FromBody] FrontendErrorDto errorDto)
+        {
+            var detail = new
+            {
+                Error = errorDto.Message,
+                Url = errorDto.Url,
+                Stack = errorDto.Stack,
+                Browser = errorDto.BrowserInfo,
+                User = User.Identity?.Name ?? "Anónimo"
+            };
+
+            await _context.Auditoria.AddAsync(new SportTrack_v1.Entidades.Entidades.Auditoria
+            {
+                Accion = "FRONTEND_CRASH",
+                Modulo = "ReactApp",
+                Detalle = System.Text.Json.JsonSerializer.Serialize(detail),
+                Usuario = User.Identity?.Name ?? "Anónimo",
+                Fecha = DateTime.UtcNow,
+                IP = Request.HttpContext.Connection.RemoteIpAddress?.ToString() ?? "0.0.0.0"
+            });
+
+            await _context.SaveChangesAsync();
+            return Ok();
+        }
+
+        public class FrontendErrorDto
+        {
+            public string Message { get; set; }
+            public string Url { get; set; }
+            public string Stack { get; set; }
+            public string BrowserInfo { get; set; }
         }
 
         [HttpDelete("logs/clear")]

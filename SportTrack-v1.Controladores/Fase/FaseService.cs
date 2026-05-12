@@ -36,6 +36,7 @@ namespace SportTrack_v1.Controladores.Fase
 
         private readonly Microsoft.AspNetCore.SignalR.IHubContext<SportTrack_v1.Controladores.Hubs.TimingHub> _hubContext;
         private readonly IMapper _mapper;
+        private readonly Audit.IAuditService _auditService;
 
         public FaseService(
             IFaseRepository faseRepository, 
@@ -43,7 +44,8 @@ namespace SportTrack_v1.Controladores.Fase
             IInscripcionRepository inscripcionRepository, 
             IEventoRepository eventoRepository,
             Microsoft.AspNetCore.SignalR.IHubContext<SportTrack_v1.Controladores.Hubs.TimingHub> hubContext,
-            IMapper mapper)
+            IMapper mapper,
+            Audit.IAuditService auditService)
         {
             _faseRepository = faseRepository;
             _etapaRepository = etapaRepository;
@@ -52,6 +54,7 @@ namespace SportTrack_v1.Controladores.Fase
             _hubContext = hubContext;
 
             _mapper = mapper;
+            _auditService = auditService;
         }
 
         public async Task<IEnumerable<FaseDto>> GetFasesPorEventoPruebaAsync(int eventoPruebaId)
@@ -167,6 +170,10 @@ namespace SportTrack_v1.Controladores.Fase
 
                 await PreGenerarSiguientesEtapasAsync(eventoPruebaId, inscriptosCount, numSeries, nextTime);
             }
+            
+            // Auditoria
+            await _auditService.RegistrarAccionAsync("GENERATE_HEATS_AUTO", 
+                $"Sorteo automático generado para la Prueba ID {eventoPruebaId}. Se crearon {numSeries} series.", null, "Competencia");
 
             return await GetFasesPorEventoPruebaAsync(eventoPruebaId);
         }
@@ -571,6 +578,9 @@ namespace SportTrack_v1.Controladores.Fase
                 }
             }
 
+            // Auditoria
+            await _auditService.RegistrarAccionAsync("PROMOTE_STAGE", 
+                $"Promoción de etapa ejecutada para la Prueba ID {eventoPruebaId}. Etapa actual: {etapaActual.Nombre}", null, "Competencia");
 
             return await GetFasesPorEventoPruebaAsync(eventoPruebaId);
         }
@@ -584,6 +594,10 @@ namespace SportTrack_v1.Controladores.Fase
             fase.FechaHoraInicioReal = manualStartTime ?? DateTime.UtcNow;
             fase.Estado = "En Carrera";
             await _faseRepository.UpdateAsync(fase);
+
+            // Auditoria
+            await _auditService.RegistrarAccionAsync("START_RACE", 
+                $"Carrera iniciada: {fase.NombreFase} (ID: {id}) a las {fase.FechaHoraInicioReal}", null, "Competencia");
 
             // Notificar por SignalR
             await _hubContext.Clients.Group($"race_{id}").SendAsync("RaceStarted", id, fase.FechaHoraInicioReal);
@@ -621,6 +635,10 @@ namespace SportTrack_v1.Controladores.Fase
 
             await _faseRepository.UpdateAsync(fase);
 
+            // Auditoria
+            await _auditService.RegistrarAccionAsync("FINISH_RACE", 
+                $"Carrera oficializada: {fase.NombreFase} (ID: {id})", null, "Competencia");
+
             // Notificar por SignalR (Local y Global)
             await _hubContext.Clients.Group($"race_{id}").SendAsync("RaceFinished", id);
             await _hubContext.Clients.All.SendAsync("globalRaceOfficialized", id);
@@ -657,6 +675,10 @@ namespace SportTrack_v1.Controladores.Fase
 
             await _faseRepository.UpdateAsync(fase);
 
+            // Auditoria
+            await _auditService.RegistrarAccionAsync("RESET_RACE", 
+                $"Carrera reiniciada: {fase.NombreFase} (ID: {id}). Se limpiaron los tiempos.", null, "Competencia");
+
             // 3. Notificar a los clientes SignalR que la carrera se reinició
             await _hubContext.Clients.Group($"race_{id}").SendAsync("RaceReset", id);
 
@@ -684,6 +706,11 @@ namespace SportTrack_v1.Controladores.Fase
             }
 
             await _faseRepository.UpdateAsync(fase);
+            
+            // Auditoria
+            await _auditService.RegistrarAccionAsync("REVIEW_RACE", 
+                $"Carrera enviada a revisión: {fase.NombreFase} (ID: {id})", null, "Competencia");
+
             Console.WriteLine($"[SignalR-Debug] Emitting GlobalRaceInReview for Fase {fase.Id}: {fase.NombreFase}");
 
             // Notificar que está en revisión (Local a la carrera y Global para el Juez)

@@ -14,11 +14,13 @@ namespace SportTrack_v1.Controladores.Inscripcion
     {
         private readonly IInscripcionRepository _inscripcionRepository;
         private readonly IMapper _mapper;
+        private readonly Audit.IAuditService _auditService;
 
-        public InscripcionService(IInscripcionRepository inscripcionRepository, IMapper mapper)
+        public InscripcionService(IInscripcionRepository inscripcionRepository, IMapper mapper, Audit.IAuditService auditService)
         {
             _inscripcionRepository = inscripcionRepository;
             _mapper = mapper;
+            _auditService = auditService;
         }
 
         public async Task<IEnumerable<InscripcionDto>> GetAllInscripcionesAsync()
@@ -43,6 +45,11 @@ namespace SportTrack_v1.Controladores.Inscripcion
             
             // Recargamos para incluir los datos relacionados (Participante) en el DTO de salida
             var result = await _inscripcionRepository.GetByIdAsync(createdInscripcion.Id);
+            
+            // Auditoria
+            await _auditService.RegistrarAccionAsync("CREATE_INSCRIPTION", 
+                $"Nueva inscripción: {result.Participante?.Nombre} {result.Participante?.Apellido} (ID: {result.Id})", null, "Inscripciones");
+
             return _mapper.Map<InscripcionDto>(result);
         }
 
@@ -60,6 +67,11 @@ namespace SportTrack_v1.Controladores.Inscripcion
                 existingInscripcion.NumeroCompetidor = inscripcionDto.NumeroCompetidor;
 
             var updatedInscripcion = await _inscripcionRepository.UpdateAsync(existingInscripcion);
+            
+            // Auditoria
+            await _auditService.RegistrarAccionAsync("UPDATE_INSCRIPTION", 
+                $"Inscripción actualizada (ID: {id}, Carril: {updatedInscripcion.NumeroCompetidor})", null, "Inscripciones");
+
             return _mapper.Map<InscripcionDto>(updatedInscripcion);
         }
 
@@ -68,7 +80,15 @@ namespace SportTrack_v1.Controladores.Inscripcion
             if (!await _inscripcionRepository.ExistsAsync(id))
                 throw new NotFoundException($"Inscripción con ID {id} no encontrada");
 
-            return await _inscripcionRepository.DeleteAsync(id);
+            var res = await _inscripcionRepository.DeleteAsync(id);
+            
+            // Auditoria
+            if (res) {
+                await _auditService.RegistrarAccionAsync("DELETE_INSCRIPTION", 
+                    $"Inscripción eliminada (ID: {id})", null, "Inscripciones");
+            }
+
+            return res;
         }
 
         public async Task<int> GetCountByEventoPruebaIdAsync(int eventoPruebaId)
@@ -109,6 +129,11 @@ namespace SportTrack_v1.Controladores.Inscripcion
 
             inscripcion.EsCabezaDeSerie = !inscripcion.EsCabezaDeSerie;
             await _inscripcionRepository.UpdateAsync(inscripcion);
+            
+            // Auditoria
+            await _auditService.RegistrarAccionAsync("TOGGLE_SEED", 
+                $"Cabeza de serie {(inscripcion.EsCabezaDeSerie ? "activado" : "desactivado")} para Inscripción {id}", null, "Inscripciones");
+
             return true;
         }
     }
