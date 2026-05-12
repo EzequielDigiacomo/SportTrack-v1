@@ -241,6 +241,18 @@ app.MapGet("/api/debug-cors", () => new {
     ServerTime = DateTime.UtcNow
 });
 
+// Endpoint de emergencia para aplicar columna UserAgent manualmente (usar una sola vez)
+app.MapGet("/api/fix-useragent-column", async (SportTrackDbContext db) => {
+    try {
+        await db.Database.ExecuteSqlRawAsync(@"
+            ALTER TABLE ""Auditoria"" ADD COLUMN IF NOT EXISTS ""UserAgent"" text NOT NULL DEFAULT '';
+        ");
+        return Results.Ok(new { Message = "Columna UserAgent agregada exitosamente (o ya existía)." });
+    } catch (Exception ex) {
+        return Results.Problem($"Error: {ex.Message}");
+    }
+});
+
 app.MapGet("/api/reset-admin/{newPassword}", async (string newPassword, SportTrackDbContext db) => {
     var user = await db.Usuarios.FirstOrDefaultAsync(u => u.Username == "admin");
     if (user == null) return Results.NotFound("Usuario admin no encontrado");
