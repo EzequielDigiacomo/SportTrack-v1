@@ -107,12 +107,35 @@ namespace SportTrack_v1.Controladores.Auth
             return await _context.Usuarios.AnyAsync(u => u.Username == username.ToLower());
         }
 
-        public async Task<System.Collections.Generic.IEnumerable<UsuarioDto>> GetUsuariosAsync()
+        public async Task<System.Collections.Generic.IEnumerable<UsuarioDto>> GetUsuariosAsync(string? requesterUsername = null)
         {
-            var usuarios = await _context.Usuarios
+            var query = _context.Usuarios
                 .Include(u => u.Club)
-                .ToListAsync();
-            
+                    .ThenInclude(c => c.ParentClub)
+                .AsQueryable();
+
+            if (!string.IsNullOrEmpty(requesterUsername))
+            {
+                var requester = await _context.Usuarios.FirstOrDefaultAsync(u => u.Username == requesterUsername.ToLower());
+                if (requester != null && requester.Rol == "Admin" && requester.ClubId.HasValue)
+                {
+                    // Un Admin de Federación solo ve:
+                    // 1. Usuarios de su propia Federación (su ClubId)
+                    // 2. Usuarios de sus Clubes Afiliados (Clubes cuyo ParentId sea su ClubId)
+                    var fedId = requester.ClubId.Value;
+                    query = query.Where(u => u.ClubId == fedId || (u.Club != null && u.Club.ParentClubId == fedId));
+                }
+                else if (requester != null && requester.Rol != "SuperAdmin" && requester.Rol != "soporte_tecnico")
+                {
+                    // Otros roles menores solo ven sus propios datos o los de su club
+                    if (requester.ClubId.HasValue)
+                        query = query.Where(u => u.ClubId == requester.ClubId);
+                    else
+                        query = query.Where(u => u.Id == requester.Id);
+                }
+            }
+
+            var usuarios = await query.ToListAsync();
             return _mapper.Map<System.Collections.Generic.IEnumerable<UsuarioDto>>(usuarios);
         }
 

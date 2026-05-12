@@ -59,9 +59,11 @@ namespace SportTrack_v1.Api.Controllers.Auth
         }
 
         [HttpGet("usuarios")]
+        [Authorize]
         public async Task<ActionResult> GetUsuarios()
         {
-            var result = await _authService.GetUsuariosAsync();
+            var username = User.Identity?.Name;
+            var result = await _authService.GetUsuariosAsync(username);
             return Ok(result);
         }
 
