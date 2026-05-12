@@ -32,6 +32,7 @@ namespace SportTrack_v1.Controladores.Auth
 
             var user = await _context.Usuarios
                 .Include(u => u.Club)
+                    .ThenInclude(c => c.ParentClub) // Importante para ver la jerarquía
                 .FirstOrDefaultAsync(u => u.Username == cleanUsername);
 
             if (user == null) 
@@ -58,12 +59,16 @@ namespace SportTrack_v1.Controladores.Auth
                 throw new UnauthorizedException("Tu cuenta está temporalmente deshabilitada. Contactá al administrador.");
             }
 
-            // Verificar si la federación (Club) está activa (SaaS Enforcement)
-            if (user.Rol != "SuperAdmin" && user.Club != null && !user.Club.Activo)
+            // SaaS Enforcement: Verificar si la federación madre está activa
+            if (user.Rol != "SuperAdmin" && user.Club != null)
             {
-                Console.WriteLine($"FEDERACIÓN SUSPENDIDA: {user.Club.Nombre} para usuario {cleanUsername}");
-                await _auditService.RegistrarAccionAsync("LOGIN_BLOCKED", $"Acceso bloqueado: la federación '{user.Club.Nombre}' está suspendida.", cleanUsername, "Auth");
-                throw new UnauthorizedException("El acceso de tu federación ha sido suspendido temporalmente por el administrador del sistema.");
+                var federacionMadre = user.Club.ParentClub ?? user.Club;
+                if (!federacionMadre.Activo)
+                {
+                    Console.WriteLine($"FEDERACIÓN SUSPENDIDA: {federacionMadre.Nombre} para usuario {cleanUsername}");
+                    await _auditService.RegistrarAccionAsync("LOGIN_BLOCKED", $"Acceso bloqueado: la federación '{federacionMadre.Nombre}' está suspendida.", cleanUsername, "Auth");
+                    throw new UnauthorizedException("El acceso de tu federación ha sido suspendido temporalmente por el administrador del sistema.");
+                }
             }
 
             Console.WriteLine($"LOGIN EXITOSO: {cleanUsername}");
@@ -128,9 +133,20 @@ namespace SportTrack_v1.Controladores.Auth
         {
             var user = await _context.Usuarios
                 .Include(u => u.Club)
+                    .ThenInclude(c => c.ParentClub)
                 .FirstOrDefaultAsync(u => u.Username == username.ToLower());
 
             if (user == null) throw new NotFoundException("Usuario no encontrado");
+
+            // SaaS Enforcement en tiempo real
+            if (user.Rol != "SuperAdmin" && user.Club != null)
+            {
+                var federacionMadre = user.Club.ParentClub ?? user.Club;
+                if (!federacionMadre.Activo)
+                {
+                    throw new UnauthorizedException("El acceso de tu federación ha sido suspendido.");
+                }
+            }
 
             return _mapper.Map<UsuarioDto>(user);
         }
