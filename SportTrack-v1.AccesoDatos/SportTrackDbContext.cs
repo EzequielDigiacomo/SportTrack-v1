@@ -159,6 +159,12 @@ namespace SportTrack.AccessDatos
                     .WithMany(p => p.Clubes)
                     .HasForeignKey(e => e.PlanSaaSId)
                     .OnDelete(DeleteBehavior.SetNull);
+
+                // Configuración de Jerarquía SaaS
+                entity.HasOne(e => e.ParentClub)
+                    .WithMany(e => e.Afiliados)
+                    .HasForeignKey(e => e.ParentClubId)
+                    .OnDelete(DeleteBehavior.Restrict);
             });
 
             // Tabla: PlanSaaS

@@ -66,33 +66,42 @@ namespace SportTrack_v1.Controladores.SaaS
             // Plan basico por defecto si no tiene plan (ID 1)
             var planBasico = await _context.PlanesSaaS.FirstOrDefaultAsync(p => p.Id == 1);
 
-            var clubes = await _context.Clubes
+            var federaciones = await _context.Clubes
+                .Where(c => c.ParentClubId == null) // Solo las federaciones "madre"
                 .Include(c => c.PlanSaaS)
                 .Include(c => c.Participantes)
                 .Include(c => c.Usuarios)
+                .Include(c => c.Afiliados)
+                    .ThenInclude(a => a.Participantes)
+                .Include(c => c.Afiliados)
+                    .ThenInclude(a => a.Usuarios)
                 .ToListAsync();
 
-            // Buscamos los torneos activos (Programada o EnCurso) agrupados por club
+            // Buscamos todos los torneos activos para agruparlos por federación madre
             var eventosActivos = await _context.Eventos
                 .Where(e => (e.Estado == Entidades.Enums.EstadoEventoEnum.Programada || e.Estado == Entidades.Enums.EstadoEventoEnum.EnCurso) && e.ClubId.HasValue)
                 .Select(e => new { e.ClubId, e.Id, e.Nombre, e.Fecha, Estado = e.Estado.ToString() })
                 .ToListAsync();
 
-            var torneosPorClub = eventosActivos
-                .GroupBy(e => e.ClubId.Value)
-                .ToDictionary(
-                    g => g.Key, 
-                    g => g.Select(e => new TorneoSaaSDetailDto { Id = e.Id, Nombre = e.Nombre, Fecha = e.Fecha, Estado = e.Estado }).ToList()
-                );
-
-            return clubes.Select(c => 
+            return federaciones.Select(c => 
             {
                 var planActivo = c.PlanSaaS ?? planBasico;
                 var maxAtletas = planActivo?.MaxAtletas ?? 500;
                 var maxTorneos = planActivo?.MaxTorneosActivos ?? 1;
 
-                var atletasRegistrados = c.Participantes.Count;
-                var torneosDetalle = torneosPorClub.ContainsKey(c.Id) ? torneosPorClub[c.Id] : new List<TorneoSaaSDetailDto>();
+                // Identificamos todos los IDs que pertenecen a esta federación (ella misma + sus afiliados)
+                var idsPertenecientes = new HashSet<int> { c.Id };
+                foreach (var af in c.Afiliados) idsPertenecientes.Add(af.Id);
+
+                // Agregamos métricas de afiliados
+                var atletasRegistrados = c.Participantes.Count + c.Afiliados.Sum(a => a.Participantes.Count);
+                var usuariosCount = c.Usuarios.Count + c.Afiliados.Sum(a => a.Usuarios.Count);
+                
+                var torneosDetalle = eventosActivos
+                    .Where(e => idsPertenecientes.Contains(e.ClubId.Value))
+                    .Select(e => new TorneoSaaSDetailDto { Id = e.Id, Nombre = e.Nombre, Fecha = e.Fecha, Estado = e.Estado })
+                    .ToList();
+                
                 var torneosActivosCount = torneosDetalle.Count;
 
                 var alDia = true;
@@ -107,7 +116,8 @@ namespace SportTrack_v1.Controladores.SaaS
                     PlanNombre = planActivo?.Nombre ?? "Desconocido",
                     MaxAtletas = maxAtletas,
                     AtletasRegistrados = atletasRegistrados,
-                    UsuariosCount = c.Usuarios.Count,
+                    ClubesAfiliadosCount = c.Afiliados.Count,
+                    UsuariosCount = usuariosCount,
                     MaxTorneos = maxTorneos,
                     TorneosActivosCount = torneosActivosCount,
                     TorneosActivos = torneosDetalle,
