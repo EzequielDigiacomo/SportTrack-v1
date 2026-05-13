@@ -13,6 +13,7 @@ namespace SportTrack_v1.Controladores.Club.Dtos
         public string? Ubicacion { get; set; }
         public bool Activo { get; set; }
         public int CantidadAtletas { get; set; }
+        public int? ParentClubId { get; set; } // ID de la federación madre (null si es federación raíz)
     }
 
     public class ClubCreateDto
