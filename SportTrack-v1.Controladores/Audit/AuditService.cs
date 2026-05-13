@@ -17,7 +17,7 @@ namespace SportTrack_v1.Controladores.Audit
             _httpContextAccessor = httpContextAccessor;
         }
 
-        public async Task RegistrarAccionAsync(string accion, string detalle, string usuario = null, string modulo = "General")
+        public async Task RegistrarAccionAsync(string accion, string detalle, string? usuario = null, string modulo = "General")
         {
             try
             {
