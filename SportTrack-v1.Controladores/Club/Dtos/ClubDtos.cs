@@ -31,6 +31,7 @@ namespace SportTrack_v1.Controladores.Club.Dtos
         public string? Direccion { get; set; }
         public string? Ubicacion { get; set; }
         public bool Activo { get; set; } = true;
+        public int? ParentClubId { get; set; } // Federación madre al crear un sub-club
     }
 
     public class ClubUpdateDto : ClubCreateDto { }
