@@ -707,9 +707,9 @@ namespace SportTrack.AccessDatos
 
             // Planes SaaS
             modelBuilder.Entity<PlanSaaS>().HasData(
-                new PlanSaaS { Id = 1, Nombre = "Básico", Precio = 0, MaxAtletas = 500, MaxTorneosActivos = 1, ResultadosTiempoReal = false, ExportacionExcel = false, SoportePrioritario = false },
-                new PlanSaaS { Id = 2, Nombre = "Estándar", Precio = 50, MaxAtletas = 2000, MaxTorneosActivos = 5, ResultadosTiempoReal = true, ExportacionExcel = true, SoportePrioritario = false },
-                new PlanSaaS { Id = 3, Nombre = "Premium", Precio = 120, MaxAtletas = -1, MaxTorneosActivos = -1, ResultadosTiempoReal = true, ExportacionExcel = true, SoportePrioritario = true }
+                new PlanSaaS { Id = 1, Nombre = "Bronce", Precio = 0, MaxAtletas = 1000, MaxTorneosActivos = 5, ResultadosTiempoReal = false, ExportacionExcel = false, SoportePrioritario = false },
+                new PlanSaaS { Id = 2, Nombre = "Plata", Precio = 99, MaxAtletas = 4000, MaxTorneosActivos = 20, ResultadosTiempoReal = false, ExportacionExcel = false, SoportePrioritario = false },
+                new PlanSaaS { Id = 3, Nombre = "Oro", Precio = 250, MaxAtletas = -1, MaxTorneosActivos = -1, ResultadosTiempoReal = true, ExportacionExcel = true, SoportePrioritario = true }
             );
 
             // Usuario inicial administrador

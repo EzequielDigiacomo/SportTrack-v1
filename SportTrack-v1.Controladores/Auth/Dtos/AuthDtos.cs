@@ -15,6 +15,7 @@ namespace SportTrack_v1.Controladores.Auth.Dtos
         public string? ClubNombre { get; set; }
         public string? Nombre { get; set; }
         public string? Apellido { get; set; }
+        public SportTrack_v1.Controladores.SaaS.Dtos.PlanSaaSDto? Plan { get; set; }
     }
 
     public class RegisterDto

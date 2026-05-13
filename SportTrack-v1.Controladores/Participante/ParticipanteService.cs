@@ -10,12 +10,14 @@ namespace SportTrack_v1.Controladores.Participante
     public class ParticipanteService : IParticipanteService
     {
         private readonly IParticipanteRepository _participanteRepository;
+        private readonly Club.IClubRepository _clubRepository;
         private readonly IMapper _mapper;
         private readonly Audit.IAuditService _auditService;
 
-        public ParticipanteService(IParticipanteRepository participanteRepository, IMapper mapper, Audit.IAuditService auditService)
+        public ParticipanteService(IParticipanteRepository participanteRepository, Club.IClubRepository clubRepository, IMapper mapper, Audit.IAuditService auditService)
         {
             _participanteRepository = participanteRepository;
+            _clubRepository = clubRepository;
             _mapper = mapper;
             _auditService = auditService;
         }
@@ -41,6 +43,22 @@ namespace SportTrack_v1.Controladores.Participante
 
         public async Task<ParticipanteDto> CreateParticipanteAsync(ParticipanteCreateDto participanteDto)
         {
+            // SaaS Enforcement: Verificar límites del plan
+            if (participanteDto.ClubId.HasValue)
+            {
+                var clubId = participanteDto.ClubId.Value;
+                var club = await _clubRepository.GetByIdAsync(clubId);
+                
+                if (club?.PlanSaaS != null)
+                {
+                    var count = await _participanteRepository.CountByClubIdAsync(clubId);
+                    if (club.PlanSaaS.MaxAtletas != -1 && count >= club.PlanSaaS.MaxAtletas)
+                    {
+                        throw new BadRequestException($"Has alcanzado el límite de {club.PlanSaaS.MaxAtletas} atletas permitidos en tu plan {club.PlanSaaS.Nombre}.");
+                    }
+                }
+            }
+
             var participante = _mapper.Map<Entidades.Entidades.Participante>(participanteDto);
             var result = await _participanteRepository.CreateAsync(participante);
             

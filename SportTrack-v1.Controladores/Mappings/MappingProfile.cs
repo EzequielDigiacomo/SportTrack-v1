@@ -20,6 +20,7 @@ namespace SportTrack_v1.Controladores.Mappings
             CreateMap<Entidades.Entidades.Club, ClubDto>()
                 .ForMember(dest => dest.CantidadAtletas, opt => opt.MapFrom(src => src.Participantes != null ? src.Participantes.Count : 0))
                 .ForMember(dest => dest.ParentClubNombre, opt => opt.MapFrom(src => src.ParentClub != null ? src.ParentClub.Nombre : null))
+                .ForMember(dest => dest.PlanNombre, opt => opt.MapFrom(src => src.PlanSaaS != null ? src.PlanSaaS.Nombre : null))
                 .ReverseMap();
             CreateMap<ClubCreateDto, Entidades.Entidades.Club>();
             CreateMap<ClubUpdateDto, Entidades.Entidades.Club>();
@@ -115,6 +116,8 @@ namespace SportTrack_v1.Controladores.Mappings
             CreateMap<EventoPrueba, EventoPruebaDto>()
                 .ForMember(dest => dest.Estado, opt => opt.MapFrom(src => src.Estado.ToString()))
                 .ForMember(dest => dest.CantidadInscritos, opt => opt.MapFrom(src => src.Inscripciones != null ? src.Inscripciones.Count : 0));
+            // Mapeos de SaaS
+            CreateMap<PlanSaaS, SportTrack_v1.Controladores.SaaS.Dtos.PlanSaaSDto>();
         }
     }
 }

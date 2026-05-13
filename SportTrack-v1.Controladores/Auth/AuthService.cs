@@ -32,7 +32,9 @@ namespace SportTrack_v1.Controladores.Auth
 
             var user = await _context.Usuarios
                 .Include(u => u.Club)
-                    .ThenInclude(c => c.ParentClub) // Importante para ver la jerarquía
+                    .ThenInclude(c => c.ParentClub)
+                .Include(u => u.Club)
+                    .ThenInclude(c => c.PlanSaaS)
                 .FirstOrDefaultAsync(u => u.Username == cleanUsername);
 
             if (user == null) 
@@ -74,6 +76,22 @@ namespace SportTrack_v1.Controladores.Auth
             Console.WriteLine($"LOGIN EXITOSO: {cleanUsername}");
 
             var response = _mapper.Map<AuthResponseDto>(user);
+            
+            // Lógica de jerarquía de planes: si el club es hijo, hereda el plan de la federación madre
+            var clubConPlan = user.Club;
+            if (clubConPlan != null && clubConPlan.PlanSaaS == null && clubConPlan.ParentClubId.HasValue)
+            {
+                // Si el club no tiene plan, buscamos el de su padre (la federación)
+                var parent = await _context.Clubes
+                    .Include(c => c.PlanSaaS)
+                    .FirstOrDefaultAsync(c => c.Id == clubConPlan.ParentClubId);
+                if (parent != null) clubConPlan = parent;
+            }
+
+            if (clubConPlan?.PlanSaaS != null)
+            {
+                response.Plan = _mapper.Map<SportTrack_v1.Controladores.SaaS.Dtos.PlanSaaSDto>(clubConPlan.PlanSaaS);
+            }
             response.Token = _tokenService.CreateToken(user);
             
             await _auditService.RegistrarAccionAsync("LOGIN_SUCCESS", $"Usuario '{user.Username}' inició sesión correctamente.", user.Username, "Auth");

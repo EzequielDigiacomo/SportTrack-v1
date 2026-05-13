@@ -34,6 +34,13 @@ namespace SportTrack_v1.Controladores.Club
         public async Task<ClubDto> CreateClubAsync(ClubCreateDto clubDto)
         {
             var club = _mapper.Map<Entidades.Entidades.Club>(clubDto);
+            
+            // Asignar plan por defecto (Bronce = 1) si no tiene uno
+            if (club.PlanSaaSId == null || club.PlanSaaSId == 0)
+            {
+                club.PlanSaaSId = 1; 
+            }
+
             var result = await _clubRepository.CreateAsync(club);
             return _mapper.Map<ClubDto>(result);
         }

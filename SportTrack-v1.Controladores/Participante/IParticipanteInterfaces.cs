@@ -13,6 +13,7 @@ namespace SportTrack_v1.Controladores.Participante
         Task<Entidades.Entidades.Participante> UpdateAsync(Entidades.Entidades.Participante participante);
         Task<bool> DeleteAsync(int id);
         Task<bool> ExistsAsync(int id);
+        Task<int> CountByClubIdAsync(int clubId);
     }
 
     public interface IParticipanteService

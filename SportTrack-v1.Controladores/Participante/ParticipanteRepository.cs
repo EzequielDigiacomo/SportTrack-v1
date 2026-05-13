@@ -95,5 +95,10 @@ namespace SportTrack_v1.Controladores.Participante
         {
             return await _context.Participantes.AnyAsync(p => p.Id == id);
         }
+
+        public async Task<int> CountByClubIdAsync(int clubId)
+        {
+            return await _context.Participantes.CountAsync(p => p.ClubId == clubId);
+        }
     }
 }
