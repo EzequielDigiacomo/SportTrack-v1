@@ -48,9 +48,34 @@ namespace SportTrack_v1.Controladores.Auth
 
             if (!BCrypt.Net.BCrypt.Verify(cleanPassword, user.PasswordHash))
             {
-                Console.WriteLine($"CONTRASEÑA INCORRECTA para: {cleanUsername}");
-                await _auditService.RegistrarAccionAsync("LOGIN_FAILED", $"Intento fallido: Contraseña incorrecta para usuario '{cleanUsername}'.", cleanUsername, "Auth");
-                throw new UnauthorizedException("Contraseña incorrecta. Verificá mayúsculas/minúsculas.");
+                user.IntentosFallidos++;
+                var intentosRestantes = 5 - user.IntentosFallidos;
+                
+                if (intentosRestantes <= 0)
+                {
+                    user.Activo = false;
+                    user.IntentosFallidos = 0;
+                    _context.Usuarios.Update(user);
+                    await _context.SaveChangesAsync();
+                    
+                    await _auditService.RegistrarAccionAsync("ACCOUNT_LOCKED", $"Cuenta '{cleanUsername}' bloqueada por 5 intentos fallidos.", cleanUsername, "Auth");
+                    throw new UnauthorizedException("Tu cuenta ha sido deshabilitada por superar el límite de intentos. Contactá al administrador (desarrollador) para habilitarla. Se recomienda cambiar la contraseña.");
+                }
+
+                _context.Usuarios.Update(user);
+                await _context.SaveChangesAsync();
+
+                Console.WriteLine($"CONTRASEÑA INCORRECTA para: {cleanUsername}. Quedan {intentosRestantes} intentos.");
+                await _auditService.RegistrarAccionAsync("LOGIN_FAILED", $"Contraseña incorrecta para '{cleanUsername}'. Quedan {intentosRestantes} intentos.", cleanUsername, "Auth");
+                throw new UnauthorizedException($"Contraseña incorrecta. Te quedan {intentosRestantes} intentos antes del bloqueo.");
+            }
+
+            // Si el login fue exitoso, reseteamos el contador
+            if (user.IntentosFallidos > 0)
+            {
+                user.IntentosFallidos = 0;
+                _context.Usuarios.Update(user);
+                await _context.SaveChangesAsync();
             }
 
             // Verificar que la cuenta esté habilitada

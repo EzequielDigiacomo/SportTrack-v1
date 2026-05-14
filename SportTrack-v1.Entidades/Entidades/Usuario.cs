@@ -17,6 +17,7 @@ namespace SportTrack_v1.Entidades.Entidades
         
         public DateTime FechaCreacion { get; set; } = DateTime.UtcNow;
         public bool Activo { get; set; } = true;
+        public int IntentosFallidos { get; set; } = 0;
 
         // Datos personales — para identificación y auditoría de jueces
         public string? Nombre { get; set; }
