@@ -68,6 +68,7 @@ namespace SportTrack_v1.Api.Controllers.Auth
         }
 
         [HttpPut("usuarios/{id}/password")]
+        [Authorize]
         public async Task<ActionResult> UpdatePassword(int id, [FromBody] string newPassword)
         {
             await _authService.UpdatePasswordAsync(id, newPassword);

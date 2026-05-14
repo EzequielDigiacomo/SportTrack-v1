@@ -47,7 +47,7 @@ namespace SportTrack_v1.Api.Middleware
                 {
                     statusCode = context.Response.StatusCode,
                     message = ex.Message,
-                    innerMessage = GetFullInnerException(ex),
+                    innerMessage = _env.IsDevelopment() ? GetFullInnerException(ex) : null,
                     details = _env.IsDevelopment() ? ex.StackTrace?.ToString() : null
                 };
 
