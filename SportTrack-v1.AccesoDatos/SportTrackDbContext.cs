@@ -679,7 +679,7 @@ namespace SportTrack.AccessDatos
                 new Categoria { Id = 4, Nombre = "Cadete", EdadMin = 15, EdadMax = 16 },
                 new Categoria { Id = 5, Nombre = "Junior", EdadMin = 17, EdadMax = 18 },
                 new Categoria { Id = 6, Nombre = "Sub-23", EdadMin = 19, EdadMax = 23 },
-                new Categoria { Id = 7, Nombre = "Senior", EdadMin = 19, EdadMax = 35 },
+                new Categoria { Id = 7, Nombre = "Senior", EdadMin = 19, EdadMax = 39 },
                 new Categoria { Id = 8, Nombre = "Master A", EdadMin = 40, EdadMax = 49 },
                 new Categoria { Id = 9, Nombre = "Master B", EdadMin = 50, EdadMax = 59 },
                 new Categoria { Id = 10, Nombre = "Master C", EdadMin = 60, EdadMax = 80 },

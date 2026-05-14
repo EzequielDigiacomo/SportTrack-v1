@@ -50,6 +50,7 @@ namespace SportTrack_v1.Controladores.Participante
         {
             var edad = DateTime.UtcNow.Year - participante.FechaNacimiento.Year;
             var categoria = await _context.Categorias
+                .Where(c => c.Nombre != "Control")
                 .FirstOrDefaultAsync(c => 
                     (c.EdadMin == null || edad >= c.EdadMin) && 
                     (c.EdadMax == null || edad <= c.EdadMax));
@@ -68,6 +69,7 @@ namespace SportTrack_v1.Controladores.Participante
         {
             var edad = DateTime.UtcNow.Year - participante.FechaNacimiento.Year;
             var categoria = await _context.Categorias
+                .Where(c => c.Nombre != "Control")
                 .FirstOrDefaultAsync(c => 
                     (c.EdadMin == null || edad >= c.EdadMin) && 
                     (c.EdadMax == null || edad <= c.EdadMax));
