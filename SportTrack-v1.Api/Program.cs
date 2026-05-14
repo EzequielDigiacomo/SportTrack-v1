@@ -275,10 +275,43 @@ app.MapGet("/api/debug-db", async (SportTrackDbContext db) => {
 
 app.MapGet("/api/fix-intentos-column", async (SportTrackDbContext db) => {
     try {
+        // 1. Asegurar columna IntentosFallidos
         await db.Database.ExecuteSqlRawAsync(@"
             ALTER TABLE seguridad.""Usuarios"" ADD COLUMN IF NOT EXISTS ""IntentosFallidos"" integer NOT NULL DEFAULT 0;
         ");
-        return Results.Ok(new { Message = "Columna IntentosFallidos agregada exitosamente (o ya existía)." });
+        // 2. Asegurar categoría Control sin error de duplicado
+        await db.Database.ExecuteSqlRawAsync(@"
+            INSERT INTO catalogos.""Categorias"" (""Id"", ""EdadMax"", ""EdadMin"", ""Nombre"") 
+            VALUES (11, 99, 0, 'Control') 
+            ON CONFLICT (""Id"") DO NOTHING;
+        ");
+        return Results.Ok(new { Message = "Base de datos actualizada (Columna Intentos e Inserción Control)." });
+    } catch (Exception ex) {
+        return Results.Problem($"Error: {ex.Message}");
+    }
+});
+
+app.MapGet("/api/reclaim-orphans/{clubId}", async (int clubId, SportTrackDbContext db) => {
+    try {
+        var orphans = await db.Eventos.Where(e => e.ClubId == null).ToListAsync();
+        foreach (var e in orphans)
+        {
+            e.ClubId = clubId;
+        }
+        await db.SaveChangesAsync();
+        return Results.Ok(new { Message = $"{orphans.Count} eventos asignados al Club/Fede {clubId}." });
+    } catch (Exception ex) {
+        return Results.Problem($"Error: {ex.Message}");
+    }
+});
+
+app.MapGet("/api/assign-event/{eventId}/{clubId}", async (int eventId, int clubId, SportTrackDbContext db) => {
+    try {
+        var evento = await db.Eventos.FindAsync(eventId);
+        if (evento == null) return Results.NotFound("Evento no encontrado");
+        evento.ClubId = clubId;
+        await db.SaveChangesAsync();
+        return Results.Ok(new { Message = $"Evento {eventId} asignado al Club/Fede {clubId}." });
     } catch (Exception ex) {
         return Results.Problem($"Error: {ex.Message}");
     }
