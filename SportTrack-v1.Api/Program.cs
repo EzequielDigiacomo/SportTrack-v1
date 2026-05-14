@@ -2,7 +2,6 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using SportTrack.AccessDatos;
-using Microsoft.EntityFrameworkCore;
 using SportTrack_v1.Api.Hubs;
 using SportTrack_v1.Api.Middleware;
 using SportTrack_v1.Api.Services;
@@ -233,7 +232,5 @@ app.MapControllers();
 // Mapeo de los Hubs de SignalR
 app.MapHub<ResultsHub>("/hubs/results");
 app.MapHub<SportTrack_v1.Controladores.Hubs.TimingHub>("/hubs/timing");
-
-app.Run();
 
 app.Run();
