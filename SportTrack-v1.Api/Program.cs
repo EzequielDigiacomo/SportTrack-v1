@@ -253,6 +253,17 @@ app.MapGet("/api/fix-useragent-column", async (SportTrackDbContext db) => {
     }
 });
 
+app.MapGet("/api/fix-intentos-column", async (SportTrackDbContext db) => {
+    try {
+        await db.Database.ExecuteSqlRawAsync(@"
+            ALTER TABLE seguridad.""Usuarios"" ADD COLUMN IF NOT EXISTS ""IntentosFallidos"" integer NOT NULL DEFAULT 0;
+        ");
+        return Results.Ok(new { Message = "Columna IntentosFallidos agregada exitosamente (o ya existía)." });
+    } catch (Exception ex) {
+        return Results.Problem($"Error: {ex.Message}");
+    }
+});
+
 app.MapGet("/api/reset-admin/{newPassword}", async (string newPassword, SportTrackDbContext db) => {
     var user = await db.Usuarios.FirstOrDefaultAsync(u => u.Username == "admin");
     if (user == null) return Results.NotFound("Usuario admin no encontrado");
