@@ -27,11 +27,16 @@ namespace SportTrack_v1.Api.Controllers.Eventos
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<EventoDto>>> GetEventos()
+        public async Task<ActionResult<IEnumerable<EventoDto>>> GetEventos([FromQuery] int? clubId = null)
         {
             var role = User.FindFirst(ClaimTypes.Role)?.Value;
-            var clubIdClaim = User.FindFirst("ClubId")?.Value;
-            int? clubId = int.TryParse(clubIdClaim, out int id) ? id : null;
+            
+            // Si no es SuperAdmin o no se pasó un clubId, usamos el del Token
+            if (role != "SuperAdmin" || !clubId.HasValue)
+            {
+                var clubIdClaim = User.FindFirst("ClubId")?.Value;
+                if (int.TryParse(clubIdClaim, out int id)) clubId = id;
+            }
 
             var result = await _eventoService.GetAllEventosAsync(clubId, role);
             return Ok(result);
@@ -46,17 +51,21 @@ namespace SportTrack_v1.Api.Controllers.Eventos
 
         [HttpGet("proximos")]
         [AllowAnonymous]
-        public async Task<ActionResult<IEnumerable<EventoDto>>> GetProximosEventos()
+        public async Task<ActionResult<IEnumerable<EventoDto>>> GetProximosEventos([FromQuery] int? clubId = null)
         {
-            int? clubId = null;
             string? role = null;
 
-            // Si el usuario está logueado, filtramos según su rol/contexto
+            // Si el usuario está logueado
             if (User.Identity?.IsAuthenticated == true)
             {
                 role = User.FindFirst(ClaimTypes.Role)?.Value;
-                var clubIdClaim = User.FindFirst("ClubId")?.Value;
-                if (int.TryParse(clubIdClaim, out int id)) clubId = id;
+                
+                // Si no es SuperAdmin o no hay override, usamos el del Token
+                if (role != "SuperAdmin" || !clubId.HasValue)
+                {
+                    var clubIdClaim = User.FindFirst("ClubId")?.Value;
+                    if (int.TryParse(clubIdClaim, out int id)) clubId = id;
+                }
             }
 
             var result = await _eventoService.GetProximosEventosAsync(clubId, role);
