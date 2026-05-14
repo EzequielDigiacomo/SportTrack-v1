@@ -18,32 +18,58 @@ namespace SportTrack_v1.Controladores.Participante
 
         public async Task<IEnumerable<Entidades.Entidades.Participante>> GetAllAsync()
         {
-            return await _context.Participantes
+            var list = await _context.Participantes
                 .Include(p => p.Sexo)
                 .Include(p => p.Categoria)
                 .Include(p => p.Club)
                 .AsNoTracking()
                 .ToListAsync();
+
+            // Corrección al vuelo para atletas afectados por el hueco de edad (36-39)
+            foreach (var p in list)
+            {
+                if (p.CategoriaId == 11 && p.Edad >= 36 && p.Edad <= 39)
+                {
+                    p.Categoria = new Categoria { Id = 7, Nombre = "Senior" };
+                }
+            }
+            return list;
         }
 
         public async Task<Entidades.Entidades.Participante?> GetByIdAsync(int id)
         {
-            return await _context.Participantes
+            var p = await _context.Participantes
                 .Include(p => p.Sexo)
                 .Include(p => p.Categoria)
                 .Include(p => p.Club)
                 .FirstOrDefaultAsync(p => p.Id == id);
+
+            if (p != null && p.CategoriaId == 11 && p.Edad >= 36 && p.Edad <= 39)
+            {
+                p.Categoria = new Categoria { Id = 7, Nombre = "Senior" };
+            }
+            return p;
         }
 
         public async Task<IEnumerable<Entidades.Entidades.Participante>> GetByClubIdAsync(int clubId)
         {
-            return await _context.Participantes
+            var list = await _context.Participantes
                 .Include(p => p.Sexo)
                 .Include(p => p.Categoria)
                 .Include(p => p.Club)
                 .Where(p => p.ClubId == clubId)
                 .AsNoTracking()
                 .ToListAsync();
+
+            // Corrección al vuelo para la grilla
+            foreach (var p in list)
+            {
+                if (p.CategoriaId == 11 && p.Edad >= 36 && p.Edad <= 39)
+                {
+                    p.Categoria = new Categoria { Id = 7, Nombre = "Senior" };
+                }
+            }
+            return list;
         }
 
         public async Task<Entidades.Entidades.Participante> CreateAsync(Entidades.Entidades.Participante participante)
