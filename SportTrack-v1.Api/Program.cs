@@ -253,6 +253,26 @@ app.MapGet("/api/fix-useragent-column", async (SportTrackDbContext db) => {
     }
 });
 
+app.MapGet("/api/debug-db", async (SportTrackDbContext db) => {
+    try {
+        var events = await db.Eventos
+            .Select(e => new { e.Id, e.Nombre, e.ClubId, ClubName = e.Club.Nombre })
+            .ToListAsync();
+            
+        var clubs = await db.Clubes
+            .Select(c => new { c.Id, c.Nombre, c.ParentClubId })
+            .ToListAsync();
+            
+        var users = await db.Usuarios
+            .Select(u => new { u.Id, u.Username, u.ClubId, u.Rol })
+            .ToListAsync();
+
+        return Results.Ok(new { Events = events, Clubs = clubs, Users = users });
+    } catch (Exception ex) {
+        return Results.Problem($"Error: {ex.Message}");
+    }
+});
+
 app.MapGet("/api/fix-intentos-column", async (SportTrackDbContext db) => {
     try {
         await db.Database.ExecuteSqlRawAsync(@"
