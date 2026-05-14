@@ -30,7 +30,7 @@ namespace SportTrack_v1.Controladores.Participante
             {
                 if (p.CategoriaId == 11 && p.Edad >= 36 && p.Edad <= 39)
                 {
-                    p.Categoria = new Categoria { Id = 7, Nombre = "Senior" };
+                    p.Categoria = new Entidades.Entidades.Categoria { Id = 7, Nombre = "Senior" };
                 }
             }
             return list;
@@ -46,7 +46,7 @@ namespace SportTrack_v1.Controladores.Participante
 
             if (p != null && p.CategoriaId == 11 && p.Edad >= 36 && p.Edad <= 39)
             {
-                p.Categoria = new Categoria { Id = 7, Nombre = "Senior" };
+                p.Categoria = new Entidades.Entidades.Categoria { Id = 7, Nombre = "Senior" };
             }
             return p;
         }
@@ -66,7 +66,7 @@ namespace SportTrack_v1.Controladores.Participante
             {
                 if (p.CategoriaId == 11 && p.Edad >= 36 && p.Edad <= 39)
                 {
-                    p.Categoria = new Categoria { Id = 7, Nombre = "Senior" };
+                    p.Categoria = new Entidades.Entidades.Categoria { Id = 7, Nombre = "Senior" };
                 }
             }
             return list;
