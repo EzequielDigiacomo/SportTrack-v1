@@ -72,6 +72,33 @@ namespace SportTrack_v1.Controladores.Participante
             return list;
         }
 
+        public async Task<IEnumerable<Entidades.Entidades.Participante>> GetByFederationIdAsync(int federationId)
+        {
+            // Obtener IDs de todos los clubes que tienen a esta federación como padre + el ID de la propia federación
+            var clubIds = await _context.Clubes
+                .Where(c => c.Id == federationId || c.ParentClubId == federationId)
+                .Select(c => c.Id)
+                .ToListAsync();
+
+            var list = await _context.Participantes
+                .Include(p => p.Sexo)
+                .Include(p => p.Categoria)
+                .Include(p => p.Club)
+                .Where(p => p.ClubId.HasValue && clubIds.Contains(p.ClubId.Value))
+                .AsNoTracking()
+                .ToListAsync();
+
+            // Corrección al vuelo para la grilla
+            foreach (var p in list)
+            {
+                if (p.CategoriaId == 11 && p.Edad >= 36 && p.Edad <= 39)
+                {
+                    p.Categoria = new Entidades.Entidades.Categoria { Id = 7, Nombre = "Senior" };
+                }
+            }
+            return list;
+        }
+
         public async Task<Entidades.Entidades.Participante> CreateAsync(Entidades.Entidades.Participante participante)
         {
             var edad = DateTime.UtcNow.Year - participante.FechaNacimiento.Year;

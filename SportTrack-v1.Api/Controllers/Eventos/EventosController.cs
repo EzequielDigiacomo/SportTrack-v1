@@ -29,16 +29,11 @@ namespace SportTrack_v1.Api.Controllers.Eventos
         [HttpGet]
         public async Task<ActionResult<IEnumerable<EventoDto>>> GetEventos()
         {
-            int? clubId = null;
             var role = User.FindFirst(ClaimTypes.Role)?.Value;
-            
-            if (role == "Club")
-            {
-                var clubIdClaim = User.FindFirst("ClubId")?.Value;
-                if (int.TryParse(clubIdClaim, out int id) && id > 0) clubId = id;
-            }
+            var clubIdClaim = User.FindFirst("ClubId")?.Value;
+            int? clubId = int.TryParse(clubIdClaim, out int id) ? id : null;
 
-            var result = await _eventoService.GetAllEventosAsync(clubId);
+            var result = await _eventoService.GetAllEventosAsync(clubId, role);
             return Ok(result);
         }
 
@@ -53,7 +48,18 @@ namespace SportTrack_v1.Api.Controllers.Eventos
         [AllowAnonymous]
         public async Task<ActionResult<IEnumerable<EventoDto>>> GetProximosEventos()
         {
-            var result = await _eventoService.GetProximosEventosAsync();
+            int? clubId = null;
+            string? role = null;
+
+            // Si el usuario está logueado, filtramos según su rol/contexto
+            if (User.Identity?.IsAuthenticated == true)
+            {
+                role = User.FindFirst(ClaimTypes.Role)?.Value;
+                var clubIdClaim = User.FindFirst("ClubId")?.Value;
+                if (int.TryParse(clubIdClaim, out int id)) clubId = id;
+            }
+
+            var result = await _eventoService.GetProximosEventosAsync(clubId, role);
             return Ok(result);
         }
 

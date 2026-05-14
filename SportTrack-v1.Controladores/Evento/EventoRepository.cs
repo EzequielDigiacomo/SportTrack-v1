@@ -17,13 +17,26 @@ namespace SportTrack_v1.Controladores.Evento
             _context = context;
         }
 
-        public async Task<IEnumerable<Entidades.Entidades.Evento>> GetAllAsync(int? clubId = null)
+        public async Task<IEnumerable<Entidades.Entidades.Evento>> GetAllAsync(int? clubId = null, string? rol = null)
         {
             var query = _context.Eventos.AsQueryable();
             
-            if (clubId.HasValue)
+            if (rol != "SuperAdmin" && clubId.HasValue)
             {
-                query = query.Where(e => e.ClubId == clubId.Value);
+                if (rol == "Admin") // Federación
+                {
+                    // Obtener IDs de la federación y sus clubes afiliados
+                    var clubIds = await _context.Clubes
+                        .Where(c => c.Id == clubId.Value || c.ParentClubId == clubId.Value)
+                        .Select(c => c.Id)
+                        .ToListAsync();
+                    
+                    query = query.Where(e => e.ClubId.HasValue && clubIds.Contains(e.ClubId.Value));
+                }
+                else // Club u otros
+                {
+                    query = query.Where(e => e.ClubId == clubId.Value);
+                }
             }
 
             return await query
@@ -70,10 +83,29 @@ namespace SportTrack_v1.Controladores.Evento
             return await _context.Eventos.AnyAsync(e => e.Id == id);
         }
 
-        public async Task<IEnumerable<Entidades.Entidades.Evento>> GetProximosAsync()
+        public async Task<IEnumerable<Entidades.Entidades.Evento>> GetProximosAsync(int? clubId = null, string? rol = null)
         {
-            return await _context.Eventos
-                .Where(e => e.Fecha >= DateTime.UtcNow.Date)
+            var query = _context.Eventos
+                .Where(e => e.Fecha >= DateTime.UtcNow.Date);
+
+            if (rol != "SuperAdmin" && clubId.HasValue)
+            {
+                if (rol == "Admin") // Federación
+                {
+                    var clubIds = await _context.Clubes
+                        .Where(c => c.Id == clubId.Value || c.ParentClubId == clubId.Value)
+                        .Select(c => c.Id)
+                        .ToListAsync();
+                    
+                    query = query.Where(e => e.ClubId.HasValue && clubIds.Contains(e.ClubId.Value));
+                }
+                else // Club
+                {
+                    query = query.Where(e => e.ClubId == clubId.Value);
+                }
+            }
+
+            return await query
                 .OrderBy(e => e.Fecha)
                 .AsNoTracking()
                 .ToListAsync();
