@@ -23,22 +23,25 @@ namespace SportTrack_v1.Controladores.Evento
             
             if (rol != "SuperAdmin" && clubId.HasValue)
             {
-                // Verificar si el clubId pertenece a una Federación (no tiene ParentClubId)
-                var isFederation = await _context.Clubes.AnyAsync(c => c.Id == clubId.Value && c.ParentClubId == null);
+                var clubActual = await _context.Clubes.FirstOrDefaultAsync(c => c.Id == clubId.Value);
+                if (clubActual != null)
+                {
+                    int federationId = clubActual.ParentClubId ?? clubActual.Id;
 
-                if (isFederation || rol == "Admin")
-                {
-                    // Obtener IDs de la federación y sus clubes afiliados
-                    var clubIds = await _context.Clubes
-                        .Where(c => c.Id == clubId.Value || c.ParentClubId == clubId.Value)
-                        .Select(c => c.Id)
-                        .ToListAsync();
-                    
-                    query = query.Where(e => e.ClubId.HasValue && clubIds.Contains(e.ClubId.Value));
-                }
-                else // Club o Rol específico de un club hijo
-                {
-                    query = query.Where(e => e.ClubId == clubId.Value);
+                    // Si el rol es uno de administración de competencias, ve toda la federación
+                    if (rol == "Admin" || rol == "Largador" || rol == "Cronometrista" || rol == "JuezControl" || rol == "Control")
+                    {
+                        var clubIds = await _context.Clubes
+                            .Where(c => c.Id == federationId || c.ParentClubId == federationId)
+                            .Select(c => c.Id)
+                            .ToListAsync();
+                        
+                        query = query.Where(e => e.ClubId.HasValue && clubIds.Contains(e.ClubId.Value));
+                    }
+                    else
+                    {
+                        query = query.Where(e => e.ClubId == clubId.Value);
+                    }
                 }
             }
 
@@ -93,21 +96,24 @@ namespace SportTrack_v1.Controladores.Evento
 
             if (rol != "SuperAdmin" && clubId.HasValue)
             {
-                // Verificar si el clubId pertenece a una Federación (no tiene ParentClubId)
-                var isFederation = await _context.Clubes.AnyAsync(c => c.Id == clubId.Value && c.ParentClubId == null);
+                var clubActual = await _context.Clubes.FirstOrDefaultAsync(c => c.Id == clubId.Value);
+                if (clubActual != null)
+                {
+                    int federationId = clubActual.ParentClubId ?? clubActual.Id;
 
-                if (isFederation || rol == "Admin") // Federación
-                {
-                    var clubIds = await _context.Clubes
-                        .Where(c => c.Id == clubId.Value || c.ParentClubId == clubId.Value)
-                        .Select(c => c.Id)
-                        .ToListAsync();
-                    
-                    query = query.Where(e => e.ClubId.HasValue && clubIds.Contains(e.ClubId.Value));
-                }
-                else // Club
-                {
-                    query = query.Where(e => e.ClubId == clubId.Value);
+                    if (rol == "Admin" || rol == "Largador" || rol == "Cronometrista" || rol == "JuezControl" || rol == "Control")
+                    {
+                        var clubIds = await _context.Clubes
+                            .Where(c => c.Id == federationId || c.ParentClubId == federationId)
+                            .Select(c => c.Id)
+                            .ToListAsync();
+                        
+                        query = query.Where(e => e.ClubId.HasValue && clubIds.Contains(e.ClubId.Value));
+                    }
+                    else // Club normal
+                    {
+                        query = query.Where(e => e.ClubId == clubId.Value);
+                    }
                 }
             }
 
