@@ -8,7 +8,8 @@ namespace SportTrack_v1.Controladores.SaaS.Dtos
         [Required]
         public string Nombre { get; set; } = string.Empty;
         public string? Sigla { get; set; }
-        public string? Email { get; set; }
+        [Required]
+        public string Email { get; set; } = string.Empty;
         public string? Telefono { get; set; }
         public string? Direccion { get; set; }
         

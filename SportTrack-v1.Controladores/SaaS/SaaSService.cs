@@ -162,6 +162,7 @@ namespace SportTrack_v1.Controladores.SaaS
                 {
                     Username = dto.AdminUsername.Trim().ToLower(),
                     PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.AdminPassword),
+                    Email = dto.Email, // Corregido: El email es obligatorio y único
                     Rol = "Admin",
                     ClubId = club.Id,
                     Activo = true
