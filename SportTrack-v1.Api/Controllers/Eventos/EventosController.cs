@@ -84,7 +84,7 @@ namespace SportTrack_v1.Api.Controllers.Eventos
         public async Task<ActionResult<EventoDto>> CreateEvento(EventoCreateDto eventoDto)
         {
             var role = User.FindFirst(ClaimTypes.Role)?.Value;
-            if (role == "Club")
+            if (role == "Club" || role == "Admin")
             {
                 var clubIdClaim = User.FindFirst("ClubId")?.Value;
                 if (int.TryParse(clubIdClaim, out int id) && id > 0) eventoDto.ClubId = id;
@@ -99,7 +99,7 @@ namespace SportTrack_v1.Api.Controllers.Eventos
         {
             int? clubId = null;
             var role = User.FindFirst(ClaimTypes.Role)?.Value;
-            if (role == "Club")
+            if (role == "Club" || role == "Admin")
             {
                 var clubIdClaim = User.FindFirst("ClubId")?.Value;
                 if (int.TryParse(clubIdClaim, out int cid) && cid > 0) clubId = cid;
@@ -114,7 +114,7 @@ namespace SportTrack_v1.Api.Controllers.Eventos
         {
             int? clubId = null;
             var role = User.FindFirst(ClaimTypes.Role)?.Value;
-            if (role == "Club")
+            if (role == "Club" || role == "Admin")
             {
                 var clubIdClaim = User.FindFirst("ClubId")?.Value;
                 if (int.TryParse(clubIdClaim, out int cid) && cid > 0) clubId = cid;
