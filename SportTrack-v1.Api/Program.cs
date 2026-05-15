@@ -45,7 +45,7 @@ builder.Services.AddCors(options =>
     {
         policy.AllowAnyHeader()
               .AllowAnyMethod()
-              .WithOrigins(allowedOrigins)
+              .SetIsOriginAllowed(origin => true) // Permitir cualquier origen para facilitar pruebas en móviles (CORS + Credentials)
               .AllowCredentials();
     });
 });

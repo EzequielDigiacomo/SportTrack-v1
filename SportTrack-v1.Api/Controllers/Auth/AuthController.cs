@@ -28,8 +28,8 @@ namespace SportTrack_v1.Api.Controllers.Auth
             var cookieOptions = new CookieOptions
             {
                 HttpOnly = true,
-                Secure = true, // En producción debería ser true
-                SameSite = SameSiteMode.None, // Necesario para Cross-Site si el front/back están en distintos dominios
+                Secure = Request.IsHttps, // Solo true si es HTTPS
+                SameSite = Request.IsHttps ? SameSiteMode.None : SameSiteMode.Lax, 
                 Expires = DateTime.UtcNow.AddHours(5)
             };
 
@@ -45,8 +45,8 @@ namespace SportTrack_v1.Api.Controllers.Auth
             Response.Cookies.Delete("X-Access-Token", new CookieOptions
             {
                 HttpOnly = true,
-                Secure = true,
-                SameSite = SameSiteMode.None
+                Secure = Request.IsHttps,
+                SameSite = Request.IsHttps ? SameSiteMode.None : SameSiteMode.Lax
             });
             return Ok(new { message = "Sesión cerrada correctamente" });
         }
