@@ -239,4 +239,16 @@ app.MapControllers();
 app.MapHub<ResultsHub>("/hubs/results");
 app.MapHub<SportTrack_v1.Controladores.Hubs.TimingHub>("/hubs/timing");
 
+// ENDPOINT DE EMERGENCIA (Temporal para arreglar la base de datos en Render)
+app.MapGet("/api/fix-db", async (SportTrack.AccessDatos.SportTrackDbContext db) => {
+    try {
+        await db.Database.ExecuteSqlRawAsync(@"
+            ALTER TABLE ""Auditoria"" ADD COLUMN IF NOT EXISTS ""UserAgent"" text NOT NULL DEFAULT '';
+        ");
+        return Results.Ok(new { Message = "Base de datos arreglada. La columna UserAgent fue creada en Render." });
+    } catch (Exception ex) {
+        return Results.Problem($"Error al crear la columna: {ex.Message}");
+    }
+});
+
 app.Run();
