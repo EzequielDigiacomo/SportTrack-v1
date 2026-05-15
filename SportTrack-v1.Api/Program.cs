@@ -19,6 +19,7 @@ using SportTrack_v1.Controladores.Mappings;
 using SportTrack_v1.Controladores.Audit;
 using Microsoft.OpenApi.Models;
 using System.Text;
+using Microsoft.AspNetCore.HttpOverrides;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -169,6 +170,12 @@ builder.Services.AddSwaggerGen(c =>
 });
 
 var app = builder.Build();
+
+// Configuración para leer IP real a través del proxy de Render
+app.UseForwardedHeaders(new ForwardedHeadersOptions
+{
+    ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
+});
 
 // Ejecutar migraciones automáticamente al iniciar (útil para el despliegue inicial en Render)
 using (var scope = app.Services.CreateScope())

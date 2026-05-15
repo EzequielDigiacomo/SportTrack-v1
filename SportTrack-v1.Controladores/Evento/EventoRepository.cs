@@ -23,7 +23,10 @@ namespace SportTrack_v1.Controladores.Evento
             
             if (rol != "SuperAdmin" && clubId.HasValue)
             {
-                if (rol == "Admin") // Federación
+                // Verificar si el clubId pertenece a una Federación (no tiene ParentClubId)
+                var isFederation = await _context.Clubes.AnyAsync(c => c.Id == clubId.Value && c.ParentClubId == null);
+
+                if (isFederation || rol == "Admin")
                 {
                     // Obtener IDs de la federación y sus clubes afiliados
                     var clubIds = await _context.Clubes
@@ -33,7 +36,7 @@ namespace SportTrack_v1.Controladores.Evento
                     
                     query = query.Where(e => e.ClubId.HasValue && clubIds.Contains(e.ClubId.Value));
                 }
-                else // Club u otros
+                else // Club o Rol específico de un club hijo
                 {
                     query = query.Where(e => e.ClubId == clubId.Value);
                 }
@@ -90,7 +93,10 @@ namespace SportTrack_v1.Controladores.Evento
 
             if (rol != "SuperAdmin" && clubId.HasValue)
             {
-                if (rol == "Admin") // Federación
+                // Verificar si el clubId pertenece a una Federación (no tiene ParentClubId)
+                var isFederation = await _context.Clubes.AnyAsync(c => c.Id == clubId.Value && c.ParentClubId == null);
+
+                if (isFederation || rol == "Admin") // Federación
                 {
                     var clubIds = await _context.Clubes
                         .Where(c => c.Id == clubId.Value || c.ParentClubId == clubId.Value)
