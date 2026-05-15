@@ -162,7 +162,7 @@ namespace SportTrack_v1.Controladores.SaaS
                 {
                     Username = dto.AdminUsername.Trim().ToLower(),
                     PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.AdminPassword),
-                    Email = dto.Email, // Corregido: El email es obligatorio y único
+                    Email = dto.AdminEmail, // Ahora usamos el email específico del admin
                     Rol = "Admin",
                     ClubId = club.Id,
                     Activo = true
@@ -178,7 +178,24 @@ namespace SportTrack_v1.Controladores.SaaS
             {
                 await transaction.RollbackAsync();
                 var innerMsg = ex.InnerException?.Message ?? "";
-                throw new Exception($"Error al crear la federación y su administrador: {ex.Message}. Detalle: {innerMsg}");
+                
+                string userFriendlyMessage = "Error interno al guardar los datos.";
+                
+                if (innerMsg.Contains("23505") || innerMsg.Contains("duplicate key"))
+                {
+                    if (innerMsg.Contains("IX_Usuarios_Username"))
+                        userFriendlyMessage = "El nombre de usuario administrador ya está en uso. Por favor, elige otro.";
+                    else if (innerMsg.Contains("IX_Usuarios_Email"))
+                        userFriendlyMessage = "El email del administrador ya está registrado en otra cuenta. Debe ser único.";
+                    else if (innerMsg.Contains("IX_Clubes_Nombre"))
+                        userFriendlyMessage = "Ya existe una federación o club con ese nombre.";
+                    else
+                        userFriendlyMessage = "Un dato ingresado ya existe en el sistema y no puede duplicarse.";
+                        
+                    throw new Exception(userFriendlyMessage);
+                }
+
+                throw new Exception($"Error al crear la federación: {ex.Message}");
             }
         }
 
