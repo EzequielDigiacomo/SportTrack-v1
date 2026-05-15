@@ -220,10 +220,16 @@ using (var scope = app.Services.CreateScope())
             context.Database.Migrate();
             Console.WriteLine("Migraciones aplicadas con éxito.");
         }
+        
+        // Safeguard: Asegurar que la columna UserAgent existe en la DB.
+        context.Database.ExecuteSqlRaw(@"
+            ALTER TABLE ""Auditoria"" ADD COLUMN IF NOT EXISTS ""UserAgent"" text NOT NULL DEFAULT '';
+        ");
+        Console.WriteLine("Safeguard: Verificada la columna UserAgent en Auditoria.");
     }
     catch (Exception ex)
     {
-        Console.WriteLine($"Error al aplicar migraciones: {ex.Message}");
+        Console.WriteLine($"Error al aplicar migraciones o safeguard: {ex.Message}");
     }
 }
 
