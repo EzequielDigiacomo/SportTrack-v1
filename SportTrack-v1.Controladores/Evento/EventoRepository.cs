@@ -44,6 +44,11 @@ namespace SportTrack_v1.Controladores.Evento
                         query = query.Where(e => e.ClubId == clubId.Value);
                     }
                 }
+                else
+                {
+                    // If club is invalid/0, don't return any events
+                    query = query.Where(e => e.Id == -1);
+                }
             }
 
             return await query
@@ -116,6 +121,11 @@ namespace SportTrack_v1.Controladores.Evento
                     {
                         query = query.Where(e => e.ClubId == clubId.Value);
                     }
+                }
+                else
+                {
+                    // Invalid club, return empty
+                    query = query.Where(e => e.Id == -1);
                 }
             }
 
