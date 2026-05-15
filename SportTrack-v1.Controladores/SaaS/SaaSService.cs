@@ -177,7 +177,8 @@ namespace SportTrack_v1.Controladores.SaaS
             catch (Exception ex)
             {
                 await transaction.RollbackAsync();
-                throw new Exception("Error al crear la federación y su administrador: " + ex.Message);
+                var innerMsg = ex.InnerException?.Message ?? "";
+                throw new Exception($"Error al crear la federación y su administrador: {ex.Message}. Detalle: {innerMsg}");
             }
         }
 
