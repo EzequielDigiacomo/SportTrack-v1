@@ -29,7 +29,8 @@ namespace SportTrack_v1.Controladores.Evento
                     int federationId = clubActual.ParentClubId ?? clubActual.Id;
 
                     // Si el rol es uno de administración de competencias, ve toda la federación
-                    if (rol == "Admin" || rol == "Largador" || rol == "Cronometrista" || rol == "JuezControl" || rol == "Control")
+                    var rolesAdministrativos = new[] { "Admin", "Largador", "Cronometrista", "JuezControl", "Control" };
+                    if (rolesAdministrativos.Any(r => r.Equals(rol, StringComparison.OrdinalIgnoreCase)))
                     {
                         var clubIds = await _context.Clubes
                             .Where(c => c.Id == federationId || c.ParentClubId == federationId)
@@ -101,7 +102,8 @@ namespace SportTrack_v1.Controladores.Evento
                 {
                     int federationId = clubActual.ParentClubId ?? clubActual.Id;
 
-                    if (rol == "Admin" || rol == "Largador" || rol == "Cronometrista" || rol == "JuezControl" || rol == "Control")
+                    var rolesAdministrativos = new[] { "Admin", "Largador", "Cronometrista", "JuezControl", "Control" };
+                    if (rolesAdministrativos.Any(r => r.Equals(rol, StringComparison.OrdinalIgnoreCase)))
                     {
                         var clubIds = await _context.Clubes
                             .Where(c => c.Id == federationId || c.ParentClubId == federationId)
