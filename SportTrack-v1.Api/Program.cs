@@ -258,4 +258,14 @@ app.MapGet("/api/fix-db", async (SportTrack.AccessDatos.SportTrackDbContext db) 
     }
 });
 
+// ENDPOINT TEMPORAL PARA DEBUG
+app.MapGet("/api/debug-events", async (SportTrack.AccessDatos.SportTrackDbContext db) => {
+    var user = await db.Usuarios.Include(u => u.Club).FirstOrDefaultAsync(u => u.Username == "largador1");
+    var events = await db.Eventos.Select(e => new { e.Id, e.Nombre, e.ClubId }).ToListAsync();
+    return Results.Ok(new { 
+        User = new { user?.Username, user?.ClubId, ParentClubId = user?.Club?.ParentClubId, user?.Rol },
+        Events = events
+    });
+});
+
 app.Run();
