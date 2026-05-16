@@ -29,7 +29,9 @@ namespace SportTrack_v1.Api.Controllers.Eventos
         [HttpGet]
         public async Task<ActionResult<IEnumerable<EventoDto>>> GetEventos([FromQuery] int? clubId = null)
         {
-            var role = User.FindFirst(ClaimTypes.Role)?.Value;
+            var role = User.FindFirst(ClaimTypes.Role)?.Value 
+                       ?? User.FindFirst("role")?.Value 
+                       ?? User.FindFirst("Rol")?.Value;
             
             // Si no es SuperAdmin o no se pasó un clubId, usamos el del Token
             if (role != "SuperAdmin" || !clubId.HasValue)
@@ -40,6 +42,25 @@ namespace SportTrack_v1.Api.Controllers.Eventos
 
             var result = await _eventoService.GetAllEventosAsync(clubId, role);
             return Ok(result);
+        }
+
+        [HttpGet("debug")]
+        public async Task<ActionResult> DebugEvents()
+        {
+            var role = User.FindFirst(ClaimTypes.Role)?.Value;
+            var clubIdClaim = User.FindFirst("ClubId")?.Value;
+            
+            int? clubId = null;
+            if (int.TryParse(clubIdClaim, out int id)) clubId = id;
+            
+            var result = await _eventoService.GetAllEventosAsync(clubId, role);
+            return Ok(new {
+                Role = role,
+                RoleLength = role?.Length,
+                ClubIdClaim = clubIdClaim,
+                ParsedClubId = clubId,
+                EventsCount = result.Count()
+            });
         }
 
         [HttpGet("{id}/fases")]
@@ -58,7 +79,9 @@ namespace SportTrack_v1.Api.Controllers.Eventos
             // Si el usuario está logueado
             if (User.Identity?.IsAuthenticated == true)
             {
-                role = User.FindFirst(ClaimTypes.Role)?.Value;
+                role = User.FindFirst(ClaimTypes.Role)?.Value 
+                       ?? User.FindFirst("role")?.Value 
+                       ?? User.FindFirst("Rol")?.Value;
                 
                 // Si no es SuperAdmin o no hay override, usamos el del Token
                 if (role != "SuperAdmin" || !clubId.HasValue)
