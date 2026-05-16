@@ -19,25 +19,51 @@ namespace SportTrack_v1.Api.Controllers.Eventos
     {
         private readonly IEventoService _eventoService;
         private readonly IFaseService _faseService;
+        private readonly SportTrack_v1.Controladores.Auth.IAuthService _authService;
 
-        public EventosController(IEventoService eventoService, IFaseService faseService)
+        public EventosController(
+            IEventoService eventoService, 
+            IFaseService faseService,
+            SportTrack_v1.Controladores.Auth.IAuthService authService)
         {
             _eventoService = eventoService;
             _faseService = faseService;
+            _authService = authService;
         }
 
         [HttpGet]
         public async Task<ActionResult<IEnumerable<EventoDto>>> GetEventos([FromQuery] int? clubId = null)
         {
-            var role = User.FindFirst(ClaimTypes.Role)?.Value 
-                       ?? User.FindFirst("role")?.Value 
-                       ?? User.FindFirst("Rol")?.Value;
+            var username = User.FindFirst(ClaimTypes.NameIdentifier)?.Value 
+                           ?? User.FindFirst(ClaimTypes.Name)?.Value;
             
-            // Si no es SuperAdmin o no se pasó un clubId, usamos el del Token
-            if (role != "SuperAdmin" || !clubId.HasValue)
+            string role = string.Empty;
+
+            if (!string.IsNullOrEmpty(username))
             {
-                var clubIdClaim = User.FindFirst("ClubId")?.Value;
-                if (int.TryParse(clubIdClaim, out int id)) clubId = id;
+                try
+                {
+                    var userDb = await _authService.GetMeAsync(username);
+                    role = userDb.Rol;
+                    
+                    if (role != "SuperAdmin" || !clubId.HasValue)
+                    {
+                        clubId = userDb.ClubId ?? clubId;
+                    }
+                }
+                catch
+                {
+                    // Fallback to token
+                    role = User.FindFirst(ClaimTypes.Role)?.Value 
+                           ?? User.FindFirst("role")?.Value 
+                           ?? User.FindFirst("Rol")?.Value ?? "";
+                    
+                    if (role != "SuperAdmin" || !clubId.HasValue)
+                    {
+                        var clubIdClaim = User.FindFirst("ClubId")?.Value;
+                        if (int.TryParse(clubIdClaim, out int id)) clubId = id;
+                    }
+                }
             }
 
             var result = await _eventoService.GetAllEventosAsync(clubId, role);
@@ -79,15 +105,34 @@ namespace SportTrack_v1.Api.Controllers.Eventos
             // Si el usuario está logueado
             if (User.Identity?.IsAuthenticated == true)
             {
-                role = User.FindFirst(ClaimTypes.Role)?.Value 
-                       ?? User.FindFirst("role")?.Value 
-                       ?? User.FindFirst("Rol")?.Value;
-                
-                // Si no es SuperAdmin o no hay override, usamos el del Token
-                if (role != "SuperAdmin" || !clubId.HasValue)
+                var username = User.FindFirst(ClaimTypes.NameIdentifier)?.Value 
+                               ?? User.FindFirst(ClaimTypes.Name)?.Value;
+
+                if (!string.IsNullOrEmpty(username))
                 {
-                    var clubIdClaim = User.FindFirst("ClubId")?.Value;
-                    if (int.TryParse(clubIdClaim, out int id)) clubId = id;
+                    try
+                    {
+                        var userDb = await _authService.GetMeAsync(username);
+                        role = userDb.Rol;
+                        
+                        if (role != "SuperAdmin" || !clubId.HasValue)
+                        {
+                            clubId = userDb.ClubId ?? clubId;
+                        }
+                    }
+                    catch
+                    {
+                        role = User.FindFirst(ClaimTypes.Role)?.Value 
+                               ?? User.FindFirst("role")?.Value 
+                               ?? User.FindFirst("Rol")?.Value;
+                        
+                        // Si no es SuperAdmin o no hay override, usamos el del Token
+                        if (role != "SuperAdmin" || !clubId.HasValue)
+                        {
+                            var clubIdClaim = User.FindFirst("ClubId")?.Value;
+                            if (int.TryParse(clubIdClaim, out int id)) clubId = id;
+                        }
+                    }
                 }
             }
 
