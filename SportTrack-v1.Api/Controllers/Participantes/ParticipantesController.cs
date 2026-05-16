@@ -21,7 +21,12 @@ namespace SportTrack_v1.Api.Controllers.Participantes
         [HttpGet]
         public async Task<ActionResult<IEnumerable<ParticipanteDto>>> GetParticipantes()
         {
-            var result = await _participanteService.GetAllParticipantesAsync();
+            var clubIdClaim = User.FindFirst("ClubId")?.Value;
+            var roleClaim = User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value;
+
+            int? clubId = string.IsNullOrEmpty(clubIdClaim) ? null : int.Parse(clubIdClaim);
+
+            var result = await _participanteService.GetAllParticipantesAsync(clubId, roleClaim);
             return Ok(result);
         }
 

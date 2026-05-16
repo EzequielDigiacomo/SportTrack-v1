@@ -22,9 +22,29 @@ namespace SportTrack_v1.Controladores.Participante
             _auditService = auditService;
         }
 
-        public async Task<IEnumerable<ParticipanteDto>> GetAllParticipantesAsync()
+        public async Task<IEnumerable<ParticipanteDto>> GetAllParticipantesAsync(int? clubId = null, string? rol = null)
         {
-            var participantes = await _participanteRepository.GetAllAsync();
+            IEnumerable<Entidades.Entidades.Participante> participantes;
+
+            if (rol == "SuperAdmin")
+            {
+                participantes = await _participanteRepository.GetAllAsync();
+            }
+            else if (rol == "Admin" && clubId.HasValue)
+            {
+                // En este sistema, 'Admin' es el rol de la Federación (como FACA)
+                participantes = await _participanteRepository.GetByFederationIdAsync(clubId.Value);
+            }
+            else if (clubId.HasValue)
+            {
+                // 'Club' y otros roles ven solo lo de su club
+                participantes = await _participanteRepository.GetByClubIdAsync(clubId.Value);
+            }
+            else
+            {
+                participantes = await _participanteRepository.GetAllAsync();
+            }
+
             return _mapper.Map<IEnumerable<ParticipanteDto>>(participantes);
         }
 

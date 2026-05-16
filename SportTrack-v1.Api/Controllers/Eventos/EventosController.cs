@@ -27,18 +27,18 @@ namespace SportTrack_v1.Api.Controllers.Eventos
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<EventoDto>>> GetEventos()
+        public async Task<ActionResult<IEnumerable<EventoDto>>> GetEventos([FromQuery] int? clubId = null)
         {
-            int? clubId = null;
             var role = User.FindFirst(ClaimTypes.Role)?.Value;
             
-            if (role == "Club")
+            // Si no es SuperAdmin o no se pasó un clubId, usamos el del Token
+            if (role != "SuperAdmin" || !clubId.HasValue)
             {
                 var clubIdClaim = User.FindFirst("ClubId")?.Value;
-                if (int.TryParse(clubIdClaim, out int id) && id > 0) clubId = id;
+                if (int.TryParse(clubIdClaim, out int id)) clubId = id;
             }
 
-            var result = await _eventoService.GetAllEventosAsync(clubId);
+            var result = await _eventoService.GetAllEventosAsync(clubId, role);
             return Ok(result);
         }
 
@@ -51,9 +51,24 @@ namespace SportTrack_v1.Api.Controllers.Eventos
 
         [HttpGet("proximos")]
         [AllowAnonymous]
-        public async Task<ActionResult<IEnumerable<EventoDto>>> GetProximosEventos()
+        public async Task<ActionResult<IEnumerable<EventoDto>>> GetProximosEventos([FromQuery] int? clubId = null)
         {
-            var result = await _eventoService.GetProximosEventosAsync();
+            string? role = null;
+
+            // Si el usuario está logueado
+            if (User.Identity?.IsAuthenticated == true)
+            {
+                role = User.FindFirst(ClaimTypes.Role)?.Value;
+                
+                // Si no es SuperAdmin o no hay override, usamos el del Token
+                if (role != "SuperAdmin" || !clubId.HasValue)
+                {
+                    var clubIdClaim = User.FindFirst("ClubId")?.Value;
+                    if (int.TryParse(clubIdClaim, out int id)) clubId = id;
+                }
+            }
+
+            var result = await _eventoService.GetProximosEventosAsync(clubId, role);
             return Ok(result);
         }
 
@@ -69,7 +84,7 @@ namespace SportTrack_v1.Api.Controllers.Eventos
         public async Task<ActionResult<EventoDto>> CreateEvento(EventoCreateDto eventoDto)
         {
             var role = User.FindFirst(ClaimTypes.Role)?.Value;
-            if (role == "Club")
+            if (role == "Club" || role == "Admin")
             {
                 var clubIdClaim = User.FindFirst("ClubId")?.Value;
                 if (int.TryParse(clubIdClaim, out int id) && id > 0) eventoDto.ClubId = id;
@@ -84,7 +99,7 @@ namespace SportTrack_v1.Api.Controllers.Eventos
         {
             int? clubId = null;
             var role = User.FindFirst(ClaimTypes.Role)?.Value;
-            if (role == "Club")
+            if (role == "Club" || role == "Admin")
             {
                 var clubIdClaim = User.FindFirst("ClubId")?.Value;
                 if (int.TryParse(clubIdClaim, out int cid) && cid > 0) clubId = cid;
@@ -99,7 +114,7 @@ namespace SportTrack_v1.Api.Controllers.Eventos
         {
             int? clubId = null;
             var role = User.FindFirst(ClaimTypes.Role)?.Value;
-            if (role == "Club")
+            if (role == "Club" || role == "Admin")
             {
                 var clubIdClaim = User.FindFirst("ClubId")?.Value;
                 if (int.TryParse(clubIdClaim, out int cid) && cid > 0) clubId = cid;

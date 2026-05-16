@@ -22,9 +22,9 @@ namespace SportTrack_v1.Controladores.Evento
             _auditService = auditService;
         }
 
-        public async Task<IEnumerable<EventoDto>> GetAllEventosAsync(int? clubId = null)
+        public async Task<IEnumerable<EventoDto>> GetAllEventosAsync(int? clubId = null, string? rol = null)
         {
-            var eventos = await _eventoRepository.GetAllAsync(clubId);
+            var eventos = await _eventoRepository.GetAllAsync(clubId, rol);
             return _mapper.Map<IEnumerable<EventoDto>>(eventos);
         }
 
@@ -121,9 +121,9 @@ namespace SportTrack_v1.Controladores.Evento
 
             return res;
         }
-        public async Task<IEnumerable<EventoDto>> GetProximosEventosAsync()
+        public async Task<IEnumerable<EventoDto>> GetProximosEventosAsync(int? clubId = null, string? rol = null)
         {
-            var eventos = await _eventoRepository.GetProximosAsync();
+            var eventos = await _eventoRepository.GetProximosAsync(clubId, rol);
             return _mapper.Map<IEnumerable<EventoDto>>(eventos);
         }
 

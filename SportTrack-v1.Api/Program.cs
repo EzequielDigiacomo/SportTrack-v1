@@ -2,7 +2,6 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using SportTrack.AccessDatos;
-using Microsoft.EntityFrameworkCore;
 using SportTrack_v1.Api.Hubs;
 using SportTrack_v1.Api.Middleware;
 using SportTrack_v1.Api.Services;
@@ -20,6 +19,7 @@ using SportTrack_v1.Controladores.Mappings;
 using SportTrack_v1.Controladores.Audit;
 using Microsoft.OpenApi.Models;
 using System.Text;
+using Microsoft.AspNetCore.HttpOverrides;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -45,7 +45,7 @@ builder.Services.AddCors(options =>
     {
         policy.AllowAnyHeader()
               .AllowAnyMethod()
-              .WithOrigins(allowedOrigins)
+              .SetIsOriginAllowed(origin => true) // Permitir cualquier origen para facilitar pruebas en móviles (CORS + Credentials)
               .AllowCredentials();
     });
 });
@@ -171,6 +171,12 @@ builder.Services.AddSwaggerGen(c =>
 
 var app = builder.Build();
 
+// Configuración para leer IP real a través del proxy de Render
+app.UseForwardedHeaders(new ForwardedHeadersOptions
+{
+    ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
+});
+
 // Ejecutar migraciones automáticamente al iniciar (útil para el despliegue inicial en Render)
 using (var scope = app.Services.CreateScope())
 {
@@ -221,10 +227,16 @@ using (var scope = app.Services.CreateScope())
             context.Database.Migrate();
             Console.WriteLine("Migraciones aplicadas con éxito.");
         }
+        
+        // Safeguard: Asegurar que la columna UserAgent existe en la DB.
+        context.Database.ExecuteSqlRaw(@"
+            ALTER TABLE ""Auditoria"" ADD COLUMN IF NOT EXISTS ""UserAgent"" text NOT NULL DEFAULT '';
+        ");
+        Console.WriteLine("Safeguard: Verificada la columna UserAgent en Auditoria.");
     }
     catch (Exception ex)
     {
-        Console.WriteLine($"Error al aplicar migraciones: {ex.Message}");
+        Console.WriteLine($"Error al aplicar migraciones o safeguard: {ex.Message}");
     }
 }
 
@@ -234,62 +246,25 @@ app.MapControllers();
 app.MapHub<ResultsHub>("/hubs/results");
 app.MapHub<SportTrack_v1.Controladores.Hubs.TimingHub>("/hubs/timing");
 
-// Endpoint de diagnóstico para CORS
-app.MapGet("/api/debug-cors", () => new { 
-    AllowedOrigins = allowedOrigins, 
-    Environment = app.Environment.EnvironmentName,
-    ServerTime = DateTime.UtcNow
-});
-
-// Endpoint de emergencia para aplicar columna UserAgent manualmente (usar una sola vez)
-app.MapGet("/api/fix-useragent-column", async (SportTrackDbContext db) => {
+// ENDPOINT DE EMERGENCIA (Temporal para arreglar la base de datos en Render)
+app.MapGet("/api/fix-db", async (SportTrack.AccessDatos.SportTrackDbContext db) => {
     try {
         await db.Database.ExecuteSqlRawAsync(@"
             ALTER TABLE ""Auditoria"" ADD COLUMN IF NOT EXISTS ""UserAgent"" text NOT NULL DEFAULT '';
         ");
-        return Results.Ok(new { Message = "Columna UserAgent agregada exitosamente (o ya existía)." });
+        return Results.Ok(new { Message = "Base de datos arreglada. La columna UserAgent fue creada en Render." });
     } catch (Exception ex) {
-        return Results.Problem($"Error: {ex.Message}");
+        return Results.Problem($"Error al crear la columna: {ex.Message}");
     }
 });
 
-app.MapGet("/api/reset-admin/{newPassword}", async (string newPassword, SportTrackDbContext db) => {
-    var user = await db.Usuarios.FirstOrDefaultAsync(u => u.Username == "admin");
-    if (user == null) return Results.NotFound("Usuario admin no encontrado");
-    
-    var hash = BCrypt.Net.BCrypt.HashPassword(newPassword, 12);
-    user.PasswordHash = hash;
-    await db.SaveChangesAsync();
-    
+// ENDPOINT TEMPORAL PARA DEBUG
+app.MapGet("/api/debug-events", async (SportTrack.AccessDatos.SportTrackDbContext db) => {
+    var user = await db.Usuarios.Include(u => u.Club).FirstOrDefaultAsync(u => u.Username == "largador1");
+    var events = await db.Eventos.Select(e => new { e.Id, e.Nombre, e.ClubId }).ToListAsync();
     return Results.Ok(new { 
-        Message = $"Contraseña del usuario 'admin' actualizada exitosamente.",
-        NewPassword = newPassword,
-        HashGenerated = hash
-    });
-});
-
-// Endpoint para crear el usuario de SOPORTE TÉCNICO (SuperAdmin)
-app.MapGet("/api/setup-support/{password}", async (string password, SportTrackDbContext db) => {
-    var existing = await db.Usuarios.FirstOrDefaultAsync(u => u.Username == "soporte_tecnico");
-    if (existing != null) return Results.Conflict("El usuario de soporte ya existe.");
-    
-    var user = new SportTrack_v1.Entidades.Entidades.Usuario {
-        Username = "soporte_tecnico",
-        PasswordHash = BCrypt.Net.BCrypt.HashPassword(password, 12),
-        Email = "soporte@sporttrack.com",
-        Rol = "SuperAdmin",
-        Activo = true,
-        Nombre = "Soporte",
-        Apellido = "Técnico"
-    };
-    
-    db.Usuarios.Add(user);
-    await db.SaveChangesAsync();
-    
-    return Results.Ok(new { 
-        Message = "Usuario de Soporte Técnico (SuperAdmin) creado con éxito.",
-        Username = "soporte_tecnico",
-        Rol = "SuperAdmin"
+        User = new { user?.Username, user?.ClubId, ParentClubId = user?.Club?.ParentClubId, user?.Rol },
+        Events = events
     });
 });
 

@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SportTrack.AccessDatos;
@@ -8,6 +9,7 @@ namespace SportTrack_v1.Api.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize(Roles = "Admin,SuperAdmin,soporte_tecnico")]
     public class DiagnosticController : ControllerBase
     {
         private readonly SportTrackDbContext _context;

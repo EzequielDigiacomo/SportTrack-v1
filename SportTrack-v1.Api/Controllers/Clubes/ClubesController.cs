@@ -51,9 +51,18 @@ namespace SportTrack_v1.Api.Controllers.Clubes
         }
 
         [HttpPost]
-        // [Authorize(Roles = "Admin")] // Habilitar cuando se definan los roles administrativos
+        [Authorize]
         public async Task<ActionResult<ClubDto>> CreateClub(ClubCreateDto clubDto)
         {
+            var role = User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value;
+            if (role == "Admin")
+            {
+                var clubIdClaim = User.FindFirst("ClubId")?.Value;
+                if (int.TryParse(clubIdClaim, out int fedId) && fedId > 0)
+                {
+                    clubDto.ParentClubId = fedId;
+                }
+            }
             var result = await _clubService.CreateClubAsync(clubDto);
             return CreatedAtAction(nameof(GetClub), new { id = result.Id }, result);
         }
