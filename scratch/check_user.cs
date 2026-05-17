@@ -19,26 +19,13 @@ class Program
 
         using (var context = new SportTrackDbContext(optionsBuilder.Options))
         {
-            var user = context.Usuarios.Include(u => u.Club).FirstOrDefault(u => u.Rol == "Largador" || u.Rol == "Cronometrista" || u.Username == "largador1");
-            if (user != null)
+            var users = context.Usuarios.Include(u => u.Club).ThenInclude(c => c.ParentClub).ToList();
+            Console.WriteLine("=== LISTADO DE USUARIOS ===");
+            foreach (var user in users)
             {
-                Console.WriteLine($"Usuario: {user.Username}, Rol: {user.Rol}, ClubId: {user.ClubId}");
-                var club = user.Club;
-                if (club != null)
-                {
-                    Console.WriteLine($"Club del Usuario: {club.Nombre}, ParentClubId: {club.ParentClubId}");
-                }
+                Console.WriteLine($"Usuario: {user.Username}, Rol: {user.Rol}, ClubId: {user.ClubId}, ClubNombre: {user.Club?.Nombre ?? "null"}, ParentClubId: {user.Club?.ParentClubId ?? null}");
             }
-            else
-            {
-                Console.WriteLine("No se encontró usuario largador.");
-            }
-
-            var eventos = context.Eventos.ToList();
-            foreach (var ev in eventos)
-            {
-                Console.WriteLine($"Evento: {ev.Nombre}, ClubId: {ev.ClubId}");
-            }
+            Console.WriteLine("===========================");
         }
     }
 }

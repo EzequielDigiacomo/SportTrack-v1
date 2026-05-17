@@ -15,16 +15,21 @@ namespace UserLinker
                 conn.Open();
                 Console.WriteLine("Conectado a Render...");
 
-                // Vinculamos a los administradores sueltos a la Federación 1 (ID 1)
-                string sql = "UPDATE seguridad.\"Usuarios\" SET \"ClubId\" = 1 WHERE \"Username\" IN ('admin', 'ezequiel_admin') AND \"ClubId\" IS NULL;";
+                string sql = "SELECT \"Id\", \"Nombre\", \"ParentClubId\" FROM catalogos.\"Clubes\" ORDER BY \"Id\";";
                 
                 using (var cmd = new NpgsqlCommand(sql, conn))
                 {
-                    int rows = cmd.ExecuteNonQuery();
-                    Console.WriteLine($"Se vincularon {rows} administradores a la Federación 1.");
+                    using var reader = cmd.ExecuteReader();
+                    Console.WriteLine("=== CLUBES EN RENDER ===");
+                    while (reader.Read())
+                    {
+                        var id = reader.GetInt32(0);
+                        var nombre = reader.GetString(1);
+                        var parentId = reader.IsDBNull(2) ? (int?)null : reader.GetInt32(2);
+                        Console.WriteLine($"ID: {id}, Nombre: {nombre}, ParentId: {parentId}");
+                    }
+                    Console.WriteLine("========================");
                 }
-
-                Console.WriteLine("Vinculación de usuarios completada.");
             }
             catch (Exception ex)
             {
