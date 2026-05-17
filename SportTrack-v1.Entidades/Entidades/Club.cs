@@ -24,6 +24,12 @@ namespace SportTrack_v1.Entidades.Entidades
         public int? PlanSaaSId { get; set; }
         public PlanSaaS? PlanSaaS { get; set; }
 
+        // Subscription / Payment Status
+        public string? FrecuenciaPago { get; set; } // "Mensual", "Anual"
+        public DateTime? FechaAltaPlan { get; set; }
+        public DateTime? FechaVencimientoPlan { get; set; }
+        public bool BloqueadoPorFaltaDePago { get; set; } = false;
+
         // Navigation properties
         public ICollection<Participante> Participantes { get; set; } = new List<Participante>();
         public ICollection<Usuario> Usuarios { get; set; } = new List<Usuario>();

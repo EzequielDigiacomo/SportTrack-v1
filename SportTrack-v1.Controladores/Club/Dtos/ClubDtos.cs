@@ -17,6 +17,10 @@ namespace SportTrack_v1.Controladores.Club.Dtos
         public string? ParentClubNombre { get; set; }
         public int? PlanSaaSId { get; set; }
         public string? PlanNombre { get; set; }
+        public string? FrecuenciaPago { get; set; }
+        public DateTime? FechaAltaPlan { get; set; }
+        public DateTime? FechaVencimientoPlan { get; set; }
+        public bool BloqueadoPorFaltaDePago { get; set; }
     }
 
     public class ClubCreateDto
@@ -35,6 +39,10 @@ namespace SportTrack_v1.Controladores.Club.Dtos
         public string? Ubicacion { get; set; }
         public bool Activo { get; set; } = true;
         public int? ParentClubId { get; set; } // Federación madre al crear un sub-club
+        public string? FrecuenciaPago { get; set; }
+        public DateTime? FechaAltaPlan { get; set; }
+        public DateTime? FechaVencimientoPlan { get; set; }
+        public bool BloqueadoPorFaltaDePago { get; set; }
     }
 
     public class ClubUpdateDto : ClubCreateDto { }

@@ -86,7 +86,7 @@ namespace SportTrack_v1.Controladores.Auth
                 throw new UnauthorizedException("Tu cuenta está temporalmente deshabilitada. Contactá al administrador.");
             }
 
-            // SaaS Enforcement: Verificar si la federación madre está activa
+            // SaaS Enforcement: Verificar si la federación madre está activa y pagos
             if (user.Rol != "SuperAdmin" && user.Club != null)
             {
                 var federacionMadre = user.Club.ParentClub ?? user.Club;
@@ -95,6 +95,20 @@ namespace SportTrack_v1.Controladores.Auth
                     Console.WriteLine($"FEDERACIÓN SUSPENDIDA: {federacionMadre.Nombre} para usuario {cleanUsername}");
                     await _auditService.RegistrarAccionAsync("LOGIN_BLOCKED", $"Acceso bloqueado: la federación '{federacionMadre.Nombre}' está suspendida.", cleanUsername, "Auth");
                     throw new UnauthorizedException("El acceso de tu federación ha sido suspendido temporalmente por el administrador del sistema.");
+                }
+
+                if (federacionMadre.BloqueadoPorFaltaDePago)
+                {
+                    Console.WriteLine($"FEDERACIÓN BLOQUEADA POR PAGO: {federacionMadre.Nombre} para usuario {cleanUsername}");
+                    await _auditService.RegistrarAccionAsync("LOGIN_BLOCKED", $"Acceso bloqueado: la federación '{federacionMadre.Nombre}' está bloqueada por falta de pago.", cleanUsername, "Auth");
+                    throw new UnauthorizedException("El acceso de tu federación se encuentra bloqueado por falta de pago. Por favor, regularice su situación.");
+                }
+
+                if (federacionMadre.FechaVencimientoPlan.HasValue && federacionMadre.FechaVencimientoPlan.Value.Date < DateTime.UtcNow.Date)
+                {
+                    Console.WriteLine($"FEDERACIÓN VENCIDA: {federacionMadre.Nombre} para usuario {cleanUsername}");
+                    await _auditService.RegistrarAccionAsync("LOGIN_BLOCKED", $"Acceso bloqueado: la suscripción de '{federacionMadre.Nombre}' se encuentra vencida.", cleanUsername, "Auth");
+                    throw new UnauthorizedException("La suscripción de tu federación ha vencido. Por favor, regularice el pago para reactivar el acceso.");
                 }
             }
 
@@ -211,6 +225,11 @@ namespace SportTrack_v1.Controladores.Auth
                 if (!federacionMadre.Activo)
                 {
                     throw new UnauthorizedException("El acceso de tu federación ha sido suspendido.");
+                }
+
+                if (federacionMadre.BloqueadoPorFaltaDePago || (federacionMadre.FechaVencimientoPlan.HasValue && federacionMadre.FechaVencimientoPlan.Value.Date < DateTime.UtcNow.Date))
+                {
+                    throw new UnauthorizedException("La suscripción de tu federación ha vencido o está bloqueada por falta de pago.");
                 }
             }
 

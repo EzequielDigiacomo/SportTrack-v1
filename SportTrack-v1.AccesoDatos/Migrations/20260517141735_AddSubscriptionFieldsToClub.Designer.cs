@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using SportTrack.AccessDatos;
@@ -11,9 +12,11 @@ using SportTrack.AccessDatos;
 namespace SportTrack_v1.AccesoDatos.Migrations
 {
     [DbContext(typeof(SportTrackDbContext))]
-    partial class SportTrackDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260517141735_AddSubscriptionFieldsToClub")]
+    partial class AddSubscriptionFieldsToClub
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
