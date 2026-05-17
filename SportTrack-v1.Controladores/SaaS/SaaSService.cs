@@ -123,7 +123,10 @@ namespace SportTrack_v1.Controladores.SaaS
                     TorneosActivosCount = torneosActivosCount,
                     TorneosActivos = torneosDetalle,
                     PlanAlDia = alDia,
-                    Activo = c.Activo
+                    Activo = c.Activo,
+                    FrecuenciaPago = c.FrecuenciaPago,
+                    FechaVencimientoPlan = c.FechaVencimientoPlan,
+                    BloqueadoPorFaltaDePago = c.BloqueadoPorFaltaDePago
                 };
             });
         }

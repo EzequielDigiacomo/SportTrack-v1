@@ -21,6 +21,11 @@ namespace SportTrack_v1.Controladores.SaaS.Dtos
         
         public bool PlanAlDia { get; set; }
         public bool Activo { get; set; }
+        
+        // Nuevos campos de suscripción
+        public string FrecuenciaPago { get; set; }
+        public DateTime? FechaVencimientoPlan { get; set; }
+        public bool BloqueadoPorFaltaDePago { get; set; }
     }
 
     public class TorneoSaaSDetailDto
