@@ -177,23 +177,48 @@ app.UseForwardedHeaders(new ForwardedHeadersOptions
     ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
 });
 
-// Ejecutar migraciones automáticamente al iniciar (útil para el despliegue inicial en Render)
+// Ejecutar migraciones automáticamente al iniciar (con salvaguardas para Render)
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
     try
     {
         var context = services.GetRequiredService<SportTrackDbContext>();
+        
+        // Salvaguarda para Render: si Categoria ID 11 ya existe en la BD pero la migración no se ha registrado,
+        // la eliminamos temporalmente para evitar que la migración falle por clave duplicada.
+        try
+        {
+            var appliedMigrations = context.Database.GetAppliedMigrations();
+            if (!appliedMigrations.Contains("20260508003834_AddHabilitacionesToEvento"))
+            {
+                Console.WriteLine("Safeguard: La migración 'AddHabilitacionesToEvento' no está registrada. Eliminando Categoria ID 11 conflictiva...");
+                context.Database.ExecuteSqlRaw(@"
+                    DELETE FROM catalogos.""Categorias"" WHERE ""Id"" = 11;
+                ");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Safeguard Warning: No se pudo limpiar la Categoria 11 (puede que esté en uso): {ex.Message}");
+        }
+
         if (context.Database.GetPendingMigrations().Any())
         {
             Console.WriteLine("Aplicando migraciones pendientes...");
             context.Database.Migrate();
             Console.WriteLine("Migraciones aplicadas con éxito.");
         }
+
+        // Safeguard: Asegurar que la columna UserAgent existe en la DB.
+        context.Database.ExecuteSqlRaw(@"
+            ALTER TABLE ""Auditoria"" ADD COLUMN IF NOT EXISTS ""UserAgent"" text NOT NULL DEFAULT '';
+        ");
+        Console.WriteLine("Safeguard: Verificada la columna UserAgent en Auditoria.");
     }
     catch (Exception ex)
     {
-        Console.WriteLine($"Error al aplicar migraciones: {ex.Message}");
+        Console.WriteLine($"Error al aplicar migraciones o salvaguardas: {ex.Message}");
     }
 }
 
@@ -215,30 +240,7 @@ app.UseCors("CorsPolicy");
 app.UseAuthentication();
 app.UseAuthorization();
 
-// Aplicar migraciones automáticamente en el inicio
-using (var scope = app.Services.CreateScope())
-{
-    var services = scope.ServiceProvider;
-    try
-    {
-        var context = services.GetRequiredService<SportTrack.AccessDatos.SportTrackDbContext>();
-        if (context.Database.GetPendingMigrations().Any())
-        {
-            context.Database.Migrate();
-            Console.WriteLine("Migraciones aplicadas con éxito.");
-        }
-        
-        // Safeguard: Asegurar que la columna UserAgent existe en la DB.
-        context.Database.ExecuteSqlRaw(@"
-            ALTER TABLE ""Auditoria"" ADD COLUMN IF NOT EXISTS ""UserAgent"" text NOT NULL DEFAULT '';
-        ");
-        Console.WriteLine("Safeguard: Verificada la columna UserAgent en Auditoria.");
-    }
-    catch (Exception ex)
-    {
-        Console.WriteLine($"Error al aplicar migraciones o safeguard: {ex.Message}");
-    }
-}
+// Las migraciones y salvaguardas se ejecutan al iniciar arriba.
 
 app.MapControllers();
 
