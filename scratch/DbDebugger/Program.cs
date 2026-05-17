@@ -10,7 +10,14 @@ class Program
         using var finalConn = new NpgsqlConnection(connString);
         finalConn.Open();
 
-        Console.WriteLine("=== USUARIOS ===");
+        Console.WriteLine("=== ASEGURANDO USUARIO SUPERADMIN ===");
+        using (var cmd = new NpgsqlCommand("UPDATE seguridad.\"Usuarios\" SET \"Rol\" = 'SuperAdmin', \"Username\" = 'superadmin' WHERE \"Id\" = 1;", finalConn))
+        {
+            cmd.ExecuteNonQuery();
+            Console.WriteLine("Usuario con ID 1 actualizado a 'superadmin' con rol 'SuperAdmin'.");
+        }
+
+        Console.WriteLine("\n=== USUARIOS ===");
         using (var cmd = new NpgsqlCommand("SELECT \"Id\", \"Username\", \"Rol\", \"ClubId\" FROM seguridad.\"Usuarios\";", finalConn))
         using (var reader = cmd.ExecuteReader())
         {
