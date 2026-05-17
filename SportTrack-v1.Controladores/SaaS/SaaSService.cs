@@ -125,6 +125,7 @@ namespace SportTrack_v1.Controladores.SaaS
                     PlanAlDia = alDia,
                     Activo = c.Activo,
                     FrecuenciaPago = c.FrecuenciaPago,
+                    FechaAltaPlan = c.FechaAltaPlan,
                     FechaVencimientoPlan = c.FechaVencimientoPlan,
                     BloqueadoPorFaltaDePago = c.BloqueadoPorFaltaDePago
                 };

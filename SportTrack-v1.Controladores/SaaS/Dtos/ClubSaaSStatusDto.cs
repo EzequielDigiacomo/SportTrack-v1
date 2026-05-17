@@ -24,6 +24,7 @@ namespace SportTrack_v1.Controladores.SaaS.Dtos
         
         // Nuevos campos de suscripción
         public string FrecuenciaPago { get; set; }
+        public DateTime? FechaAltaPlan { get; set; }
         public DateTime? FechaVencimientoPlan { get; set; }
         public bool BloqueadoPorFaltaDePago { get; set; }
     }
