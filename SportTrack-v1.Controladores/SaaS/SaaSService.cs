@@ -113,6 +113,11 @@ namespace SportTrack_v1.Controladores.SaaS
                 {
                     ClubId = c.Id,
                     ClubNombre = c.Nombre,
+                    Sigla = c.Sigla,
+                    Email = c.Email,
+                    Telefono = c.Telefono,
+                    Direccion = c.Direccion,
+                    Ubicacion = c.Ubicacion,
                     PlanSaaSId = planActivo?.Id,
                     PlanNombre = planActivo?.Nombre ?? "Desconocido",
                     MaxAtletas = maxAtletas,

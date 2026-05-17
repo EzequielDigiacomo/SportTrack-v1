@@ -7,6 +7,11 @@ namespace SportTrack_v1.Controladores.SaaS.Dtos
     {
         public int ClubId { get; set; }
         public string ClubNombre { get; set; }
+        public string? Sigla { get; set; }
+        public string? Email { get; set; }
+        public string? Telefono { get; set; }
+        public string? Direccion { get; set; }
+        public string? Ubicacion { get; set; }
         public int? PlanSaaSId { get; set; }
         public string PlanNombre { get; set; }
         
