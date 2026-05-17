@@ -15,6 +15,8 @@ namespace SportTrack_v1.Controladores.Auth.Dtos
         public string? ClubNombre { get; set; }
         public string? Nombre { get; set; }
         public string? Apellido { get; set; }
+        public string? FrecuenciaPago { get; set; }
+        public System.DateTime? FechaVencimientoPlan { get; set; }
         public SportTrack_v1.Controladores.SaaS.Dtos.PlanSaaSDto? Plan { get; set; }
     }
 
@@ -47,6 +49,8 @@ namespace SportTrack_v1.Controladores.Auth.Dtos
         public string? Nombre { get; set; }
         public string? Apellido { get; set; }
         public string? Dni { get; set; }
-        public string? Telefono { get; set; }
+        // Subscription details for frontend sidebar
+        public string? FrecuenciaPago { get; set; }
+        public System.DateTime? FechaVencimientoPlan { get; set; }
     }
 }

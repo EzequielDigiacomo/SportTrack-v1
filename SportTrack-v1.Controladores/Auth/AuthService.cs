@@ -131,6 +131,11 @@ namespace SportTrack_v1.Controladores.Auth
             {
                 response.Plan = _mapper.Map<SportTrack_v1.Controladores.SaaS.Dtos.PlanSaaSDto>(clubConPlan.PlanSaaS);
             }
+            if (clubConPlan != null)
+            {
+                response.FrecuenciaPago = clubConPlan.FrecuenciaPago;
+                response.FechaVencimientoPlan = clubConPlan.FechaVencimientoPlan;
+            }
             response.Token = _tokenService.CreateToken(user);
             
             await _auditService.RegistrarAccionAsync("LOGIN_SUCCESS", $"Usuario '{user.Username}' inició sesión correctamente.", user.Username, "Auth");
@@ -233,7 +238,23 @@ namespace SportTrack_v1.Controladores.Auth
                 }
             }
 
-            return _mapper.Map<UsuarioDto>(user);
+            var response = _mapper.Map<UsuarioDto>(user);
+
+            var clubConPlan = user.Club;
+            if (clubConPlan != null && clubConPlan.ParentClubId.HasValue)
+            {
+                var parent = await _context.Clubes
+                    .FirstOrDefaultAsync(c => c.Id == clubConPlan.ParentClubId);
+                if (parent != null) clubConPlan = parent;
+            }
+
+            if (clubConPlan != null)
+            {
+                response.FrecuenciaPago = clubConPlan.FrecuenciaPago;
+                response.FechaVencimientoPlan = clubConPlan.FechaVencimientoPlan;
+            }
+
+            return response;
         }
 
         public async Task<bool> ToggleActivoAsync(int id)
