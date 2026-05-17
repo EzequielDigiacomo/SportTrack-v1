@@ -235,10 +235,14 @@ namespace SportTrack_v1.Controladores.SaaS
                 TotalAtletasGlobales = totalAtletas,
                 TorneosActivosGlobales = torneosActivos,
                 CrecimientoMensual = crecimiento,
-                TopFederaciones = federaciones.Take(5).Select(f => new FederacionMetricDto { 
-                    Nombre = f.Nombre,
-                    ClubesCount = _context.Clubes.Count(c => c.ParentClubId == f.Id)
-                }).ToList()
+                TopFederaciones = federaciones
+                    .Select(f => new FederacionMetricDto { 
+                        Nombre = f.Nombre,
+                        ClubesCount = _context.Clubes.Count(c => c.ParentClubId == f.Id)
+                    })
+                    .OrderByDescending(f => f.ClubesCount)
+                    .Take(5)
+                    .ToList()
             };
         }
     }
