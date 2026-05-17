@@ -84,7 +84,7 @@ namespace SportTrack_v1.Controladores.Participante
                 .Include(p => p.Sexo)
                 .Include(p => p.Categoria)
                 .Include(p => p.Club)
-                .Where(p => p.ClubId.HasValue && clubIds.Contains(p.ClubId.Value))
+                .Where(p => !p.ClubId.HasValue || clubIds.Contains(p.ClubId.Value))
                 .AsNoTracking()
                 .ToListAsync();
 
