@@ -90,6 +90,7 @@ namespace SportTrack_v1.Api.Controllers.Eventos
         }
 
         [HttpGet("{id}/fases")]
+        [AllowAnonymous]
         public async Task<ActionResult<IEnumerable<FaseDto>>> GetFases(int id)
         {
             var result = await _faseService.GetFasesPorEventoAsync(id);
@@ -193,6 +194,7 @@ namespace SportTrack_v1.Api.Controllers.Eventos
         }
 
         [HttpGet("{id}/pruebas")]
+        [AllowAnonymous]
         public async Task<ActionResult<IEnumerable<EventoPruebaDto>>> GetPruebas(int id)
         {
             var result = await _eventoService.GetPruebasByEventoAsync(id);
