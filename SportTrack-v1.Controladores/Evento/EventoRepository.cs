@@ -41,7 +41,7 @@ namespace SportTrack_v1.Controladores.Evento
                     }
                     else
                     {
-                        query = query.Where(e => e.ClubId == clubId.Value);
+                        query = query.Where(e => e.ClubId == clubId.Value || e.ClubId == federationId);
                     }
                 }
                 else
@@ -119,7 +119,7 @@ namespace SportTrack_v1.Controladores.Evento
                     }
                     else // Club normal
                     {
-                        query = query.Where(e => e.ClubId == clubId.Value);
+                        query = query.Where(e => e.ClubId == clubId.Value || e.ClubId == federationId);
                     }
                 }
                 else
