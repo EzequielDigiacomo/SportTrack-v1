@@ -40,6 +40,7 @@ namespace SportTrack_v1.Entidades.Entidades
         public bool SinReceso { get; set; } = false;
         public int GapEntrePruebas { get; set; } = 10;
         public bool PermitirCombinadas { get; set; } = false;
+        public bool UsarGapVariable { get; set; } = false;
         public string TimeZoneId { get; set; } = "America/Argentina/Buenos_Aires"; // Default IANA timezone
         
         // Habilitaciones de Configuración
