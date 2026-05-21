@@ -127,6 +127,9 @@ builder.Services.AddScoped<SportTrack_v1.Controladores.SaaS.ISaaSService, SportT
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<IAuditService, AuditService>();
 
+// Pagos
+builder.Services.AddScoped<SportTrack_v1.Controladores.Pago.IPagoService, SportTrack_v1.Controladores.Pago.PagoService>();
+
 // AutoMapper
 builder.Services.AddAutoMapper(cfg => cfg.AddProfile<MappingProfile>());
 

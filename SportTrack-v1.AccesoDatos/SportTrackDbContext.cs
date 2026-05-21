@@ -35,6 +35,7 @@ namespace SportTrack.AccessDatos
         public DbSet<Resultado> Resultados { get; set; }
         public DbSet<Penalizacion> Penalizaciones { get; set; }
         public DbSet<Auditoria> Auditoria { get; set; }
+        public DbSet<Pago> Pagos { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -651,6 +652,56 @@ namespace SportTrack.AccessDatos
 
                 entity.HasIndex(e => e.TipoPenalizacion)
                     .HasDatabaseName("IX_Penalizaciones_TipoPenalizacion");
+            });
+
+            // Tabla: Pago
+            modelBuilder.Entity<Pago>(entity =>
+            {
+                entity.ToTable("Pagos", "regatas");
+
+                entity.HasKey(e => e.Id);
+
+                entity.Property(e => e.Id)
+                    .ValueGeneratedOnAdd();
+
+                entity.Property(e => e.TipoPago)
+                    .IsRequired()
+                    .HasMaxLength(50);
+
+                entity.Property(e => e.Referencia)
+                    .HasMaxLength(100);
+
+                entity.Property(e => e.RegistradoPor)
+                    .HasMaxLength(100);
+
+                entity.Property(e => e.Notas)
+                    .HasMaxLength(500);
+
+                entity.Property(e => e.Monto)
+                    .HasPrecision(18, 2);
+
+                entity.Property(e => e.FechaPago)
+                    .IsRequired()
+                    .HasDefaultValueSql("NOW()");
+
+                // Foreign Keys
+                entity.HasOne(e => e.Club)
+                    .WithMany()
+                    .HasForeignKey(e => e.ClubId)
+                    .OnDelete(DeleteBehavior.SetNull)
+                    .HasConstraintName("FK_Pagos_Clubes");
+
+                entity.HasOne(e => e.Participante)
+                    .WithMany()
+                    .HasForeignKey(e => e.ParticipanteId)
+                    .OnDelete(DeleteBehavior.SetNull)
+                    .HasConstraintName("FK_Pagos_Participantes");
+
+                entity.HasOne(e => e.Inscripcion)
+                    .WithMany()
+                    .HasForeignKey(e => e.InscripcionId)
+                    .OnDelete(DeleteBehavior.SetNull)
+                    .HasConstraintName("FK_Pagos_Inscripciones");
             });
 
             // ============================================

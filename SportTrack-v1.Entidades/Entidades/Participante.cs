@@ -21,6 +21,7 @@ namespace SportTrack_v1.Entidades.Entidades
         public string? Email { get; set; }
         public string? Telefono { get; set; }
         public string? Direccion { get; set; }
+        public bool PagoAfiliacionAlDia { get; set; } = true;
 
         // Propiedades calculadas
         public int Edad => DateTime.UtcNow.Year - FechaNacimiento.Year;

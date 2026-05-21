@@ -7,6 +7,7 @@ namespace SportTrack_v1.Controladores.Inscripcion.Dtos
         public int EventoPruebaId { get; set; }
         public int? ParticipanteId { get; set; } // Opcional si es K2/K4 y van todos en Tripulantes
         public string NumeroCompetidor { get; set; } = string.Empty;
+        public bool Pagado { get; set; } = false;
 
         public ICollection<InscripcionTripulanteCreateDto> Tripulantes { get; set; } = new List<InscripcionTripulanteCreateDto>();
     }
@@ -22,5 +23,6 @@ namespace SportTrack_v1.Controladores.Inscripcion.Dtos
         public int? EventoPruebaId { get; set; }
         public string? Estado { get; set; }
         public string? NumeroCompetidor { get; set; }
+        public bool? Pagado { get; set; }
     }
 }

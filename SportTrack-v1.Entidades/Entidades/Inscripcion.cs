@@ -16,6 +16,7 @@ namespace SportTrack_v1.Entidades.Entidades
         public string NumeroCompetidor { get; set; } = string.Empty;
         public bool EsCabezaDeSerie { get; set; } = false;
         public Enums.EstadoInscripcionEnum Estado { get; set; } = EstadoInscripcionEnum.Inscrito;
+        public bool Pagado { get; set; } = false;
 
         // Navigation properties
         public EventoPrueba EventoPrueba { get; set; } = null!;

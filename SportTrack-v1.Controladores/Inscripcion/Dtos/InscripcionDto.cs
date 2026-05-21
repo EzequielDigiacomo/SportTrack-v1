@@ -15,6 +15,7 @@ namespace SportTrack_v1.Controladores.Inscripcion.Dtos
         public string NumeroCompetidor { get; set; } = string.Empty;
         public bool EsCabezaDeSerie { get; set; }
         public string Estado { get; set; } = string.Empty;
+        public bool Pagado { get; set; }
 
         public ICollection<InscripcionTripulanteDto> Tripulantes { get; set; } = new List<InscripcionTripulanteDto>();
     }

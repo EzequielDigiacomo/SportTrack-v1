@@ -6,16 +6,19 @@ using SportTrack.AccessDatos;
 using SportTrack_v1.Controladores.SaaS.Dtos;
 using SportTrack_v1.Entidades.Entidades;
 using SportTrack_v1.Entidades.Enums;
+using SportTrack_v1.Controladores.Audit;
 
 namespace SportTrack_v1.Controladores.SaaS
 {
     public class SaaSService : ISaaSService
     {
         private readonly SportTrackDbContext _context;
+        private readonly IAuditService _auditService;
 
-        public SaaSService(SportTrackDbContext context)
+        public SaaSService(SportTrackDbContext context, IAuditService auditService)
         {
             _context = context;
+            _auditService = auditService;
         }
 
         public async Task<IEnumerable<PlanSaaSDto>> GetPlanesAsync()
@@ -57,8 +60,20 @@ namespace SportTrack_v1.Controladores.SaaS
             var club = await _context.Clubes.FindAsync(clubId);
             if (club != null)
             {
+                var oldPlanId = club.PlanSaaSId;
                 club.PlanSaaSId = planId;
                 await _context.SaveChangesAsync();
+
+                if (oldPlanId != planId)
+                {
+                    var plan = await _context.PlanesSaaS.FindAsync(planId);
+                    string planNombre = plan?.Nombre ?? $"Plan ID {planId}";
+                    await _auditService.RegistrarAccionAsync(
+                        "ASSIGN_PLAN",
+                        $"Asignado Plan '{planNombre}' a la federación '{club.Nombre}'.",
+                        modulo: "SaaS"
+                    );
+                }
             }
         }
 
@@ -144,6 +159,14 @@ namespace SportTrack_v1.Controladores.SaaS
             {
                 club.Activo = !club.Activo;
                 await _context.SaveChangesAsync();
+
+                string status = club.Activo ? "habilitado" : "suspendido";
+                string accion = club.Activo ? "ACTIVATE_FEDERATION" : "SUSPEND_FEDERATION";
+                await _auditService.RegistrarAccionAsync(
+                    accion,
+                    $"Acceso a la federación '{club.Nombre}' {status} manualmente.",
+                    modulo: "SaaS"
+                );
             }
         }
 

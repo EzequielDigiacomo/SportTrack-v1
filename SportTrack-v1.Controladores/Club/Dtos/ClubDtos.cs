@@ -21,6 +21,7 @@ namespace SportTrack_v1.Controladores.Club.Dtos
         public DateTime? FechaAltaPlan { get; set; }
         public DateTime? FechaVencimientoPlan { get; set; }
         public bool BloqueadoPorFaltaDePago { get; set; }
+        public bool PagoAfiliacionAlDia { get; set; } = true;
     }
 
     public class ClubCreateDto
@@ -43,6 +44,7 @@ namespace SportTrack_v1.Controladores.Club.Dtos
         public DateTime? FechaAltaPlan { get; set; }
         public DateTime? FechaVencimientoPlan { get; set; }
         public bool BloqueadoPorFaltaDePago { get; set; }
+        public bool PagoAfiliacionAlDia { get; set; } = true;
     }
 
     public class ClubUpdateDto : ClubCreateDto { }

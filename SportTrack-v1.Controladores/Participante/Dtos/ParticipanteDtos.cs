@@ -18,6 +18,7 @@ namespace SportTrack_v1.Controladores.Participante.Dtos
         public string? Dni { get; set; }
         public string? Email { get; set; }
         public int Edad { get; set; }
+        public bool PagoAfiliacionAlDia { get; set; } = true;
     }
 
     public class ParticipanteCreateDto
@@ -31,5 +32,6 @@ namespace SportTrack_v1.Controladores.Participante.Dtos
         public string? Pais { get; set; }
         public string? Dni { get; set; }
         public string? Email { get; set; }
+        public bool PagoAfiliacionAlDia { get; set; } = true;
     }
 }
