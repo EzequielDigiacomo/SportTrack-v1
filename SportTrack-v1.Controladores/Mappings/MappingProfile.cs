@@ -43,14 +43,17 @@ namespace SportTrack_v1.Controladores.Mappings
 
             // Mapeos de Inscripciones
             CreateMap<InscripcionTripulante, InscripcionTripulanteDto>()
-                .ForMember(dest => dest.ParticipanteNombreCompleto, opt => opt.MapFrom(src => $"{src.Participante.Nombre} {src.Participante.Apellido}"));
+                .ForMember(dest => dest.ParticipanteNombreCompleto, opt => opt.MapFrom(src => src.Participante != null ? $"{src.Participante.Nombre} {src.Participante.Apellido}" : null));
             CreateMap<InscripcionTripulanteCreateDto, InscripcionTripulante>();
 
             CreateMap<Entidades.Entidades.Inscripcion, InscripcionDto>()
                 .ForMember(dest => dest.Estado, opt => opt.MapFrom(src => src.Estado.ToString()))
                 .ForMember(dest => dest.ParticipanteNombreCompleto, opt => opt.MapFrom(src => src.Participante != null ? $"{src.Participante.Nombre} {src.Participante.Apellido}" : null))
                 .ForMember(dest => dest.ClubNombre, opt => opt.MapFrom(src => src.Participante != null && src.Participante.Club != null ? src.Participante.Club.Nombre : null))
-                .ForMember(dest => dest.ClubSigla, opt => opt.MapFrom(src => src.Participante != null && src.Participante.Club != null ? src.Participante.Club.Sigla : null));
+                .ForMember(dest => dest.ClubSigla, opt => opt.MapFrom(src => src.Participante != null && src.Participante.Club != null ? src.Participante.Club.Sigla : null))
+                .ForMember(dest => dest.ClubId, opt => opt.MapFrom(src => src.Participante != null ? src.Participante.ClubId : null))
+                .ForMember(dest => dest.ParticipanteClubId, opt => opt.MapFrom(src => src.Participante != null ? src.Participante.ClubId : null))
+                .ForMember(dest => dest.EventoNombre, opt => opt.MapFrom(src => src.EventoPrueba != null && src.EventoPrueba.Evento != null ? src.EventoPrueba.Evento.Nombre : null));
             
             CreateMap<InscripcionCreateDto, Entidades.Entidades.Inscripcion>();
             CreateMap<InscripcionUpdateDto, Entidades.Entidades.Inscripcion>()

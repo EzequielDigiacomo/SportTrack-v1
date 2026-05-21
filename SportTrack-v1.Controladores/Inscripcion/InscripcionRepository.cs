@@ -21,6 +21,9 @@ namespace SportTrack_v1.Controladores.Inscripcion
         {
             return await _context.Inscripciones
                 .Include(i => i.Participante)
+                    .ThenInclude(p => p.Club)
+                .Include(i => i.EventoPrueba)
+                    .ThenInclude(ep => ep.Evento)
                 .Include(i => i.Tripulantes)
                     .ThenInclude(t => t.Participante)
                 .AsNoTracking()
@@ -31,6 +34,9 @@ namespace SportTrack_v1.Controladores.Inscripcion
         {
             return await _context.Inscripciones
                 .Include(i => i.Participante)
+                    .ThenInclude(p => p.Club)
+                .Include(i => i.EventoPrueba)
+                    .ThenInclude(ep => ep.Evento)
                 .Include(i => i.Tripulantes)
                     .ThenInclude(t => t.Participante)
                 .FirstOrDefaultAsync(i => i.Id == id);
@@ -77,6 +83,8 @@ namespace SportTrack_v1.Controladores.Inscripcion
             return await _context.Inscripciones
                 .Include(i => i.Participante)
                     .ThenInclude(p => p.Club)
+                .Include(i => i.EventoPrueba)
+                    .ThenInclude(ep => ep.Evento)
                 .Include(i => i.Tripulantes)
                     .ThenInclude(t => t.Participante)
                 .Where(i => i.EventoPruebaId == eventoPruebaId)
@@ -87,9 +95,11 @@ namespace SportTrack_v1.Controladores.Inscripcion
         {
             return await _context.Inscripciones
                 .Include(i => i.Participante)
+                    .ThenInclude(p => p.Club)
+                .Include(i => i.EventoPrueba)
+                    .ThenInclude(ep => ep.Evento)
                 .Include(i => i.Tripulantes)
                     .ThenInclude(t => t.Participante)
-                .Include(i => i.EventoPrueba)
                 .Where(i => i.EventoPrueba.EventoId == eventoId && 
                             (i.Participante.ClubId == clubId || i.Tripulantes.Any(t => t.Participante.ClubId == clubId)))
                 .ToListAsync();
