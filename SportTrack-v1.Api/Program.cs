@@ -215,6 +215,19 @@ using (var scope = app.Services.CreateScope())
             ALTER TABLE ""Auditoria"" ADD COLUMN IF NOT EXISTS ""UserAgent"" text NOT NULL DEFAULT '';
         ");
         Console.WriteLine("Safeguard: Verificada la columna UserAgent en Auditoria.");
+
+        // Safeguard: Asegurar que la columna UsarGapVariable existe en la DB.
+        try
+        {
+            context.Database.ExecuteSqlRaw(@"
+                ALTER TABLE regatas.""Eventos"" ADD COLUMN IF NOT EXISTS ""UsarGapVariable"" boolean NOT NULL DEFAULT FALSE;
+            ");
+            Console.WriteLine("Safeguard: Verificada la columna UsarGapVariable en Eventos.");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Safeguard Warning: No se pudo verificar/agregar UsarGapVariable: {ex.Message}");
+        }
     }
     catch (Exception ex)
     {
@@ -254,9 +267,12 @@ app.MapGet("/api/fix-db", async (SportTrack.AccessDatos.SportTrackDbContext db) 
         await db.Database.ExecuteSqlRawAsync(@"
             ALTER TABLE ""Auditoria"" ADD COLUMN IF NOT EXISTS ""UserAgent"" text NOT NULL DEFAULT '';
         ");
-        return Results.Ok(new { Message = "Base de datos arreglada. La columna UserAgent fue creada en Render." });
+        await db.Database.ExecuteSqlRawAsync(@"
+            ALTER TABLE regatas.""Eventos"" ADD COLUMN IF NOT EXISTS ""UsarGapVariable"" boolean NOT NULL DEFAULT FALSE;
+        ");
+        return Results.Ok(new { Message = "Base de datos arreglada. Las columnas UserAgent y UsarGapVariable fueron verificadas/creadas con éxito." });
     } catch (Exception ex) {
-        return Results.Problem($"Error al crear la columna: {ex.Message}");
+        return Results.Problem($"Error al arreglar la base de datos: {ex.Message}");
     }
 });
 
