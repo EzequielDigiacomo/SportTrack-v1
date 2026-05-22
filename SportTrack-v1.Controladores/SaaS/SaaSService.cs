@@ -123,6 +123,8 @@ namespace SportTrack_v1.Controladores.SaaS
                 var alDia = true;
                 if (maxAtletas != -1 && atletasRegistrados > maxAtletas) alDia = false;
                 if (maxTorneos != -1 && torneosActivosCount > maxTorneos) alDia = false;
+                if (c.FechaVencimientoPlan.HasValue && c.FechaVencimientoPlan.Value.Date < DateTime.UtcNow.Date) alDia = false;
+                if (c.BloqueadoPorFaltaDePago) alDia = false;
 
                 return new ClubSaaSStatusDto
                 {
