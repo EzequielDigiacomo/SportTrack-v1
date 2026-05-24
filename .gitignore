@@ -363,4 +363,7 @@ MigrationBackup/
 FodyWeavers.xsd
 
 # Auditoria (Private scripts)
-auditoria/
+auditoria/
+
+# Scratch development scripts
+scratch/
