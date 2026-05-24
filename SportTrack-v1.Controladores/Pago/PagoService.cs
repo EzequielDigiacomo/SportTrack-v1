@@ -120,6 +120,7 @@ namespace SportTrack_v1.Controladores.Pago
                 if (club == null) throw new NotFoundException($"Club con ID {dto.ClubId.Value} no encontrado");
                 
                 club.PagoAfiliacionAlDia = true;
+                club.SolicitudPagoPendiente = false;
                 pago.ClubId = club.Id;
                 detalleAuditoria = $"Pago de afiliación anual de Club '{club.Nombre}' registrado por ${dto.Monto} (Ref: {dto.Referencia}).";
             }
@@ -192,6 +193,10 @@ namespace SportTrack_v1.Controladores.Pago
             if (club == null) throw new NotFoundException($"Club con ID {clubId} no encontrado");
 
             club.PagoAfiliacionAlDia = alDia;
+            if (alDia)
+            {
+                club.SolicitudPagoPendiente = false;
+            }
             _context.Clubes.Update(club);
             var result = await _context.SaveChangesAsync() > 0;
 
@@ -202,6 +207,16 @@ namespace SportTrack_v1.Controladores.Pago
             }
 
             return result;
+        }
+
+        public async Task<bool> SetSolicitudPagoPendienteAsync(int clubId, bool pendiente)
+        {
+            var club = await _context.Clubes.FindAsync(clubId);
+            if (club == null) throw new NotFoundException($"Club con ID {clubId} no encontrado");
+
+            club.SolicitudPagoPendiente = pendiente;
+            _context.Clubes.Update(club);
+            return await _context.SaveChangesAsync() > 0;
         }
 
         public async Task<bool> ToggleAtletaPagoStatusAsync(int participanteId, bool alDia)

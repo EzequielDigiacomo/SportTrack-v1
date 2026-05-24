@@ -30,6 +30,7 @@ namespace SportTrack_v1.Entidades.Entidades
         public DateTime? FechaVencimientoPlan { get; set; }
         public bool BloqueadoPorFaltaDePago { get; set; } = false;
         public bool PagoAfiliacionAlDia { get; set; } = true;
+        public bool SolicitudPagoPendiente { get; set; } = false;
 
         // Navigation properties
         public ICollection<Participante> Participantes { get; set; } = new List<Participante>();

@@ -11,5 +11,6 @@ namespace SportTrack_v1.Controladores.Pago
         Task<bool> ToggleClubPagoStatusAsync(int clubId, bool alDia);
         Task<bool> ToggleAtletaPagoStatusAsync(int participanteId, bool alDia);
         Task<bool> ToggleInscripcionPagoStatusAsync(int inscripcionId, bool pagado);
+        Task<bool> SetSolicitudPagoPendienteAsync(int clubId, bool pendiente);
     }
 }

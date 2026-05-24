@@ -54,6 +54,14 @@ namespace SportTrack_v1.Api.Controllers.Pagos
             return NoContent();
         }
 
+        [HttpPut("clubes/{id}/solicitar-pago")]
+        public async Task<IActionResult> SolicitarPago(int id, [FromBody] bool pendiente)
+        {
+            var result = await _pagoService.SetSolicitudPagoPendienteAsync(id, pendiente);
+            if (!result) return BadRequest("No se pudo registrar la solicitud de pago");
+            return NoContent();
+        }
+
         [HttpPut("atletas/{id}/toggle")]
         public async Task<IActionResult> ToggleAtletaPago(int id, [FromBody] bool alDia)
         {
