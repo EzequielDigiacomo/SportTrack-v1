@@ -64,5 +64,10 @@ namespace SportTrack_v1.Controladores.Hubs
             await _faseService.UpdateResultadoStatusAsync(int.Parse(resultadoId), status);
             // El servicio ya emite "GlobalResultStatusUpdated"
         }
+
+        public async Task RequestPaymentStatusChange(string clubNombre, string clubId)
+        {
+            await Clients.All.SendAsync("paymentStatusChangeRequested", new { clubNombre, clubId, motive = "solicitar cambio de estado de pago de este club" });
+        }
     }
 }

@@ -7,6 +7,7 @@ Este directorio contiene toda la documentación técnica y funcional necesaria p
 ### 1. Análisis Técnico
 Documentación sobre la arquitectura del sistema, stack tecnológico y estructura de la solución.
 -   [Análisis Técnico](./Analisis/ANALISIS_TECNICO.md)
+-   [Presentación del Stack y Ventajas Competitivas](./PRESENTACION_TECNOLOGICA.md)
 
 ### 2. Manuales de Implementación
 Guías paso a paso para desarrolladores y administradores de sistemas.
