@@ -18,6 +18,9 @@ namespace SportTrack_v1.Controladores.Hubs
         private static readonly System.Collections.Concurrent.ConcurrentDictionary<string, System.Collections.Generic.List<RaceUserPresence>> _activeRaceGroups = 
             new System.Collections.Concurrent.ConcurrentDictionary<string, System.Collections.Generic.List<RaceUserPresence>>();
 
+        private static readonly System.Collections.Concurrent.ConcurrentDictionary<string, System.Collections.Generic.List<RaceUserPresence>> _activeEventGroups = 
+            new System.Collections.Concurrent.ConcurrentDictionary<string, System.Collections.Generic.List<RaceUserPresence>>();
+
         public TimingHub(IFaseService faseService)
         {
             _faseService = faseService;
@@ -54,6 +57,40 @@ namespace SportTrack_v1.Controladores.Hubs
                     copyList = new System.Collections.Generic.List<RaceUserPresence>(currentList);
                 }
                 await Clients.Group($"race_{faseId}").SendAsync("RacePresenceUpdated", copyList);
+            }
+        }
+
+        public async Task JoinEventGroup(string eventoId, string userName, string role)
+        {
+            await Groups.AddToGroupAsync(Context.ConnectionId, $"event_{eventoId}");
+
+            var presence = new RaceUserPresence
+            {
+                ConnectionId = Context.ConnectionId,
+                UserName = userName,
+                Role = role
+            };
+
+            _activeEventGroups.AddOrUpdate(eventoId,
+                new System.Collections.Generic.List<RaceUserPresence> { presence },
+                (key, oldValue) =>
+                {
+                    lock (oldValue)
+                    {
+                        oldValue.RemoveAll(x => x.ConnectionId == Context.ConnectionId || (x.UserName == userName && x.Role == role));
+                        oldValue.Add(presence);
+                    }
+                    return oldValue;
+                });
+
+            if (_activeEventGroups.TryGetValue(eventoId, out var currentList))
+            {
+                System.Collections.Generic.List<RaceUserPresence> copyList;
+                lock (currentList)
+                {
+                    copyList = new System.Collections.Generic.List<RaceUserPresence>(currentList);
+                }
+                await Clients.Group($"event_{eventoId}").SendAsync("EventPresenceUpdated", copyList);
             }
         }
 
@@ -99,6 +136,29 @@ namespace SportTrack_v1.Controladores.Hubs
                     await Clients.Group($"race_{faseId}").SendAsync("RacePresenceUpdated", copyList);
                 }
             }
+
+            foreach (var entry in _activeEventGroups)
+            {
+                var eventoId = entry.Key;
+                var currentList = entry.Value;
+                bool removed = false;
+                lock (currentList)
+                {
+                    int before = currentList.Count;
+                    currentList.RemoveAll(x => x.ConnectionId == Context.ConnectionId);
+                    removed = currentList.Count < before;
+                }
+                if (removed)
+                {
+                    System.Collections.Generic.List<RaceUserPresence> copyList;
+                    lock (currentList)
+                    {
+                        copyList = new System.Collections.Generic.List<RaceUserPresence>(currentList);
+                    }
+                    await Clients.Group($"event_{eventoId}").SendAsync("EventPresenceUpdated", copyList);
+                }
+            }
+
             await base.OnDisconnectedAsync(exception);
         }
 
