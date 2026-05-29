@@ -5,23 +5,101 @@ using SportTrack_v1.Controladores.Fase;
 
 namespace SportTrack_v1.Controladores.Hubs
 {
+    public class RaceUserPresence
+    {
+        public string ConnectionId { get; set; }
+        public string UserName { get; set; }
+        public string Role { get; set; }
+    }
+
     public class TimingHub : Hub
     {
         private readonly IFaseService _faseService;
+        private static readonly System.Collections.Concurrent.ConcurrentDictionary<string, System.Collections.Generic.List<RaceUserPresence>> _activeRaceGroups = 
+            new System.Collections.Concurrent.ConcurrentDictionary<string, System.Collections.Generic.List<RaceUserPresence>>();
 
         public TimingHub(IFaseService faseService)
         {
             _faseService = faseService;
         }
 
-        public async Task JoinRaceGroup(string faseId)
+        public async Task JoinRaceGroup(string faseId, string userName, string role)
         {
             await Groups.AddToGroupAsync(Context.ConnectionId, $"race_{faseId}");
+
+            var presence = new RaceUserPresence
+            {
+                ConnectionId = Context.ConnectionId,
+                UserName = userName,
+                Role = role
+            };
+
+            _activeRaceGroups.AddOrUpdate(faseId,
+                new System.Collections.Generic.List<RaceUserPresence> { presence },
+                (key, oldValue) =>
+                {
+                    lock (oldValue)
+                    {
+                        oldValue.RemoveAll(x => x.ConnectionId == Context.ConnectionId || (x.UserName == userName && x.Role == role));
+                        oldValue.Add(presence);
+                    }
+                    return oldValue;
+                });
+
+            if (_activeRaceGroups.TryGetValue(faseId, out var currentList))
+            {
+                System.Collections.Generic.List<RaceUserPresence> copyList;
+                lock (currentList)
+                {
+                    copyList = new System.Collections.Generic.List<RaceUserPresence>(currentList);
+                }
+                await Clients.Group($"race_{faseId}").SendAsync("RacePresenceUpdated", copyList);
+            }
         }
 
         public async Task LeaveRaceGroup(string faseId)
         {
             await Groups.RemoveFromGroupAsync(Context.ConnectionId, $"race_{faseId}");
+
+            if (_activeRaceGroups.TryGetValue(faseId, out var currentList))
+            {
+                lock (currentList)
+                {
+                    currentList.RemoveAll(x => x.ConnectionId == Context.ConnectionId);
+                }
+                System.Collections.Generic.List<RaceUserPresence> copyList;
+                lock (currentList)
+                {
+                    copyList = new System.Collections.Generic.List<RaceUserPresence>(currentList);
+                }
+                await Clients.Group($"race_{faseId}").SendAsync("RacePresenceUpdated", copyList);
+            }
+        }
+
+        public override async Task OnDisconnectedAsync(Exception exception)
+        {
+            foreach (var entry in _activeRaceGroups)
+            {
+                var faseId = entry.Key;
+                var currentList = entry.Value;
+                bool removed = false;
+                lock (currentList)
+                {
+                    int before = currentList.Count;
+                    currentList.RemoveAll(x => x.ConnectionId == Context.ConnectionId);
+                    removed = currentList.Count < before;
+                }
+                if (removed)
+                {
+                    System.Collections.Generic.List<RaceUserPresence> copyList;
+                    lock (currentList)
+                    {
+                        copyList = new System.Collections.Generic.List<RaceUserPresence>(currentList);
+                    }
+                    await Clients.Group($"race_{faseId}").SendAsync("RacePresenceUpdated", copyList);
+                }
+            }
+            await base.OnDisconnectedAsync(exception);
         }
 
         // Acciones críticas vía WebSocket para mínima latencia
