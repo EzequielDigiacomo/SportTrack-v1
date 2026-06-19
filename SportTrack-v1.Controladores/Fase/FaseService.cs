@@ -770,6 +770,20 @@ namespace SportTrack_v1.Controladores.Fase
             if (placements == null || !placements.Any())
                 throw new ArgumentException("Debe proporcionar al menos una ubicación para generar las fases.");
 
+            // Validar que no haya carriles duplicados dentro de la misma serie
+            var agrupadoPorSerieCheck = placements.GroupBy(p => p.Serie);
+            foreach (var grupo in agrupadoPorSerieCheck)
+            {
+                var carrilesRepetidos = grupo.GroupBy(p => p.Carril)
+                                            .Where(g => g.Count() > 1)
+                                            .Select(g => g.Key)
+                                            .ToList();
+                if (carrilesRepetidos.Any())
+                {
+                    throw new ArgumentException($"El carril {carrilesRepetidos.First()} está repetido en la Serie {grupo.Key}.");
+                }
+            }
+
             // 1. LIMPIEZA TOTAL
             await _etapaRepository.DeleteByEventoPruebaIdAsync(eventoPruebaId);
 
