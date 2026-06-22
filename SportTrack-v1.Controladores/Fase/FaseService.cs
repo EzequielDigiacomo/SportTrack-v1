@@ -88,7 +88,7 @@ namespace SportTrack_v1.Controladores.Fase
             if (ep != null)
             {
                 ep.PlanProgresionAsignado = DeterminarPlanProgresion(inscriptosCount);
-                await _eventoRepository.UpdateAsync(ep);
+                await _eventoRepository.UpdateEventoPruebaAsync(ep);
             }
 
             // ANCLAJE AL PROGRAMA: Usamos la hora programada del evento o de la prueba.
@@ -834,7 +834,7 @@ namespace SportTrack_v1.Controladores.Fase
             {
                 int inscriptosCount = placements.Count;
                 ep.PlanProgresionAsignado = DeterminarPlanProgresion(inscriptosCount);
-                await _eventoRepository.UpdateAsync(ep);
+                await _eventoRepository.UpdateEventoPruebaAsync(ep);
             }
 
             // Determinar cuántas series hay
