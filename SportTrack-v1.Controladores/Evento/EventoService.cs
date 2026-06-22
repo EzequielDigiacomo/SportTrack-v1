@@ -137,6 +137,7 @@ namespace SportTrack_v1.Controladores.Evento
                 PruebaId = ep.PruebaId,
                 FechaHora = ep.FechaHora,
                 Estado = ep.Estado.ToString(),
+                PlanProgresionAsignado = ep.PlanProgresionAsignado,
                 CantidadInscritos = ep.Inscripciones != null ? ep.Inscripciones.Count : 0,
                 Prueba = ep.Prueba == null ? null : new PruebaDto
                 {

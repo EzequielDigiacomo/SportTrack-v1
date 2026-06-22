@@ -110,6 +110,7 @@ namespace SportTrack_v1.Controladores.Evento.Dtos
         public DateTime FechaHora { get; set; }
         public string? Estado { get; set; }
         public int CantidadInscritos { get; set; }
+        public string? PlanProgresionAsignado { get; set; }
     }
 
     public class EventoPruebaCreateDto
