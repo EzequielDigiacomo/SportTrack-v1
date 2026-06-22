@@ -251,13 +251,17 @@ namespace SportTrack_v1.Controladores.Fase
  
         private string DeterminarPlanProgresion(int count)
         {
-            if (count >= 10 && count <= 18) return "Plan A1";
-            if (count >= 19 && count <= 27) return "Plan B1";
-            if (count >= 28 && count <= 36) return "Plan C1";
-            if (count >= 37 && count <= 45) return "Plan D1";
-            if (count >= 46 && count <= 54) return "Plan E1";
-            if (count >= 55 && count <= 63) return "Plan F1";
-            if (count >= 64 && count <= 72) return "Plan G1";
+            // La elección entre la variante 1 y 2 es aleatoria (ej: A1 o A2)
+            string variant = new Random().Next(1, 3).ToString(); 
+
+            if (count >= 10 && count <= 18) return $"Plan A{variant}";
+            if (count >= 19 && count <= 27) return $"Plan B{variant}";
+            if (count >= 28 && count <= 36) return $"Plan C{variant}";
+            if (count >= 37 && count <= 45) return $"Plan D{variant}";
+            if (count >= 46 && count <= 54) return $"Plan E{variant}";
+            if (count >= 55 && count <= 63) return $"Plan F{variant}";
+            if (count >= 64 && count <= 72) return $"Plan G{variant}";
+            
             return null; // Directo a final u otra excepción
         }
 
