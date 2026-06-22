@@ -84,6 +84,13 @@ namespace SportTrack_v1.Controladores.Fase
             
             var ep = await _eventoRepository.GetEventoPruebaByIdAsync(eventoPruebaId);
             
+            // Asignar Plan de Progresión Automáticamente
+            if (ep != null)
+            {
+                ep.PlanProgresionAsignado = DeterminarPlanProgresion(inscriptosCount);
+                await _eventoRepository.UpdateAsync(ep);
+            }
+
             // ANCLAJE AL PROGRAMA: Usamos la hora programada del evento o de la prueba.
             DateTime nextTime;
             if (ep?.FechaHora != null)
@@ -242,6 +249,18 @@ namespace SportTrack_v1.Controladores.Fase
             }
         }
  
+        private string DeterminarPlanProgresion(int count)
+        {
+            if (count >= 10 && count <= 18) return "Plan A1";
+            if (count >= 19 && count <= 27) return "Plan B1";
+            if (count >= 28 && count <= 36) return "Plan C1";
+            if (count >= 37 && count <= 45) return "Plan D1";
+            if (count >= 46 && count <= 54) return "Plan E1";
+            if (count >= 55 && count <= 63) return "Plan F1";
+            if (count >= 64 && count <= 72) return "Plan G1";
+            return null; // Directo a final u otra excepción
+        }
+
         private Entidades.Entidades.Fase CrearFaseConResultados(int etapaId, string nombreFase, int numeroFase, List<Entidades.Entidades.Inscripcion> inscripcionesBase, DateTime? fechaHora = null)
         {
             var fase = new Entidades.Entidades.Fase
@@ -808,6 +827,14 @@ namespace SportTrack_v1.Controladores.Fase
                 {
                     nextTime = DateTime.SpecifyKind(baseDate.Add(horaBase), DateTimeKind.Utc);
                 }
+            }
+
+            // Asignar Plan de Progresión Automáticamente
+            if (ep != null)
+            {
+                int inscriptosCount = placements.Count;
+                ep.PlanProgresionAsignado = DeterminarPlanProgresion(inscriptosCount);
+                await _eventoRepository.UpdateAsync(ep);
             }
 
             // Determinar cuántas series hay
