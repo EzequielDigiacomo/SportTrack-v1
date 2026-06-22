@@ -26,6 +26,10 @@ namespace SportTrack_v1.Entidades.Entidades
         // Información adicional
         public string? Observaciones { get; set; }
 
+        // Progression Traceability
+        public int? FaseOrigenId { get; set; }
+        public string? ReglaClasificacionAplicada { get; set; }
+
         // Auditoría
         public DateTime FechaRegistro { get; set; } = DateTime.UtcNow;
         public DateTime? FechaActualizacion { get; set; }

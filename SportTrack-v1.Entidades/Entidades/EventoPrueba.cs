@@ -16,6 +16,9 @@ namespace SportTrack_v1.Entidades.Entidades
         public int MaxParticipantes { get; set; } = 0;
         public string? Pista { get; set; }
         public EstadoEventoEnum Estado { get; set; } = EstadoEventoEnum.Programada; // Usando enum
+        
+        // Progression Traceability
+        public string? PlanProgresionAsignado { get; set; }
 
         // Navigation properties
         public Evento Evento { get; set; } = null!;
