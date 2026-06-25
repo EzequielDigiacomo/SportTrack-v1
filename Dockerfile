@@ -21,6 +21,10 @@ RUN dotnet publish "SportTrack-v1.Api.csproj" -c Release -o /app/publish /p:UseA
 # Etapa 2: Runtime
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS final
 WORKDIR /app
+
+# Instalar postgresql-client para disponer de pg_dump (necesario para respaldos de base de datos)
+RUN apt-get update && apt-get install -y postgresql-client && rm -rf /var/lib/apt/lists/*
+
 COPY --from=publish /app/publish .
 
 # Exponer el puerto predeterminado de Render

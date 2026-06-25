@@ -45,12 +45,29 @@ namespace SportTrack_v1.Api.Controllers
                 {
                     if (item.TiempoOficial.HasValue) original.TiempoOficial = item.TiempoOficial;
                     if (item.Posicion.HasValue) original.Posicion = item.Posicion;
+                    if (item.Carril.HasValue) original.Carril = item.Carril;
+                    
                     if (!string.IsNullOrEmpty(item.Estado))
                         original.Estado = (SportTrack_v1.Entidades.Enums.EstadoResultadoEnum)Enum.Parse(typeof(SportTrack_v1.Entidades.Enums.EstadoResultadoEnum), item.Estado);
                     
+                    if (original.Inscripcion?.Participante != null && !string.IsNullOrEmpty(item.ParticipanteNombre))
+                    {
+                        var nameParts = item.ParticipanteNombre.Trim().Split(' ');
+                        if (nameParts.Length > 0)
+                        {
+                            original.Inscripcion.Participante.Nombre = nameParts[0];
+                            original.Inscripcion.Participante.Apellido = nameParts.Length > 1 ? string.Join(" ", nameParts.Skip(1)) : "";
+                        }
+                    }
+
+                    if (original.Inscripcion?.Participante?.Club != null && !string.IsNullOrEmpty(item.ClubSigla))
+                    {
+                        original.Inscripcion.Participante.Club.Sigla = item.ClubSigla.Trim();
+                    }
+
                     original.FechaActualizacion = DateTime.UtcNow;
                     original.UsuarioActualizacion = HttpContext.User.Identity?.Name ?? "Sistema";
-
+                    
                     aActualizar.Add(original);
                 }
             }
@@ -82,5 +99,8 @@ namespace SportTrack_v1.Api.Controllers
         public TimeSpan? TiempoOficial { get; set; }
         public int? Posicion { get; set; }
         public string? Estado { get; set; }
+        public int? Carril { get; set; }
+        public string? ParticipanteNombre { get; set; }
+        public string? ClubSigla { get; set; }
     }
 }
