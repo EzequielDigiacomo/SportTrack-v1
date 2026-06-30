@@ -50,16 +50,16 @@ namespace SportTrack_v1.Api.Controllers
                 {
                     // Intentar buscar en C:\Program Files\PostgreSQL si no se encuentra en el PATH
                     var defaultPgPath = @"C:\Program Files\PostgreSQL\16\bin\pg_dump.exe"; // Versión común, puede ser 15, 16, 17...
-                    if (!File.Exists(defaultPgPath))
+                    if (!System.IO.File.Exists(defaultPgPath))
                     {
                         defaultPgPath = @"C:\Program Files\PostgreSQL\15\bin\pg_dump.exe";
                     }
-                    if (!File.Exists(defaultPgPath))
+                    if (!System.IO.File.Exists(defaultPgPath))
                     {
                         defaultPgPath = @"C:\Program Files\PostgreSQL\14\bin\pg_dump.exe";
                     }
                     
-                    if (File.Exists(defaultPgPath))
+                    if (System.IO.File.Exists(defaultPgPath))
                     {
                         pgDumpCommand = defaultPgPath;
                     }

@@ -231,6 +231,22 @@ using (var scope = app.Services.CreateScope())
         {
             Console.WriteLine($"Safeguard Warning: No se pudo verificar/agregar UsarGapVariable: {ex.Message}");
         }
+
+        // Safeguard: Asegurar que las columnas de Perfil en Usuarios existen.
+        try
+        {
+            context.Database.ExecuteSqlRaw(@"
+                ALTER TABLE catalogos.""Usuarios"" ADD COLUMN IF NOT EXISTS ""Nombre"" text;
+                ALTER TABLE catalogos.""Usuarios"" ADD COLUMN IF NOT EXISTS ""Apellido"" text;
+                ALTER TABLE catalogos.""Usuarios"" ADD COLUMN IF NOT EXISTS ""Dni"" text;
+                ALTER TABLE catalogos.""Usuarios"" ADD COLUMN IF NOT EXISTS ""Telefono"" text;
+            ");
+            Console.WriteLine("Safeguard: Verificadas las columnas de Perfil en Usuarios.");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Safeguard Warning: No se pudo verificar/agregar Perfil en Usuarios: {ex.Message}");
+        }
     }
     catch (Exception ex)
     {
@@ -273,7 +289,13 @@ app.MapGet("/api/fix-db", async (SportTrack.AccessDatos.SportTrackDbContext db) 
         await db.Database.ExecuteSqlRawAsync(@"
             ALTER TABLE regatas.""Eventos"" ADD COLUMN IF NOT EXISTS ""UsarGapVariable"" boolean NOT NULL DEFAULT FALSE;
         ");
-        return Results.Ok(new { Message = "Base de datos arreglada. Las columnas UserAgent y UsarGapVariable fueron verificadas/creadas con éxito." });
+        await db.Database.ExecuteSqlRawAsync(@"
+            ALTER TABLE catalogos.""Usuarios"" ADD COLUMN IF NOT EXISTS ""Nombre"" text;
+            ALTER TABLE catalogos.""Usuarios"" ADD COLUMN IF NOT EXISTS ""Apellido"" text;
+            ALTER TABLE catalogos.""Usuarios"" ADD COLUMN IF NOT EXISTS ""Dni"" text;
+            ALTER TABLE catalogos.""Usuarios"" ADD COLUMN IF NOT EXISTS ""Telefono"" text;
+        ");
+        return Results.Ok(new { Message = "Base de datos arreglada. Las columnas de Usuario (Nombre, Apellido, etc.), UserAgent y UsarGapVariable fueron verificadas/creadas con éxito." });
     } catch (Exception ex) {
         return Results.Problem($"Error al arreglar la base de datos: {ex.Message}");
     }
