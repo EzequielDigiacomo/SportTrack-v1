@@ -274,5 +274,31 @@ namespace SportTrack_v1.Controladores.Auth
 
             return result;
         }
+
+        public async Task<bool> UpdatePerfilAsync(int id, UpdatePerfilDto dto)
+        {
+            var user = await _context.Usuarios.FindAsync(id);
+            if (user == null)
+            {
+                throw new NotFoundException($"Usuario con ID {id} no encontrado");
+            }
+
+            user.Nombre = dto.Nombre;
+            user.Apellido = dto.Apellido;
+            user.Dni = dto.Dni;
+            user.Telefono = dto.Telefono;
+            if (!string.IsNullOrEmpty(dto.Email))
+            {
+                user.Email = dto.Email;
+            }
+
+            _context.Usuarios.Update(user);
+            var result = await _context.SaveChangesAsync() > 0;
+
+            await _auditService.RegistrarAccionAsync("UPDATE_PROFILE", 
+                $"Perfil actualizado para el usuario '{user.Username}'", null, "Auth");
+
+            return result;
+        }
     }
 }

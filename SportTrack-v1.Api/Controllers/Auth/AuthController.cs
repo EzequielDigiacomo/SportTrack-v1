@@ -75,6 +75,14 @@ namespace SportTrack_v1.Api.Controllers.Auth
             return Ok(new { message = "Contraseña actualizada con éxito" });
         }
 
+        [HttpPut("usuarios/{id}/perfil")]
+        [Authorize]
+        public async Task<ActionResult> UpdatePerfil(int id, [FromBody] UpdatePerfilDto dto)
+        {
+            await _authService.UpdatePerfilAsync(id, dto);
+            return Ok(new { message = "Perfil actualizado con éxito" });
+        }
+
         [HttpPatch("usuarios/{id}/toggle-activo")]
         [Authorize(Roles = "Admin,SuperAdmin")]
         public async Task<ActionResult> ToggleActivo(int id)

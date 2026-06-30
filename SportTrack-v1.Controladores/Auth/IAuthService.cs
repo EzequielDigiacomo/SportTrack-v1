@@ -12,5 +12,6 @@ namespace SportTrack_v1.Controladores.Auth
         Task<bool> UpdatePasswordAsync(int id, string newPassword);
         Task<UsuarioDto> GetMeAsync(string username);
         Task<bool> ToggleActivoAsync(int id);
+        Task<bool> UpdatePerfilAsync(int id, UpdatePerfilDto dto);
     }
 }

@@ -53,4 +53,13 @@ namespace SportTrack_v1.Controladores.Auth.Dtos
         public string? FrecuenciaPago { get; set; }
         public System.DateTime? FechaVencimientoPlan { get; set; }
     }
+
+    public class UpdatePerfilDto
+    {
+        public string? Nombre { get; set; }
+        public string? Apellido { get; set; }
+        public string? Dni { get; set; }
+        public string? Telefono { get; set; }
+        public string? Email { get; set; }
+    }
 }
